@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+    <FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dip" >
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/setup">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/options"
+            android:textAppearance="?android:attr/textAppearanceMedium" >
+        </TextView>
+
+        <Spinner
+            android:id="@+id/option_max_points"
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:prompt="@string/option_victory_points_to_win" >
+        </Spinner>
+
+        <Spinner
+            android:id="@+id/option_num_players"
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:prompt="@string/option_num_players" >
+        </Spinner>
+
+        <Spinner
+            android:id="@+id/option_board_size"
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:prompt="@string/option_victory_points_to_win" >
+        </Spinner>
+
+        <CheckBox
+            android:id="@+id/auto_discard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/option_auto_discard" >
+        </CheckBox>
+
+
+        <Button
+            android:id="@+id/start"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start"
+            >
+        </Button>
+
+
+
+    </LinearLayout>
+
+    </ScrollView>
+    <RelativeLayout
+        android:id="@+id/progressLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" >
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/loading" />
+    </RelativeLayout>
+    </FrameLayout>
+

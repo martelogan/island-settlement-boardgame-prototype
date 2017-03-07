@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dip" >
+
+        <Spinner
+            android:id="@+id/trade_type"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:prompt="@string/trade_requesting" >
+        </Spinner>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/trade_offering" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/lumber"
+                android:src="@drawable/resource_lumber_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="28dip" />
+
+            <Button
+                android:id="@+id/trade_minus1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="46dip" />
+
+            <TextView
+                android:id="@+id/trade_offer1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="40dip" />
+
+
+            <Button
+                android:id="@+id/trade_plus1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/wool"
+                android:src="@drawable/resource_wool_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="28dip" />
+
+            <Button
+                android:id="@+id/trade_minus2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="46dip" />
+
+            <TextView
+                android:id="@+id/trade_offer2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="40dip" />
+
+
+            <Button
+                android:id="@+id/trade_plus2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/grain"
+                android:src="@drawable/resource_grain_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="28dip" />
+
+            <Button
+                android:id="@+id/trade_minus3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="46dip" />
+
+            <TextView
+                android:id="@+id/trade_offer3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="40dip" />
+
+            <Button
+                android:id="@+id/trade_plus3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/brick"
+                android:src="@drawable/resource_brick_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="28dip" />
+
+            <Button
+                android:id="@+id/trade_minus4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="46dip" />
+
+            <TextView
+                android:id="@+id/trade_offer4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="40dip" />
+
+            <Button
+                android:id="@+id/trade_plus4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/ore"
+                android:src="@drawable/resource_ore_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="28dip" />
+
+            <Button
+                android:id="@+id/trade_minus5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="46dip" />
+
+            <TextView
+                android:id="@+id/trade_offer5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="40dip" />
+
+            <Button
+                android:id="@+id/trade_plus5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/trade_bank"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="@string/trade_bank" >
+            </Button>
+
+            <Button
+                android:id="@+id/trade_propose"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="@string/trade_propose" >
+            </Button>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/bankratio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/bankratio"
+            android:textSize="20sp" />
+        <TextView
+            android:id="@+id/resource1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/lumber"
+            android:textSize="18sp" />
+        <TextView
+            android:id="@+id/resource2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/wool"
+            android:textSize="18sp" />
+        <TextView
+            android:id="@+id/resource3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/grain"
+            android:textSize="18sp" />
+        <TextView
+            android:id="@+id/resource4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/brick"
+            android:textSize="18sp" />
+        <TextView
+            android:id="@+id/resource5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/ore"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+</ScrollView>

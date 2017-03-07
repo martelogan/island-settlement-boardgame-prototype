@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!-- Application name and misc strings-->
+	<string name="app_name">CatAndroid</string>
+	<string name="empty_string"></string>
+	<string name="acknowledgements">A game by Hitpeeps</string>
+
+	<!-- StartScreenActivity menu -->
+	<string name="login_button">Login</string>
+	<string name="rules_button">Game Rules</string>
+	<string name="rules_failed">Sorry :( . We can\'t seem to load the rules file</string>
+	<string name="about_button">About this game</string>
+	<string name="about_text">COMP 361 Project - Catan + Cities and Knights + Seafarers</string>
+
+    <!-- Launch game screen -->
+    <string name="options">Options</string>
+    <string name="start">Start</string>
+    <string name="resume_button">Resume</string>
+    <string name="option_victory_points_to_win">Points to win</string>
+    <string name="option_num_players">Number of Players</string>
+    <string name="victory_points_to_win">Victory points to win</string>
+    <string name="option_auto_discard">Discard automatically when 7 is rolled</string>
+    <string name="short_game">(short game)</string>
+    <string name="standard_game">(standard game)</string>
+    <string name="long_game">(long game)</string>
+
+	<!-- Colors -->
+	<string name="red">red</string>
+	<string name="yellow">yellow</string>
+	<string name="green">green</string>
+	<string name="blue">blue</string>
+
+	<!-- Skeleton Multiplayer -->
+	<string name="hello_world">Hello world!</string>
+	<string name="sign_out">Sign Out</string>
+	<string name="match_instructions">Type in a new word for the data in this game, then hit done.</string>
+	<string name="quick_match">Quick match</string>
+	<string name="done">Done</string>
+	<string name="leave">Leave</string>
+	<string name="cancel">Cancel</string>
+	<string name="finish">Finish</string>
+	<string name="welcome_to_our_skeleton_app_">Welcome to Catandroid. Please Sign In</string>
+	<string name="check_games">View Open Games</string>
+	<string name="start_match">Start New Game</string>
+	<string name="turn_counter">Turn counter</string>
+	<string name="signin_other_error">There was an issue with sign in.  Please try again later.</string>
+
+	<!-- Resource resourceTypes -->
+	<string name="desert">desert</string>
+	<string name="lumber">lumber</string>
+	<string name="wool">wool</string>
+	<string name="grain">grain</string>
+	<string name="brick">brick</string>
+	<string name="ore">ore</string>
+	<string name="gold">gold</string>
+
+	<!-- Trade screen -->
+	<string name="trade">Trade</string>
+	<string name="bankratio"><u>Bank Trade Ratio</u></string>
+	<string name="trade_bank">Trade with the bank</string>
+	<string name="trade_requesting">Requesting</string>
+	<string name="trade_offering">Offering</string>
+	<string name="trade_confirm">Confirm</string>
+	<string name="trade_cancel">Cancel</string>
+	<string name="trade_for_resource">Trade for %s</string> 
+	<string name="trade_for_prior">Traded for</string>
+	<string name="trade_invalid">Invalid trade</string>
+	<string name="trade_plus">+</string>
+	<string name="trade_minus">-</string>
+	<string name="trade_zero">0</string>
+	<string name="resources">Road: lumber, brick
+		\nSettlement: lumber, wool, grain,
+		brick
+		\nCity: 2 grain, 3 ore
+    </string>
+	<string name="trade_your_resources">Your resources</string>
+	<string name="trade_propose">Propose trade</string>
+	<string name="trade_make_offer">Make offer</string>
+	<string name="trade_accept_offer">Accept offer</string>
+	<string name="trade_accepted">Trade with %s</string>
+	<string name="trade_counter">%s proposed a counter-offer</string>
+	<string name="trade_counter_offer">Counter-offer</string>
+	<string name="trade_counter_make">Make counter-offer</string>
+	<string name="trade_rejected">%s has rejected the offer</string>
+	<string name="trade_pending_offers">Pending offers</string>
+	<string name="trade_player_wants">Trade for %s</string>
+	<string name="trade_ratio" formatted="false">%s (%d:1)</string>
+	<string name="trade_player_offer">%s is offering</string>
+
+	<!-- DiscardResourcesFragment screen -->
+	<string name="discard_reason">%s rolled a 7</string>
+	<string name="discard_instruction">discard %d resources</string>
+	<string name="discard_select">Select resources to discard</string>
+	<string name="discard_button">Discard Resources</string>
+
+    <!-- Player turn log messages -->
+    <string name="player_roll">Rolled %s</string>
+    <string name="player_road">Built a road</string>
+    <string name="player_settlement">Built a settlement</string>
+    <string name="player_city">Built a city</string>
+	<string name="player_traded_away">Traded away %s</string>
+	<string name="player_ended_turn">Ended turn</string>
+	<string name="player_received_card">Received a card</string>
+	<string name="player_played_card">Played a %s card</string>
+    <string name="player_longest_road">Has the longest road</string>
+    <string name="player_stole_from">Stole from %s</string>
+	<string name="player_received_resource">Received %s</string>
+	<string name="player_received_x_resources" formatted="false">Received %s resources</string>
+    <string name="player_discarded">Discarded %s</string>
+    <string name="player_traded_with">Traded with %s</string>
+    <string name="player_traded_for">Traded for %s</string>
+
+	<!-- PlayerStatsFragment screen -->
+	<string name="status">Status</string>
+	<string name="status_points_str">points</string>
+	<string name="status_victory_points">Victory points</string>
+	<string name="status_color">Color</string>
+	<string name="status_this_turn">This turn</string>
+	<string name="status_last_turn">Last turn</string>
+	<string name="status_turn">Turn</string>
+	<string name="status_resources">Resources</string>
+	<string name="status_settlements">Settlements (1 point)</string>
+	<string name="status_cities">Cities (2 points)</string>
+	<string name="status_roads">Total roads</string>
+	<string name="status_best_road_length">Your longest road length</string>
+	<string name="status_has_longest_road">Longest road</string>
+	<string name="status_progress_cards">Progress cards</string>
+	<string name="status_harbor">harbor</string>
+
+	<!-- Quick costs_reference screen -->
+	<string name="reference">Costs Reference</string>
+	<string name="development_costs">Development Costs</string>
+	<string name="reference_road">Road</string>
+	<string name="reference_settlement">Settlement</string>
+	<string name="reference_city">City</string>
+	<string name="reference_costs">Road:\n1 lumber, 1 brick\n
+		\nSettlement:\n1 lumber, 1
+		wool, 1 grain, 1 brick\n
+		\nCity:\n2 grain, 3 ore\n
+    </string>
+
+	<!-- In-game buttons -->
+	<string name="button_cards">Buy or use cards</string>
+	<string name="button_settlement">Build settlement</string>
+	<string name="button_city">Build city</string>
+	<string name="button_road">Build road</string>
+	<string name="button_status">Status</string>
+	<string name="button_roll">Roll dice</string>
+	<string name="button_end">End turn</string>
+	<string name="button_trade">Trade</string>
+	<string name="button_cancel">Cancel</string>
+
+    <!-- Prompt strings -->
+    <string name="phase_first_settlement">Place first settlement</string>
+    <string name="phase_first_road">Place first road</string>
+    <string name="phase_first_city">Place first city</string>
+    <string name="phase_second_road">Place 2nd road</string>
+    <string name="phase_your_turn">Your turn</string>
+    <string name="phase_build">Build</string>
+    <string name="phase_move_robber">Move the robber</string>
+    <string name="phase_game_over">Game over</string>
+
+	<!-- Various strings in the game -->
+	<string name="not_my_turn">It\'s not your turn!</string>
+	<string name="game_turn_summary">Turn Summary</string>
+	<string name="game_rolled_str">Rolled</string>
+	<string name="game_move_robber">move the robber</string>
+	<string name="game_back_to_board">Back to board</string>
+	<string name="game_return_to_menu">Return to menu</string>
+	<string name="game_use_str">Use</string>
+	<string name="game_purchased_str">Purchased a</string>
+	<string name="game_ok_str">OK</string>
+	<string name="game_cancel_str">Cancel</string>
+	<string name="game_resources_str">resources</string>
+	<string name="game_steal_title">Pick a victim</string>
+	<string name="game_steal_from_str">Steal from</string>
+	<string name="game_steal_fail_str">Nobody to steal from</string>
+	<string name="game_stole_str">Stole</string>
+	<string name="game_from_str">from</string>
+	<string name="game_player_couldnt_steal">Couldn\'t steal from</string>
+	<string name="game_did_nothing_str">Did nothing</string>
+	<string name="game_build_road">Build a road</string>
+	<string name="game_build_settlement">Build a settlement</string>
+	<string name="game_build_city">Build a city</string>
+	<string name="game_cant_build_str">Can\'t build</string>
+	<string name="game_cant_move_robber">Can\'t move robber</string>
+	<string name="game_robber_same">You must move the robber to a new location</string>
+    <string name="game_build_settlements_max">Reached the maximum number of settlements.</string>
+	<string name="game_build_city_max">Reached the maximum number of cities.</string>
+	<string name="game_build_road_max">Reached the maximum number of roads.</string>
+	<string name="game_cant_build_settlement">No available settlement locations.</string>
+	<string name="game_cant_build_city">No available city locations.</string>
+	<string name="game_cant_build_road">No available road locations</string>
+	<string name="game_won">won</string>
+
+
+</resources>
