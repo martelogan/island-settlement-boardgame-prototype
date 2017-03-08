@@ -396,13 +396,15 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 			return;
 		}
 
-		((TextView) findViewById(R.id.name_field)).setText(Games.Players.getCurrentPlayer(
-				mGoogleApiClient).getDisplayName());
-		findViewById(R.id.login_layout).setVisibility(View.GONE);
+		if(findViewById(R.id.option_max_points) == null){
+			((TextView) findViewById(R.id.name_field)).setText(Games.Players.getCurrentPlayer(
+					mGoogleApiClient).getDisplayName());
+			findViewById(R.id.login_layout).setVisibility(View.GONE);
+		}
 
 		if (isDoingTurn) {
 			findViewById(R.id.matchup_layout).setVisibility(View.GONE);
-		} else {
+		} else if(findViewById(R.id.option_max_points) == null){
 			findViewById(R.id.matchup_layout).setVisibility(View.VISIBLE);
 			setTitle("CatAndroid");
 		}
@@ -513,6 +515,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 			Log.d(TAG, "Match = " + match);
 		} else if (request == RC_SELECT_PLAYERS) {
 			// Returned from 'Select players to Invite' dialog
+			dismissSpinner();
 
 			if (response != Activity.RESULT_OK) {
 				// user canceled

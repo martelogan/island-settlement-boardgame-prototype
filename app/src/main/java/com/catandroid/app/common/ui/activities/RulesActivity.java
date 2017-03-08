@@ -22,7 +22,7 @@ public class RulesActivity extends Activity {
 
 		ActionBar actionBar = getActionBar();
 		actionBar.setHomeButtonEnabled(true);
-		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(false);
 
 		String data = null;
 

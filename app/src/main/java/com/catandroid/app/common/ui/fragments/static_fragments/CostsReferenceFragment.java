@@ -30,7 +30,7 @@ public class CostsReferenceFragment extends Fragment {
 
 		//getActivity().setContentView(R.layout.costs_reference);
 		getActivity().setTitle(getString(R.string.reference));
-		getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 
 		//LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.costs_reference, null, false);
