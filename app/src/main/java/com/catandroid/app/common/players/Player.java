@@ -99,8 +99,17 @@ public class Player {
 		countPerResource = new int[Resource.RESOURCE_TYPES.length];
 		harbors = new boolean[Resource.ResourceType.values().length];
 		for (int i = 0; i < countPerResource.length; i++) {
-			countPerResource[i] = 0;
-			harbors[i] = false;
+			//everyone starts with 2 gold coins
+			//everyone has hold harbour by default
+			if(Resource.RESOURCE_TYPES[i] == Resource.ResourceType.GOLD){
+				harbors[i] = true;
+				countPerResource[i] = 2;
+			} else {
+				harbors[i] = false;
+				countPerResource[i] = 0;
+			}
+
+
 		}
 	}
 
@@ -291,12 +300,19 @@ public class Player {
 				if (curHex != null) {
 					terrainType = curHex.getTerrainType();
 					if (terrainType != Hexagon.TerrainType.DESERT
-							&& terrainType != Hexagon.TerrainType.SEA) {
+							&& terrainType != Hexagon.TerrainType.SEA
+							&& terrainType != Hexagon.TerrainType.GOLD_FIELD) {
 						// collect resource for hex adjacent to city
 						resourceType = curHex.getResourceType();
 						addResources(resourceType, 2);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(2) + " " + Resource.toRString(resourceType));
+					} else if(terrainType == Hexagon.TerrainType.GOLD_FIELD){
+						// collect 4 gold coins for gold hex adjacent to city at start
+						resourceType = curHex.getResourceType();
+						addResources(resourceType, 4);
+						appendAction(R.string.player_received_x_resources,
+								Integer.toString(4) + " " + Resource.toRString(resourceType));
 					}
 				}
 			}

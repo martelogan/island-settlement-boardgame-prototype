@@ -224,7 +224,12 @@ public class Vertex {
 		}
 
 		if (resourceType != null) {
-			owner.addResources(resourceType, building);
+			//Gold gets two times more on distribution (2 for settlement, 4 for city)
+			if(resourceType == Resource.ResourceType.GOLD){
+				owner.addResources(resourceType, building*2);
+			} else {
+				owner.addResources(resourceType, building);
+			}
 		}
 	}
 
