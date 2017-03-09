@@ -13,7 +13,7 @@ public class Vertex {
 	private int id;
 	private int building;
 
-	private Player owner;
+	private int owner;
 
 	private int[] edgeIds;
 	private int[] hexagonIds;
@@ -29,7 +29,7 @@ public class Vertex {
 	 */
 	public Vertex(Board board, int id) {
 		this.id = id;
-		owner = null;
+		owner = -1;
 		building = NONE;
 
 		edgeIds = new int[3];
@@ -178,8 +178,8 @@ public class Vertex {
 	 *            the player to check for
 	 * @return true if player has a building on the vertexS
 	 */
-	public boolean hasBuilding(Player player) {
-		return (owner == player);
+	public boolean hasBuilding(int player) {
+		return (board.getPlayerById(owner) == board.getPlayerById(player));
 	}
 
 	/**
@@ -198,7 +198,7 @@ public class Vertex {
 	 * @return the Player that owns it, or null
 	 */
 	public Player getOwner() {
-		return owner;
+		return board.getPlayerById(owner);
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class Vertex {
 	}
 
 	public void distributeResources(Resource.ResourceType resourceType) {
-		if (owner == null)
+		if (owner == -1)
 		{
 			return;
 		}
@@ -226,9 +226,9 @@ public class Vertex {
 		if (resourceType != null) {
 			//Gold gets two times more on distribution (2 for settlement, 4 for city)
 			if(resourceType == Resource.ResourceType.GOLD){
-				owner.addResources(resourceType, building*2);
+				board.getPlayerById(owner).addResources(resourceType, building*2);
 			} else {
-				owner.addResources(resourceType, building);
+				board.getPlayerById(owner).addResources(resourceType, building);
 			}
 		}
 	}
@@ -288,7 +288,7 @@ public class Vertex {
 		//TODO: change this to cities & knights version
 		// only allow building settlements
 		if (setup) {
-			return (owner == null);
+			return (board.getPlayerById(owner) == null);
 		}
 
 		// check if owner has road to vertex
@@ -297,12 +297,12 @@ public class Vertex {
 		}
 
 		// can build settlement
-		if (owner == null && type == SETTLEMENT) {
+		if (board.getPlayerById(owner) == null && type == SETTLEMENT) {
 			return true;
 		}
 		// can build city
 		else {
-			return owner == player && type == CITY && building == SETTLEMENT;
+			return board.getPlayerById(owner) == player && type == CITY && building == SETTLEMENT;
 		}
 	}
 
@@ -333,7 +333,7 @@ public class Vertex {
 
 		switch (building) {
 			case NONE:
-				owner = player;
+				owner = player.getPlayerNumber();
 				building = board.isSetupPhase2() ? CITY : SETTLEMENT;
 				break;
 			case SETTLEMENT:
@@ -375,7 +375,7 @@ public class Vertex {
 		// calculated with whichever happens to be picked first
 
 		// another player's road breaks the road chain
-		if (owner != null && owner != player)
+		if (board.getPlayerById(owner) != null && board.getPlayerById(owner) != player)
 		{
 			return 0;
 		}

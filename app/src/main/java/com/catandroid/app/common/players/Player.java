@@ -757,7 +757,7 @@ public class Player {
 //		int total = 0;
 //
 //		for (int i = 0; i < board.getNumPlayers(); i++) {
-//			Player player = board.getPlayer(i);
+//			Player player = board.getPlayerById(i);
 //			int count = player.getResources(resourceType);
 //
 //			if (player == this || count <= 0)

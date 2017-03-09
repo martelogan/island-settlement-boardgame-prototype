@@ -84,7 +84,7 @@ public class TradeResponseFragment extends Activity {
 
 		int index = 0;
 		for (int i = 0; i < 4; i++) {
-			Player player = board.getPlayer(i);
+			Player player = board.getPlayerById(i);
 			if (player == current)
 				continue;
 
@@ -110,7 +110,7 @@ public class TradeResponseFragment extends Activity {
 						Player player = null;
 						int index = 0;
 						for (int i = 0; i < 4; i++) {
-							player = board.getPlayer(i);
+							player = board.getPlayerById(i);
 							if (player == current)
 								continue;
 
@@ -155,7 +155,7 @@ public class TradeResponseFragment extends Activity {
 					Player player = null;
 					int index = 0;
 					for (int i = 0; i < 4; i++) {
-						player = board.getPlayer(i);
+						player = board.getPlayerById(i);
 						if (player == current)
 							continue;
 
@@ -194,7 +194,7 @@ public class TradeResponseFragment extends Activity {
 
 			int index = 0;
 			for (int i = 0; i < 4; i++) {
-				Player player = board.getPlayer(i);
+				Player player = board.getPlayerById(i);
 				if (player == current)
 					continue;
 
