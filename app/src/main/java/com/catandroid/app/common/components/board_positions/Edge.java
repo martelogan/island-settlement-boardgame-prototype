@@ -132,7 +132,7 @@ public class Edge {
 	 * @return null or the owner of this edge
 	 */
 	public Player getOwnerPlayer() {
-		return board.getPlayer(ownerPlayerNumber);
+		return board.getPlayerById(ownerPlayerNumber);
 	}
 
 	/**
@@ -465,7 +465,7 @@ public class Edge {
 	 * @return the road length
 	 */
 	public int getRoadLength(int countId) {
-		Player ownerPlayer = board.getPlayer(ownerPlayerNumber);
+		Player ownerPlayer = board.getPlayerById(ownerPlayerNumber);
 		if (ownerPlayer == null) {
 			return 0;
 		}

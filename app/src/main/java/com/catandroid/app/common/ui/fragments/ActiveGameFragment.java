@@ -307,7 +307,7 @@ public class ActiveGameFragment extends Fragment {
 
 	private void select(Action action, Hexagon hexagon) {
 		if (action == Action.ROBBER) {
-			if (hexagon != board.getPrevRobberHex()) {
+			if (hexagon != board.getPrevRobberHexId()) {
 				board.setRobber(hexagon.getId());
 				showState(false);
 			} else {
@@ -553,7 +553,7 @@ public class ActiveGameFragment extends Fragment {
 			renderer.getGeometry().zoomOut();
 
 		// show card stealing dialog
-		if (board.isRobberPhase() && board.getCurRobberHex() != null)
+		if (board.isRobberPhase() && board.getCurRobberHexId() != null)
 			steal();
 
 		// display winner
@@ -587,7 +587,7 @@ public class ActiveGameFragment extends Fragment {
 			action = Action.CITY;
 		else if (board.isSetupRoad() || board.isProgressPhase())
 			action = Action.ROAD;
-		else if (board.isRobberPhase() && board.getCurRobberHex() == null)
+		else if (board.isRobberPhase() && board.getCurRobberHexId() == null)
 			action = Action.ROBBER;
 
 		renderer.setAction(action);
@@ -709,7 +709,7 @@ public class ActiveGameFragment extends Fragment {
 				continue;
 			}
 
-			Player player = board.getPlayer(i % board.getNumPlayers());
+			Player player = board.getPlayerById(i % board.getNumPlayers());
 			String name = player.getName()
 					+ " ("
 					+ getActivity().getString(Player
@@ -745,7 +745,7 @@ public class ActiveGameFragment extends Fragment {
 			return;
 		}
 
-		Hexagon robbing = board.getCurRobberHex();
+		Hexagon robbing = board.getCurRobberHexId();
 		if (robbing == null) {
 			Log.w(getActivity().getClass().getName(),
 					"shouldn't be calling steal() without robber location set");
@@ -760,7 +760,7 @@ public class ActiveGameFragment extends Fragment {
 
 		Player player = null;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
-			player = board.getPlayer(i);
+			player = board.getPlayerById(i);
 
 			// don't steal from self or players without a settlement/city
 			if (player == current || !robbing.adjacentToPlayer(player))
@@ -818,7 +818,7 @@ public class ActiveGameFragment extends Fragment {
 
 		Player current = board.getCurrentPlayer();
 
-		Hexagon robbing = board.getCurRobberHex();
+		Hexagon robbing = board.getCurRobberHexId();
 		if (robbing == null)
 		{
 			return;
@@ -826,7 +826,7 @@ public class ActiveGameFragment extends Fragment {
 
 		int index = 0;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
-			Player player = board.getPlayer(i);
+			Player player = board.getPlayerById(i);
 			if (player == current || !robbing.adjacentToPlayer(player))
 			{
 				continue;

@@ -70,14 +70,14 @@ public class Board {
 	private Player[] players;
 	private int numPlayers;
 	private Harbor[] harbors;
-	private Stack<Player> playersYetToDiscard;
+	private Stack<Integer> playerIdsYetToDiscard;
 	private BoardGeometry boardGeometry;
-	private HashMap<Long, Hexagon> hexMap;
+	private HashMap<Long, Integer> hexIdMap;
 
-	private Hexagon curRobberHex, prevRobberHex;
+	private Integer curRobberHexId, prevRobberHexId;
 	private int turn, turnNumber, roadCountId, longestRoad,
 			maxPoints, lastDiceRollNumber;
-	private Player longestRoadOwner, winner;
+	private Integer longestRoadOwnerId, winnerId;
 
 	private boolean autoDiscard;
 
@@ -127,12 +127,12 @@ public class Board {
 		phase = Phase.SETUP_SETTLEMENT;
 		roadCountId = 0;
 		longestRoad = 4;
-		longestRoadOwner = null;
+		longestRoadOwnerId = null;
 		hexagons = null;
-		winner = null;
+		winnerId = null;
 
-		playersYetToDiscard = new Stack<Player>();
-		hexMap = new HashMap<Long, Hexagon>();
+		playerIdsYetToDiscard = new Stack<Integer>();
+		hexIdMap = new HashMap<Long, Integer>();
 
 		// randomly initialize hexagons
 		hexagons = BoardUtils.initRandomHexes(this);
@@ -141,7 +141,7 @@ public class Board {
 		edges = BoardUtils.generateEdges(this, boardGeometry.getEdgeCount());
 
 		// populate board map with starting parameters
-		boardGeometry.populateBoard(hexagons, vertices, edges, harbors, hexMap);
+		boardGeometry.populateBoard(hexagons, vertices, edges, harbors, hexIdMap);
 
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
@@ -189,7 +189,7 @@ public class Board {
 	 *            players playerNumber [0, 3]
 	 * @return the players
 	 */
-	public Player getPlayer(int playerNumber) {
+	public Player getPlayerById(int playerNumber) {
 		if (playerNumber < 0 || playerNumber >= players.length)
 		{
 			return null;
@@ -224,7 +224,7 @@ public class Board {
 					bot.discard(extra);
 				} else if (players[i].isHuman()) {
 					// queue human players to discard_resources
-					playersYetToDiscard.add(players[i]);
+					playerIdsYetToDiscard.add(players[i].getPlayerNumber());
 				}
 			}
 
@@ -262,7 +262,7 @@ public class Board {
 	 *            current ai players
 	 */
 	private void startAIRobberPhase(AutomatedPlayer current) {
-		int hex = current.placeRobber(hexagons, prevRobberHex);
+		int hex = current.placeRobber(hexagons, hexagons[prevRobberHexId]);
 		setRobber(hex);
 
 		int count = 0;
@@ -332,7 +332,6 @@ public class Board {
 
 				case DONE:
 					return;
-
 				}
 
 			nextPhase();
@@ -424,12 +423,12 @@ public class Board {
 	 * Enter the robber placement phase
 	 */
 	public void startRobberPhase() {
-		if(this.curRobberHex != null) {
-			this.curRobberHex.removeRobber();
+		if(this.curRobberHexId != null) {
+			hexagons[this.curRobberHexId].removeRobber();
 		}
-		this.prevRobberHex= this.curRobberHex;
+		this.prevRobberHexId = this.curRobberHexId;
 		this.returnPhase = phase;
-		this.curRobberHex = null;
+		this.curRobberHexId = null;
 		phase = Phase.ROBBER;
 		runTurn();
 	}
@@ -611,8 +610,8 @@ public class Board {
 	 *
 	 * @return the hexagons with the robberIndex
 	 */
-	public Hexagon getCurRobberHex() {
-		return curRobberHex;
+	public Hexagon getCurRobberHexId() {
+		return hexagons[curRobberHexId];
 	}
 
 	/**
@@ -621,14 +620,16 @@ public class Board {
 	 *
 	 * @return the last location of the robber
 	 */
-	public Hexagon getPrevRobberHex() {
+	public Hexagon getPrevRobberHexId() {
 		int hexCount = this.boardGeometry.getHexCount();
-		int curRobberId = this.curRobberHex != null ? this.curRobberHex.getId() : -1;
-		int prevRobberId = this.prevRobberHex != null ? this.prevRobberHex.getId() : -1;
+		int curRobberId = this.curRobberHexId != null ? hexagons[this.curRobberHexId].getId() : -1;
+		int prevRobberId = this.prevRobberHexId != null ? hexagons[this.prevRobberHexId].getId() : -1;
 		if (this.phase == Phase.ROBBER && prevRobberId >= 0 && prevRobberId < hexCount)
-			return this.prevRobberHex;
+		{
+			return hexagons[this.prevRobberHexId];
+		}
 		else if (curRobberId >= 0 && curRobberId < hexCount) {
-			return this.curRobberHex;
+			return hexagons[this.curRobberHexId];
 		}
 		else {
 			return null;
@@ -643,27 +644,27 @@ public class Board {
 	 * @return true iff the currebt robber hex was set
 	 */
 	public boolean setCurRobberHex(Hexagon curRobberHex) {
-		if (this.curRobberHex != null) {
-			this.curRobberHex.removeRobber();
+		if (this.curRobberHexId != null) {
+			hexagons[this.curRobberHexId].removeRobber();
 		}
-		this.curRobberHex = curRobberHex;
-		this.curRobberHex.setRobber();
+		this.curRobberHexId = curRobberHex.getId();
+		curRobberHex.setRobber();
 		return true;
 	}
 
 	/**
 	 * Set the index for the robber
 	 *
-	 * @param robberIndex
+	 * @param curRobberHexId
 	 *            id of the hexagon with the robber
 	 * @return true if the robber was placed
 	 */
-	public boolean setRobber(int robberIndex) {
-		if (this.curRobberHex != null) {
-			this.curRobberHex.removeRobber();
+	public boolean setRobber(int curRobberHexId) {
+		if (this.curRobberHexId != null) {
+			hexagons[this.curRobberHexId].removeRobber();
 		}
-		this.curRobberHex = this.hexagons[robberIndex];
-		this.curRobberHex.setRobber();
+		this.curRobberHexId = curRobberHexId;
+		hexagons[this.curRobberHexId].setRobber();
 		return true;
 	}
 
@@ -680,11 +681,11 @@ public class Board {
 	 * Update the longest road owner and length
 	 */
 	public void checkLongestRoad() {
-		Player previousOwner = longestRoadOwner;
+		Player previousOwner = players[longestRoadOwnerId];
 
 		// reset road length in case a road was split
 		longestRoad = 4;
-		longestRoadOwner = null;
+		longestRoadOwnerId = null;
 
 		// reset players' road lengths to 0
 		for (int i = 0; i < numPlayers; i++)
@@ -701,7 +702,7 @@ public class Board {
 				owner.setRoadLength(length);
 				if (length > longestRoad) {
 					longestRoad = length;
-					longestRoadOwner = owner;
+					longestRoadOwnerId = owner.getPlayerNumber();
 				}
 			}
 		}
@@ -710,7 +711,7 @@ public class Board {
 		if (previousOwner != null
 				&& previousOwner.getRoadLength() == longestRoad)
 		{
-			longestRoadOwner = previousOwner;
+			longestRoadOwnerId = previousOwner.getPlayerNumber();
 		}
 	}
 
@@ -722,7 +723,7 @@ public class Board {
 	 * @return true if players had the longest road
 	 */
 	public boolean hasLongestRoad(Player player) {
-		return (longestRoadOwner != null && player == longestRoadOwner);
+		return (longestRoadOwnerId != null && player.getPlayerNumber() == longestRoadOwnerId);
 	}
 
 	/**
@@ -740,7 +741,7 @@ public class Board {
 	 * @return the players with the longest road
 	 */
 	public Player getLongestRoadOwner() {
-		return longestRoadOwner;
+		return players[longestRoadOwnerId];
 	}
 
 	/**
@@ -749,7 +750,7 @@ public class Board {
 	 * @return true if one or more players need to discard_resources
 	 */
 	public boolean checkPlayerToDiscard() {
-		return !playersYetToDiscard.empty();
+		return !playerIdsYetToDiscard.empty();
 	}
 
 	/**
@@ -759,7 +760,7 @@ public class Board {
 	 */
 	public Player getPlayerToDiscard() {
 		try {
-			return playersYetToDiscard.pop();
+			return players[playerIdsYetToDiscard.pop()];
 		} catch (EmptyStackException e) {
 			return null;
 		}
@@ -816,29 +817,29 @@ public class Board {
 	/**
 	 * Get the winner
 	 * 
-	 * @return the winning players or null
+	 * @return the winning player or null
 	 */
 	public Player getWinner() {
-		// winner already found or we just want to check what was already found
-		if (winner != null)
+		// winnerId already found or we just want to check what was already found
+		if (winnerId != null)
 		{
-			return winner;
+			return players[winnerId];
 		}
 
-		// check for winner
+		// check for winnerId
 		for (int i = 0; i < numPlayers; i++) {
 			if (players[i].getVictoryPoints() >= maxPoints) {
-				winner = players[i];
+				winnerId = players[i].getPlayerNumber();
 				if(phase != phase.DONE){
 					//we need to tell google the game is done
-					activeGameFragment.mListener.endTurn(winner.getGooglePlayParticipantId(),true);
+					activeGameFragment.mListener.endTurn(players[winnerId].getGooglePlayParticipantId(),true);
 				}
 				phase = Phase.DONE;
 				break;
 			}
 		}
 
-		return winner;
+		return players[winnerId];
 	}
 
     public void reinitBoardOnDependents() {

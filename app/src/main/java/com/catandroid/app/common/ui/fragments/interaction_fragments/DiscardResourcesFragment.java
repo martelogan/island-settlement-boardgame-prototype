@@ -62,7 +62,7 @@ public class DiscardResourcesFragment extends Fragment {
 		Bundle extras = this.getArguments();
 		if (extras != null) {
 			quantity = extras.getInt(QUANTITY_KEY);
-			player = board.getPlayer(extras.getInt(PLAYER_KEY));
+			player = board.getPlayerById(extras.getInt(PLAYER_KEY));
 		}
 		
 		if (extras == null || quantity == 0) {
