@@ -31,22 +31,22 @@ public class TradeRequestFragment extends Fragment {
 	public static final String INDEX_KEY = "com.catandroid.app.TradeIndex";
 
 	private static final int[] RESOURCES = { R.id.trade_res1, R.id.trade_res2,
-			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5 };
+			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5, R.id.trade_res6 };
 
 	private static final int[] OFFERS = { R.id.trade_offer1, R.id.trade_offer2,
-			R.id.trade_offer3, R.id.trade_offer4, R.id.trade_offer5 };
+			R.id.trade_offer3, R.id.trade_offer4, R.id.trade_offer5, R.id.trade_offer6 };
 
 	private static final int[] PLUS = { R.id.trade_plus1, R.id.trade_plus2,
-			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5 };
+			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5, R.id.trade_plus6 };
 
 	private static final int[] MINUS = { R.id.trade_minus1, R.id.trade_minus2,
-			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5 };
+			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5, R.id.trade_minus6 };
 
 	private static final int[] RES_VIEW = { R.id.resource1, R.id.resource2,
-			R.id.resource3, R.id.resource4, R.id.resource5 };
+			R.id.resource3, R.id.resource4, R.id.resource5, R.id.resource6 };
 
 	private static final int[] RES_STRING = { R.string.lumber, R.string.wool,
-			R.string.grain, R.string.brick, R.string.ore };
+			R.string.grain, R.string.brick, R.string.ore, R.string.gold };
 
 	private Player player;
 	private int selected;
@@ -89,8 +89,11 @@ public class TradeRequestFragment extends Fragment {
 
 			int count = player.getResources(Resource.RESOURCE_TYPES[i]);
 			int ratio = player.getTradeValue();
-			if (player.hasHarbor(Resource.RESOURCE_TYPES[i]))
+			//Everyone has the gold discount by default
+			if (player.hasHarbor(Resource.RESOURCE_TYPES[i]) ||
+					Resource.RESOURCE_TYPES[i] == Resource.ResourceType.GOLD ){
 				ratio = 2;
+			}
 
 			TextView text = (TextView) tradeView.findViewById(RESOURCES[i]);
 			text.setText(Integer.toString(count));

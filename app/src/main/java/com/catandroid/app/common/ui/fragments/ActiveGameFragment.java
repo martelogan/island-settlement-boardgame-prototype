@@ -83,7 +83,7 @@ public class ActiveGameFragment extends Fragment {
 		if(getActivity().findViewById(R.id.setup) != null){
 			getActivity().findViewById(R.id.setup).setVisibility(View.GONE);
 		}
-		getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 	}
 
 	public void setBoard(Board board){
