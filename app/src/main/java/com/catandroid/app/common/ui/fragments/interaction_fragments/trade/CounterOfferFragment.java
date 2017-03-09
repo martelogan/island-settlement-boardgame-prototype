@@ -42,7 +42,7 @@ public class CounterOfferFragment extends Activity {
 
 		resourceType = Resource.RESOURCE_TYPES[extras.getInt(TradeRequestFragment.TYPE_KEY)];
 		trade = extras.getIntArray(TradeRequestFragment.OFFER_KEY);
-		player = board.getPlayer(extras.getInt(TradeRequestFragment.PLAYER_KEY));
+		player = board.getPlayerById(extras.getInt(TradeRequestFragment.PLAYER_KEY));
 		current = board.getCurrentPlayer();
 		index = extras.getInt(TradeRequestFragment.INDEX_KEY);
 

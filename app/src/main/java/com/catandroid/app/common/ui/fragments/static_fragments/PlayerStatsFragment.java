@@ -51,7 +51,7 @@ public class PlayerStatsFragment extends Fragment {
 		for (int i = 0; i < numPlayers; i++) {
 			views[i] = inflater.inflate(R.layout.player_stats, null);
 			
-			Player player = board.getPlayer(i);
+			Player player = board.getPlayerById(i);
 
 			boolean showAll = ((myParticipantId).equals(player.getGooglePlayParticipantId())
 					&& player.isHuman()
@@ -156,7 +156,7 @@ public class PlayerStatsFragment extends Fragment {
 		
 		PagerTitleStrip titleStrip = (PagerTitleStrip) view.findViewById(R.id.status_title_strip);
 		titleStrip.setBackgroundColor(TextureManager.darken(TextureManager.getColor(
-				board.getPlayer(board.getCurrentPlayer().getPlayerNumber()).getColor()), 0.35));
+				board.getPlayerById(board.getCurrentPlayer().getPlayerNumber()).getColor()), 0.35));
 		
 		viewPager.setOnPageChangeListener(new OnPageChangeListener() {
 			@Override
@@ -169,7 +169,7 @@ public class PlayerStatsFragment extends Fragment {
 
 			@Override
 			public void onPageSelected(int position) {
-				int color = TextureManager.getColor(board.getPlayer(position).getColor());
+				int color = TextureManager.getColor(board.getPlayerById(position).getColor());
 				color = TextureManager.darken(color, 0.35);
 				
 				PagerTitleStrip titleStrip = (PagerTitleStrip) view.findViewById(R.id.status_title_strip);
@@ -206,7 +206,7 @@ public class PlayerStatsFragment extends Fragment {
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			return board.getPlayer(position).getName();
+			return board.getPlayerById(position).getName();
 		}
 	}
 }
