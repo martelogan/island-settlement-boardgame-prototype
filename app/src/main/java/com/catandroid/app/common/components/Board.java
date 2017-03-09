@@ -76,10 +76,10 @@ public class Board {
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
 
-	private Integer curRobberHexId, prevRobberHexId;
+	private Integer curRobberHexId = null, prevRobberHexId = null;
 	private int turn, turnNumber, roadCountId, longestRoad,
 			maxPoints, lastDiceRollNumber;
-	private Integer longestRoadOwnerId, winnerId;
+	private Integer longestRoadOwnerId = null, winnerId = null;
 
 	private boolean autoDiscard;
 
@@ -217,10 +217,11 @@ public class Board {
 
 				if (autoDiscard) {
 					// discard_resources randomly
-					for (int j = 0; j < extra; j++)
+					for (int j = 0; j < extra; j++){
 						players[i].discard(null);
+					}
 				}
-				if (players[i].isBot()) {
+				 else if (players[i].isBot()) {
 					// instruct the ai to discard_resources
 					AutomatedPlayer bot = (AutomatedPlayer) players[i];
 					bot.discard(extra);
@@ -264,7 +265,8 @@ public class Board {
 	 *            current ai players
 	 */
 	private void startAIRobberPhase(AutomatedPlayer current) {
-		int hex = current.placeRobber(hexagons, hexagons[prevRobberHexId]);
+		int hex = current.placeRobber(hexagons,
+				prevRobberHexId != null ? hexagons[prevRobberHexId] : null);
 		setRobber(hex);
 
 		int count = 0;
@@ -609,12 +611,12 @@ public class Board {
 	}
 
 	/**
-	 * Get the hexagons with the robberIndex
+	 * Get the hexagon with the robber
 	 *
-	 * @return the hexagons with the robberIndex
+	 * @return the hexagon with the robber
 	 */
-	public Hexagon getCurRobberHexId() {
-		return hexagons[curRobberHexId];
+	public Hexagon getCurRobberHex() {
+		return curRobberHexId != null ? hexagons[curRobberHexId] : null;
 	}
 
 	/**
@@ -647,8 +649,8 @@ public class Board {
 	 * @return true iff the currebt robber hex was set
 	 */
 	public boolean setCurRobberHex(Hexagon curRobberHex) {
-		if (this.curRobberHexId != null) {
-			hexagons[this.curRobberHexId].removeRobber();
+		if (this.curRobberHexId != null && hexagons != null) {
+			hexagons[curRobberHexId].removeRobber();
 		}
 		this.curRobberHexId = curRobberHex.getId();
 		curRobberHex.setRobber();
@@ -663,7 +665,7 @@ public class Board {
 	 * @return true if the robber was placed
 	 */
 	public boolean setRobber(int curRobberHexId) {
-		if (this.curRobberHexId != null) {
+		if (this.curRobberHexId != null  && hexagons != null) {
 			hexagons[this.curRobberHexId].removeRobber();
 		}
 		this.curRobberHexId = curRobberHexId;
@@ -684,7 +686,7 @@ public class Board {
 	 * Update the longest road owner and length
 	 */
 	public void checkLongestRoad() {
-		Player previousOwner = players[longestRoadOwnerId];
+		Player previousOwner = longestRoadOwnerId != null ? players[longestRoadOwnerId] : null;
 
 		// reset road length in case a road was split
 		longestRoad = 4;
@@ -744,7 +746,7 @@ public class Board {
 	 * @return the players with the longest road
 	 */
 	public Player getLongestRoadOwner() {
-		return players[longestRoadOwnerId];
+		return longestRoadOwnerId != null ? players[longestRoadOwnerId] : null;
 	}
 
 	/**
@@ -763,7 +765,8 @@ public class Board {
 	 */
 	public Player getPlayerToDiscard() {
 		try {
-			return players[playerIdsYetToDiscard.pop()];
+			Integer playerId = playerIdsYetToDiscard.pop();
+			return playerId != null ? players[playerId] : null;
 		} catch (EmptyStackException e) {
 			return null;
 		}
@@ -842,7 +845,7 @@ public class Board {
 			}
 		}
 
-		return players[winnerId];
+		return winnerId != null ? players[winnerId] : null;
 	}
 
     public void reinitBoardOnDependents() {

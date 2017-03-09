@@ -115,7 +115,8 @@ public class PlayerStatsFragment extends Fragment {
 			}
 
 			for (int j = 0; j < Resource.RESOURCE_TYPES.length; j++) {
-				if (player.hasHarbor(Resource.RESOURCE_TYPES[j])) {
+				if (player.hasHarbor(Resource.RESOURCE_TYPES[j])
+						&& Resource.RESOURCE_TYPES[j] != Resource.ResourceType.GOLD) {
 					message += getString(Resource
 							.toRString(Resource.RESOURCE_TYPES[j]))
 							+ " " + getString(R.string.status_harbor) + "\n";

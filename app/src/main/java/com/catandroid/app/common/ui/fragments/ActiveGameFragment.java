@@ -553,7 +553,7 @@ public class ActiveGameFragment extends Fragment {
 			renderer.getGeometry().zoomOut();
 
 		// show card stealing dialog
-		if (board.isRobberPhase() && board.getCurRobberHexId() != null)
+		if (board.isRobberPhase() && board.getCurRobberHex() != null)
 			steal();
 
 		// display winner
@@ -587,7 +587,7 @@ public class ActiveGameFragment extends Fragment {
 			action = Action.CITY;
 		else if (board.isSetupRoad() || board.isProgressPhase())
 			action = Action.ROAD;
-		else if (board.isRobberPhase() && board.getCurRobberHexId() == null)
+		else if (board.isRobberPhase() && board.getCurRobberHex() == null)
 			action = Action.ROBBER;
 
 		renderer.setAction(action);
@@ -745,7 +745,7 @@ public class ActiveGameFragment extends Fragment {
 			return;
 		}
 
-		Hexagon robbing = board.getCurRobberHexId();
+		Hexagon robbing = board.getCurRobberHex();
 		if (robbing == null) {
 			Log.w(getActivity().getClass().getName(),
 					"shouldn't be calling steal() without robber location set");
@@ -818,7 +818,7 @@ public class ActiveGameFragment extends Fragment {
 
 		Player current = board.getCurrentPlayer();
 
-		Hexagon robbing = board.getCurRobberHexId();
+		Hexagon robbing = board.getCurRobberHex();
 		if (robbing == null)
 		{
 			return;
