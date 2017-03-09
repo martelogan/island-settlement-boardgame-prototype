@@ -11,6 +11,7 @@ public class UIButton {
 		DEFAULT, PRESSED, ACTIVATED
 	}
 
+	//testing push
 	private int x, y, width, height;
 	private boolean pressed, enabled;
 	private ButtonType buttonType;

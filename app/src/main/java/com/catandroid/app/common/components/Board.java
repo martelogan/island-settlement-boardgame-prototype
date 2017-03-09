@@ -1,5 +1,7 @@
 package com.catandroid.app.common.components;
 
+import android.util.Log;
+
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
@@ -589,6 +591,7 @@ public class Board {
 
 		return vertices[vertexId];
 	}
+
 	
 	public Vertex[] getVertices() {
 		return vertices;

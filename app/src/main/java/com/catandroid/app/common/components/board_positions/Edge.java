@@ -152,7 +152,7 @@ public class Edge {
 			// the player has a road to an unoccupied vertexIds,
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).hasRoad(player) && !board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player)) {
+					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
 				return true;
 			}
 		}
