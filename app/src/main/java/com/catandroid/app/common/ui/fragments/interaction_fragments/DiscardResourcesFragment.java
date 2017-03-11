@@ -20,17 +20,17 @@ public class DiscardResourcesFragment extends Fragment {
 	public static final String PLAYER_KEY = "com.catandroid.app.DiscardPlayer";
 
 	private static final int[] RESOURCES = { R.id.trade_res1, R.id.trade_res2,
-			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5 };
+			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5, R.id.trade_res6 };
 
 	private static final int[] SELECTIONS = { R.id.trade_offer1,
 			R.id.trade_offer2, R.id.trade_offer3, R.id.trade_offer4,
-			R.id.trade_offer5 };
+			R.id.trade_offer5, R.id.trade_offer6 };
 
 	private static final int[] PLUS = { R.id.trade_plus1, R.id.trade_plus2,
-			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5 };
+			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5, R.id.trade_plus6 };
 
 	private static final int[] MINUS = { R.id.trade_minus1, R.id.trade_minus2,
-			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5 };
+			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5, R.id.trade_minus6 };
 
 	private Player player;
 	private int quantity;
@@ -62,7 +62,7 @@ public class DiscardResourcesFragment extends Fragment {
 		Bundle extras = this.getArguments();
 		if (extras != null) {
 			quantity = extras.getInt(QUANTITY_KEY);
-			player = board.getPlayer(extras.getInt(PLAYER_KEY));
+			player = board.getPlayerById(extras.getInt(PLAYER_KEY));
 		}
 		
 		if (extras == null || quantity == 0) {

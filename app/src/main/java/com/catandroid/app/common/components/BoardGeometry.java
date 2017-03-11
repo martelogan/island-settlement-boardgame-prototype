@@ -280,7 +280,7 @@ public class BoardGeometry {
 	// BOARD POPULATION LOGIC
 
 	void populateBoard(Hexagon[] hexagons, Vertex[] vertices,
-					   Edge[] edges, Harbor[] harbors, HashMap<Long, Hexagon> hexMap)  {
+					   Edge[] edges, Harbor[] harbors, HashMap<Long, Integer> hexIdMap)  {
 
 		// edges available to neighbour harbors
 		HashSet<Edge> portEdges = new HashSet<Edge>();
@@ -293,6 +293,7 @@ public class BoardGeometry {
 		HashSet<Hexagon> successfullyHashed = new HashSet<Hexagon>();
 
         // variables for hexagon population logic
+		Integer tempHexId = null;
 		int hexagonIndex = 0, edgeIndexOnHex = 0, vertexIndex = 0;
         Long hexLocationHash;
 		Hexagon curHex = null, curNeighborHex = null;
@@ -317,7 +318,8 @@ public class BoardGeometry {
                     // is there a clockwise axialNeighbor w.r.t vDirect?
                     neighborLocation = AxialHexLocation.axialNeighbor(curHexLocation, vDirect);
                     hexLocationHash = HexGridUtils.perfectHash(neighborLocation);
-                    curNeighborHex = hexMap.get(hexLocationHash);
+					tempHexId = hexIdMap.get(hexLocationHash);
+                    curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                     if (curNeighborHex != null) { // we have a clockwise axialNeighbor
                         hadClockwiseNeighbor = true;
                         resolveNeighborHex(portEdges, curHex, curNeighborHex,
@@ -337,7 +339,8 @@ public class BoardGeometry {
                             neighborLocation = AxialHexLocation.axialNeighbor(
                                     curHexLocation, (vDirect + 1) % 6);
                             hexLocationHash = HexGridUtils.perfectHash(neighborLocation);
-                            curNeighborHex = hexMap.get(hexLocationHash);
+							tempHexId = hexIdMap.get(hexLocationHash);
+							curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                             if (curNeighborHex != null) { // we have a clockwise axialNeighbor
 								neighborEdge = resolveNeighborHex(portEdges, curHex, curNeighborHex,
 										(vDirect + 1) % 6, (vDirect + 2) % 6);
@@ -355,7 +358,8 @@ public class BoardGeometry {
 							AxialHexLocation.axialNeighbor(curHexLocation,
 									Math.abs(((((vDirect - 1)  % 6) + 6) % 6)));
                     hexLocationHash = HexGridUtils.perfectHash(neighborLocation);
-                    curNeighborHex = hexMap.get(hexLocationHash);
+					tempHexId = hexIdMap.get(hexLocationHash);
+					curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                     if (curNeighborHex != null) { // we have an anti-clockwise axialNeighbor
                         hadAntiClockwiseNeighbor = true;
                         neighborEdge = resolveNeighborHex(portEdges, curHex, curNeighborHex,
@@ -386,7 +390,7 @@ public class BoardGeometry {
                 // hexagon is ready to place
 				curHex.setCoord(curHexLocation);
                 hexLocationHash = HexGridUtils.perfectHash(curHexLocation);
-                hexMap.put(hexLocationHash, curHex);
+                hexIdMap.put(hexLocationHash, curHex.getId());
                 successfullyHashed.add(curHex);
                 hexagonIndex += 1;
             }
@@ -396,7 +400,7 @@ public class BoardGeometry {
 			Log.w("BOARD_GEOMETRY_WARNING","Some hexes were not hashed!");
 		}
 
-        placeHarbors(hexMap, harbors, portEdges);
+        placeHarbors(hexIdMap, hexagons, harbors, portEdges);
 
  		initCartesianCoordinates(hexagons, vertices, edges);
 
@@ -453,7 +457,7 @@ public class BoardGeometry {
         curHex.setVertex(clockwiseV1, (vDirect + 1) % 6);
     }
 
-    private void placeHarbors(HashMap<Long, Hexagon> hexMap,
+    private void placeHarbors(HashMap<Long, Integer> hexIdMap, Hexagon[] hexagons,
                               Harbor[] harbors, HashSet<Edge> portEdges) {
 
         // shuffled array of edges
@@ -461,6 +465,7 @@ public class BoardGeometry {
         Collections.shuffle(randomPortEdges);
 
         // associate vertices with harbors
+		Integer tempHexId = null;
         Harbor harbor;
         Edge candidatePortEdge = null;
         Hexagon candidatePortHex = null, curNeighborHex = null;
@@ -481,7 +486,9 @@ public class BoardGeometry {
                     neighborLocation =
                             AxialHexLocation.axialNeighbor(
                                     candidatePortHexLocation, candidatePortEdge.getPortHexDirect());
-                    Hexagon seaHex = hexMap.get(HexGridUtils.perfectHash(neighborLocation));
+					tempHexId = hexIdMap.get(
+							HexGridUtils.perfectHash(neighborLocation));
+					Hexagon seaHex = tempHexId != null ? hexagons[tempHexId] : null;
                     Edge curEdge = null;
                     for (int k = 0; k < 6; k++) { // remove candidacy of other edges on sea hex
                         curEdge = seaHex.getEdge(k);
@@ -503,7 +510,9 @@ public class BoardGeometry {
                     neighborDirect = (candidatePortEdge.getOriginHexDirect() + 1) % 6;
                     neighborLocation =
                             AxialHexLocation.axialNeighbor(candidatePortHexLocation, neighborDirect);
-                    curNeighborHex = hexMap.get(HexGridUtils.perfectHash(neighborLocation));
+					tempHexId = hexIdMap.get(
+							HexGridUtils.perfectHash(neighborLocation));
+					curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                     if (curNeighborHex != null) {
                         forbiddenNeighborEdgeDirect =
                                 (AxialHexLocation.complementAxialDirection(neighborDirect) + 1) % 6;
@@ -513,7 +522,9 @@ public class BoardGeometry {
                     neighborDirect = (((((candidatePortEdge.getOriginHexDirect() - 1) % 6) + 6) % 6));
                     neighborLocation =
                             AxialHexLocation.axialNeighbor(candidatePortHexLocation, neighborDirect);
-                    curNeighborHex = hexMap.get(HexGridUtils.perfectHash(neighborLocation));
+					tempHexId = hexIdMap.get(
+							HexGridUtils.perfectHash(neighborLocation));
+					curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                     if (curNeighborHex != null) {
                         forbiddenNeighborEdgeDirect =
                                 ((((AxialHexLocation.complementAxialDirection(neighborDirect) - 1)

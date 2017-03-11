@@ -307,7 +307,7 @@ public class ActiveGameFragment extends Fragment {
 
 	private void select(Action action, Hexagon hexagon) {
 		if (action == Action.ROBBER) {
-			if (hexagon != board.getPrevRobberHex()) {
+			if (hexagon != board.getPrevRobberHexId()) {
 				board.setRobber(hexagon.getId());
 				showState(false);
 			} else {
@@ -709,7 +709,7 @@ public class ActiveGameFragment extends Fragment {
 				continue;
 			}
 
-			Player player = board.getPlayer(i % board.getNumPlayers());
+			Player player = board.getPlayerById(i % board.getNumPlayers());
 			String name = player.getName()
 					+ " ("
 					+ getActivity().getString(Player
@@ -760,7 +760,7 @@ public class ActiveGameFragment extends Fragment {
 
 		Player player = null;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
-			player = board.getPlayer(i);
+			player = board.getPlayerById(i);
 
 			// don't steal from self or players without a settlement/city
 			if (player == current || !robbing.adjacentToPlayer(player))
@@ -826,7 +826,7 @@ public class ActiveGameFragment extends Fragment {
 
 		int index = 0;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
-			Player player = board.getPlayer(i);
+			Player player = board.getPlayerById(i);
 			if (player == current || !robbing.adjacentToPlayer(player))
 			{
 				continue;

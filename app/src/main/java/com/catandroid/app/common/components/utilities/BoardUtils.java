@@ -26,6 +26,7 @@ public class BoardUtils
      */
     public static Hexagon[] initRandomHexes(Board board) {
         int hexCount, curTerrainTypeCount, typeIndex;
+        boolean isRobberSet = false;
         hexCount = board.getBoardGeometry().getHexCount();
         Hexagon[] hexagons = new Hexagon[hexCount];
         Hexagon.TerrainType[] terrainTypes = Hexagon.TerrainType.values();
@@ -43,7 +44,10 @@ public class BoardUtils
 
                         if (terrainType == Hexagon.TerrainType.DESERT) {
                             hexagons[index].placeNumberToken(7);
-                            board.setCurRobberHex(hexagons[index]);
+                            if(!isRobberSet) {
+                                board.setCurRobberHex(hexagons[index]);
+                                isRobberSet = true;
+                            }
                         }
 
                         break;

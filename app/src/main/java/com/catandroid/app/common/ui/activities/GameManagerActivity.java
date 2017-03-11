@@ -497,12 +497,17 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 			}
 		} else if (request == RC_LOOK_AT_MATCHES) {
 			// Returning from the 'Select Match' dialog
-			setContentView(R.layout.game_manager);
-			setViewVisibility();
 
 			if (response != Activity.RESULT_OK) {
 				// user canceled
+				setContentView(R.layout.game_manager);
+				setViewVisibility();
 				return;
+			} else {
+				setContentView(R.layout.game_setup_options);
+				showSpinner();
+				findViewById(R.id.setup).setVisibility(View.GONE);
+				setViewVisibility();
 			}
 
 			TurnBasedMatch match = data
@@ -515,10 +520,10 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 			Log.d(TAG, "Match = " + match);
 		} else if (request == RC_SELECT_PLAYERS) {
 			// Returned from 'Select players to Invite' dialog
-			dismissSpinner();
 
 			if (response != Activity.RESULT_OK) {
 				// user canceled
+				dismissSpinner();
 				return;
 			}
 
@@ -586,7 +591,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 
 			names[i] = name;
 
-			boolean ai = true;
+			boolean ai = false;
 
 			if(gameParticipantIds.size() == 3 && ai) {
 				if (ai && (i == 1 || i == 2)) {
