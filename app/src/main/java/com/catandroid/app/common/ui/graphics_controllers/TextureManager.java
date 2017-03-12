@@ -27,7 +27,8 @@ public class TextureManager {
 
 	private enum TextureType {
 		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, BUTTON_BG, BUTTON
+		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, BUTTON_BG, BUTTON,
+        WALL
 	}
 
 	private Hashtable<Integer, Bitmap> bitmap;
@@ -107,6 +108,16 @@ public class TextureManager {
         add(TextureType.CITY, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
                 res);
 
+        //load large wall textures
+        //@TODO ADD RESOURCES FOR WALL
+        add(TextureType.WALL, Player.Color.SELECT.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALL, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALL, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALL, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
         // load robber texture
         add(TextureType.HEX_ROBBER, 0, R.drawable.hex_robber, res);
 
@@ -162,6 +173,12 @@ public class TextureManager {
 				R.drawable.button_end_turn, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.CANCEL.ordinal(),
 				R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.BUILD_WALL.ordinal(),
+                R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_PROGRESS.ordinal(),
+                R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.KNIGHT.ordinal(),
+                R.drawable.button_cancel_action, res);
 	}
 
     public void drawButton(UIButton button, GL10 gl) {
@@ -262,10 +279,10 @@ public class TextureManager {
     }
 
     public void drawVertex(Vertex vertex, boolean buildsettlement, boolean buildCity,
-                           GL10 gl, BoardGeometry boardGeometry) {
+                           boolean buildWall, GL10 gl, BoardGeometry boardGeometry) {
 
         TextureType textureType = TextureType.NONE;
-        if (vertex.getBuilding() == Vertex.CITY || buildCity)
+        if (vertex.getBuilding() == Vertex.CITY || buildCity || buildWall)
         {
             textureType = TextureType.CITY;
         }
@@ -273,10 +290,14 @@ public class TextureManager {
         {
             textureType = TextureType.SETTLEMENT;
         }
+        else if (vertex.getBuilding() == Vertex.WALL)
+        {
+            textureType = TextureType.WALL;
+        }
 
         Player.Color color;
         Player owner = vertex.getOwner();
-        if (buildsettlement || buildCity)
+        if (buildsettlement || buildCity || buildWall)
         {
             color = Player.Color.SELECT;
         }

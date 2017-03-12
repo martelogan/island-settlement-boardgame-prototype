@@ -1,9 +1,11 @@
 package com.catandroid.app.common.ui.fragments;
 
+import com.catandroid.app.common.components.TradeProposal;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
 import com.catandroid.app.R;;
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeProposedFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeRequestFragment;
 import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
 import com.catandroid.app.common.ui.graphics_controllers.GameRenderer.Action;
@@ -62,7 +64,7 @@ public class ActiveGameFragment extends Fragment {
 	private ResourceView resources;
 	private TextureManager texture;
 
-	private Handler turnHandler;
+	private UpdateHandler turnHandler;
 	private TurnThread turnThread;
 	
 	private GameRenderer renderer;
@@ -70,10 +72,11 @@ public class ActiveGameFragment extends Fragment {
 	private boolean isActive;
 
 	private static final String[] ROLL_STRINGS = { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" };
+	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
 
 	public Listener mListener = null;
 
-	private String myParticipantId;
+	public String myParticipantId;
 
 	public ActiveGameFragment(){ }
 
@@ -116,9 +119,12 @@ public class ActiveGameFragment extends Fragment {
 				}
 
 				if (board.checkPlayerToDiscard()) {
-					Message discard = new Message();
-					discard.what = DISCARD_MESSAGE;
-					turnHandler.sendMessage(discard);
+					//show popup if we are the ones that should discard
+					if(board.checkNextPlayerToDiscard().getGooglePlayParticipantId().equals(myParticipantId)){
+						Message discard = new Message();
+						discard.what = DISCARD_MESSAGE;
+						turnHandler.sendMessage(discard);
+					}
 				} else if (board.getCurrentPlayer().isBot()) {
 					board.runTurn();
 					Message change = new Message();
@@ -158,6 +164,7 @@ public class ActiveGameFragment extends Fragment {
 
 	@SuppressLint("HandlerLeak")
 	class UpdateHandler extends Handler {
+		ActiveGameFragment activeGameFragment;
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -191,6 +198,7 @@ public class ActiveGameFragment extends Fragment {
 					DiscardResourcesFragment discardResourcesFragment = new DiscardResourcesFragment();
 					discardResourcesFragment.setArguments(bundle);
 					discardResourcesFragment.setBoard(board);
+					discardResourcesFragment.setActiveGameFragment(activeGameFragment);
 
 					FragmentTransaction discardFragmentTransaction =  getActivity().getSupportFragmentManager().beginTransaction();
 					discardFragmentTransaction.replace(R.id.fragment_container, discardResourcesFragment,"DISCARD");
@@ -203,13 +211,15 @@ public class ActiveGameFragment extends Fragment {
 
 				super.handleMessage(msg);
 			}
+			public void setActiveGameFragment(ActiveGameFragment activeGameFragment){
+				this.activeGameFragment = activeGameFragment;
+			}
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		fa = (FragmentActivity) super.getActivity();
 
-		RelativeLayout frame = new RelativeLayout(getActivity());
 
 		if (texture == null) {
 			texture = new TextureManager(getActivity().getResources());
@@ -223,12 +233,11 @@ public class ActiveGameFragment extends Fragment {
 		view.requestFocus();
 		view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.MATCH_PARENT, 1));
-		frame.addView(view);
 
 
-		((ViewGroup)view.getParent()).removeView(view);
 
 		turnHandler = new UpdateHandler();
+		turnHandler.setActiveGameFragment(this);
 
 		return view;
 	}
@@ -291,6 +300,7 @@ public class ActiveGameFragment extends Fragment {
 
 			case SETTLEMENT:
 			case CITY:
+			case WALL:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -326,6 +336,10 @@ public class ActiveGameFragment extends Fragment {
 		else if (action == Action.CITY)
 		{
 			type = Vertex.CITY;
+		}
+		else if (action == Action.WALL)
+		{
+			type = Vertex.WALL;
 		}
 
 		Player player = board.getCurrentPlayer();
@@ -394,8 +408,10 @@ public class ActiveGameFragment extends Fragment {
 
 				int roll1 = (int) (Math.random() * 6) + 1;
 				int roll2 = (int) (Math.random() * 6) + 1;
+				int event = (int) (Math.random() * 6) + 1;
 				int roll = roll1 + roll2;
-				board.getCurrentPlayer().roll(roll);
+				board.getCurrentPlayer().roll(roll1, roll2 , event);
+				showState(true);
 				mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
 
 				if (roll == 7) {
@@ -406,7 +422,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				} else {
 					toast(getString(R.string.game_rolled_str) + " " + roll + " "
-							+ ROLL_STRINGS[roll1] + ROLL_STRINGS[roll2]);
+							+ ROLL_STRINGS[roll1] + ROLL_STRINGS[roll2] + EVENT_ROLL_STRINGS[event]);
 				}
 
 				showState(false);
@@ -488,11 +504,44 @@ public class ActiveGameFragment extends Fragment {
 	//			development();
 				break;
 
+			case BUILD_WALL:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canBuild(player, Vertex.WALL, false))
+						canBuild = true;
+				}
+
+				if (!canBuild) {
+					cantBuild(Action.WALL);
+					break;
+				}
+
+				if (board.getCurrentPlayer().getNumWalls() >= Player.MAX_WALLS) {
+					popup(getString(R.string.game_cant_build_str),
+							getString(R.string.game_build_wall_max));
+					break;
+				}
+
+				renderer.setAction(Action.WALL);
+				setButtons(Action.WALL);
+				getActivity().setTitle(board.getCurrentPlayer().getName() + ": "
+						+ getActivity().getString(R.string.game_build_wall));
+				break;
+
+			case KNIGHT:
+				toast("Hire knight/Active Knight");
+				break;
+
+			case PURCHASE_PROGRESS:
+				toast("Purchase City Improvement");
+				break;
+
 			case TRADE:
 
 				FragmentManager tradeFragmentManager = getActivity().getSupportFragmentManager();
 				TradeRequestFragment tradeFragment = new TradeRequestFragment();
 				tradeFragment.setBoard(board);
+                tradeFragment.setActiveGameFragment(this);
+
 				FragmentTransaction tradeFragmentTransaction =  tradeFragmentManager.beginTransaction();
 				tradeFragmentTransaction.replace(R.id.fragment_container, tradeFragment,tradeFragment.getClass().getSimpleName());
 				tradeFragmentTransaction.addToBackStack(tradeFragment.getClass().getSimpleName());
@@ -544,17 +593,19 @@ public class ActiveGameFragment extends Fragment {
 		showState(true);
 	}
 
+	//setup()
 	private void showState(boolean setZoom) {
 		Player player = board.getCurrentPlayer();
 
-		renderer.setState(board, (player.isHuman() && board.itsMyTurn(myParticipantId))  ? player : null, texture, board.getLastDiceRollNumber());
+		renderer.setState(board, (player.isHuman() && board.itsMyTurn(myParticipantId) && !board.isMyPseudoTurn())  ? player : null, texture, board.getLastDiceRollNumber());
 
 		if (setZoom)
 			renderer.getGeometry().zoomOut();
 
 		// show card stealing dialog
-		if (board.isRobberPhase() && board.getCurRobberHex() != null)
-			steal();
+		if (board.isRobberPhase() && board.getCurRobberHex() != null){
+            steal();
+        }
 
 		// display winner
 		boolean hadWinner = board.getWinner() != null;
@@ -605,7 +656,8 @@ public class ActiveGameFragment extends Fragment {
 		//Add check if its actually our turn and
 		int resourceId = board.getPhaseResource();
 		if (resourceId != 0)
-			if(board.itsMyTurn(myParticipantId)) {
+			if((board.itsMyTurn(myParticipantId) && !board.isMyPseudoTurn())
+					|| myTurnInterrupted()) {
 				getActivity().setTitle(player.getName() + ": " + getActivity().getString(resourceId));
 			} else{
 				getActivity().setTitle(R.string.not_my_turn);
@@ -613,13 +665,34 @@ public class ActiveGameFragment extends Fragment {
 		else
 			getActivity().setTitle(player.getName());
 
+		if(board.getTradeProposal() != null && board.isMyPseudoTurn() && board.isTradeProposedPhase()){
+            //We are in a phase of trade somehow
+            //check which phase we are in based on current Phase
+            // show trade proposal if its my turn to see the proposal
+			proposeTrade();
+//            String currentPlayerToProposeParticipantId = board.getPlayerById(board.getTradeProposal().getCurrentPlayerToProposeId()).getGooglePlayParticipantId();
+//            if (board.isTradeProposedPhase() && currentPlayerToProposeParticipantId.equals(myParticipantId)){
+//                proposeTrade();
+//            } else if(board.isTradeRespondedPhase() && board.getTradeProposal().getTradeCreatorPlayerId() == board.getCurrentPlayer().getPlayerNumber()){
+//				resultsTrade();
+//			}
+        } else if(board.isTradeRespondedPhase()
+				&& board.getPlayerById(board.getTradeProposal().getTradeCreatorPlayerId()).getGooglePlayParticipantId().equals(myParticipantId)){
+			resultsTrade();
+		}
+
 		// TODO: remove/replace all references to resources
 //		resources.setValues(player);
 
 		Log.d("myTag", "end of showState");
 	}
 
-
+	private boolean myTurnInterrupted(){
+		if(board.isTradeProposedPhase()){
+			return  board.getPlayerById(board.getTradeProposal().getTradeCreatorPlayerId()).getGooglePlayParticipantId().equals(myParticipantId);
+		}
+		return false;
+	}
 	private void setButtons(Action action) {
 		view.removeButtons();
 
@@ -670,6 +743,13 @@ public class ActiveGameFragment extends Fragment {
             {
                 view.addButton(UIButton.ButtonType.BUILD_CITY);
             }
+            if (player.affordWall())
+            {
+				view.addButton(ButtonType.BUILD_WALL);
+			}
+			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
+//			view.addButton(ButtonType.PURCHASE_PROGRESS);
+//			view.addButton(ButtonType.KNIGHT);
 		}
 	}
 
@@ -736,6 +816,142 @@ public class ActiveGameFragment extends Fragment {
 		{
 			popup(getString(R.string.game_turn_summary), message);
 		}
+	}
+
+    private void proposeTrade() {
+        if (!board.isTradeProposedPhase()) {
+            Log.w(getActivity().getClass().getName(),
+                    "shouldn't be calling trade() out of trade phase");
+            return;
+        }
+
+        if (board.getTradeProposal() == null) {
+            Log.w(getActivity().getClass().getName(),
+                    "shouldn't be calling trade() without trade proposal set");
+            return;
+        }
+
+        TradeProposedFragment tradeProposedFragment = new TradeProposedFragment();
+        tradeProposedFragment.setBoard(board);
+		tradeProposedFragment.setActiveGameFragment(this);
+
+        FragmentTransaction tradeFragmentTransaction =  getActivity().getSupportFragmentManager().beginTransaction();
+        tradeFragmentTransaction.replace(R.id.fragment_container, tradeProposedFragment,"PROPOSE_TRADE");
+        tradeFragmentTransaction.addToBackStack("PROPOSE_TRADE");
+        tradeFragmentTransaction.commit();
+
+    }
+
+	private void resultsTrade() {
+
+		final Player tradeCreator = board.getPlayerById(board.getTradeProposal().getTradeCreatorPlayerId());
+		final Player tradeProposed = board.getPlayerById(board.getTradeProposal().getCurrentPlayerToProposeId());
+		final int[] counterOffer = board.getTradeProposal().getCounterOffer();
+		final Resource.ResourceType resourceType = board.getTradeProposal().getTradeResource();
+
+
+		TradeProposal tradeProposal = board.getTradeProposal();
+		if (!board.isTradeRespondedPhase()) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling trade() out of trade phase");
+			return;
+		}
+
+		if (tradeProposal == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling trade() without trade proposal set");
+			return;
+		}
+
+		if(tradeProposal.getCounterOffer() == null && !tradeProposal.isTradeReplied()){
+			//nobody accepted, show dialog
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(getString(R.string.waiting_trade_responded));
+			builder.setMessage(R.string.waiting_trade_responded_nobody);
+
+			AlertDialog tradeResultsDialog = builder.create();
+			tradeResultsDialog.setCancelable(true);
+			tradeResultsDialog.show();
+
+			//reset the board to state before trade
+			board.setTradeProposal(null);
+			board.nextPhase();
+			showState(true);
+
+			return;
+		} else if(tradeProposal.getCounterOffer() == null && tradeProposal.isTradeReplied()){
+			//somebody accepted, show dialog
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(getString(R.string.waiting_trade_responded));
+			builder.setMessage(tradeProposed.getName()
+					+ " accepted your trade offer! \n\nGained 1 " + getString(Resource.toRString(tradeProposal.getTradeResource())));
+
+			AlertDialog tradeResultsDialog = builder.create();
+			tradeResultsDialog.setCancelable(true);
+			tradeResultsDialog.show();
+
+			//reset the board to state before trade
+			board.setTradeProposal(null);
+			board.nextPhase();
+			showState(true);
+
+			return;
+		} else if(counterOffer != null && tradeProposal.isTradeReplied()){
+			//somebody proposed counter offer
+			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+			String newProposal = tradeProposed.getName() + " asks for:\n";
+			for (int i = 0; i < counterOffer.length; i++) {
+				if(counterOffer[i] > 0){
+					newProposal += "(" + Integer.toString(counterOffer[i]) + ") " + getString(Resource.toRString(Resource.RESOURCE_TYPES[i])) + "\n";
+				}
+			}
+
+			//check which message to present based on if enough resources
+			if(!tradeCreator.canTradePlayer(counterOffer)){
+				alertDialogBuilder.setMessage("A counter offer was created!\nYou ask for: " + getString(Resource.toRString(resourceType)) +"\n" + newProposal + "\nYou don't have enough resources!");
+
+				alertDialogBuilder
+						.setCancelable(false)
+						.setNegativeButton("Close",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int id) {
+										board.nextPhase();
+										showState(true);
+									}
+								});
+
+			} else {
+				alertDialogBuilder.setMessage("A counter offer was created!\nYou ask for: " + getString(Resource.toRString(resourceType)) +"\n" + newProposal);
+
+				alertDialogBuilder
+						.setCancelable(false)
+						.setPositiveButton("Accept",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int id) {
+										tradeCreator.trade(tradeProposed, resourceType, counterOffer);
+										board.nextPhase();
+										showState(true);
+									}
+								})
+						.setNegativeButton("Reject",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int id) {
+										board.nextPhase();
+										showState(true);
+									}
+								});
+
+			}
+
+			alertDialogBuilder.show();
+
+
+		}
+
+
 	}
 
 	private void steal() {
@@ -895,6 +1111,13 @@ public class ActiveGameFragment extends Fragment {
 				else
 					message = getString(R.string.game_cant_build_city);
 
+				break;
+
+			case WALL:
+				if (player.getNumWalls() == Player.MAX_WALLS)
+					message = getString(R.string.game_build_wall_max);
+				else
+					message = getString(R.string.game_cant_build_wall);
 				break;
 
 			default:

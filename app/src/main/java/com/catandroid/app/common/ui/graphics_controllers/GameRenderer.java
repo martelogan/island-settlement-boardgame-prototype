@@ -18,7 +18,7 @@ import com.catandroid.app.common.ui.resources.Square;
 public class GameRenderer implements Renderer {
 
 	public enum Action {
-		NONE, SETTLEMENT, CITY, ROAD, ROBBER
+		NONE, SETTLEMENT, CITY, ROAD, ROBBER, WALL
 	}
 
 	private TextureManager texture;
@@ -195,8 +195,10 @@ public class GameRenderer implements Renderer {
                         && player.canBuild(vertex, Vertex.SETTLEMENT);
                 boolean city = player != null && action == Action.CITY
                         && player.canBuild(vertex, Vertex.CITY);
+				boolean wall = player != null && action == Action.WALL
+						&& player.canBuild(vertex, Vertex.WALL);
 
-                texture.drawVertex(vertex, settlement, city, gl, boardGeometry);
+                texture.drawVertex(vertex, settlement, city, wall, gl, boardGeometry);
             }
 
 			gl.glMatrixMode(GL10.GL_PROJECTION);

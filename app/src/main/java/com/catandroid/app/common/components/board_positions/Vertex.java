@@ -9,6 +9,7 @@ public class Vertex {
 	public static final int NONE = 0;
 	public static final int SETTLEMENT = 1;
 	public static final int CITY = 2;
+	public static final int WALL = 3;
 
 	private int id;
 	private int building;
@@ -218,6 +219,16 @@ public class Vertex {
 	}
 
 	public void distributeResources(Resource.ResourceType resourceType) {
+
+		int numToGive = 0;
+
+		//determine how many resources to distribute
+		if(building == 1){
+			numToGive = 1;
+		} else if(building == 2 || building == 3){
+			numToGive = 2;
+		}
+
 		if (owner == -1)
 		{
 			return;
@@ -226,9 +237,9 @@ public class Vertex {
 		if (resourceType != null) {
 			//Gold gets two times more on distribution (2 for settlement, 4 for city)
 			if(resourceType == Resource.ResourceType.GOLD){
-				board.getPlayerById(owner).addResources(resourceType, building*2);
+				board.getPlayerById(owner).addResources(resourceType, numToGive*2);
 			} else {
-				board.getPlayerById(owner).addResources(resourceType, building);
+				board.getPlayerById(owner).addResources(resourceType, numToGive);
 			}
 		}
 	}
@@ -301,8 +312,15 @@ public class Vertex {
 			return true;
 		}
 		// can build city
-		else {
+		else if(board.getPlayerById(owner) != null && type == CITY){
 			return board.getPlayerById(owner) == player && type == CITY && building == SETTLEMENT;
+		}
+		//can build a wall
+		else if(board.getPlayerById(owner) != null && type == WALL){
+			return board.getPlayerById(owner) == player && type == WALL && building == CITY;
+		}
+		else{
+			return false;
 		}
 	}
 
@@ -340,6 +358,9 @@ public class Vertex {
 				building = CITY;
 				break;
 			case CITY:
+				building = WALL;
+				break;
+			case WALL:
 				return false;
 		}
 

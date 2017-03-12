@@ -222,7 +222,10 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 					Log.d(TAG, "Warning: accessing TurnBasedMatch when not connected");
 				}
 
-				//updateMatch(mTurnBasedMatch);
+				//if we are not playing game, refresh
+				if(findViewById(R.id.sign_in_button) != null){
+					setViewVisibility();
+				}
 				return;
 			}
 		}

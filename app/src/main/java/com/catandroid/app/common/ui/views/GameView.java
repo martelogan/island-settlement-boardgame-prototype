@@ -238,7 +238,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 					x += size;
 					if (x + 1.5 * size > endwidth) {
 						x = 0;
-						y -= button.getHeight();
+						y = button.getHeight();
 					}
 				} else {
 					// landscape
@@ -283,6 +283,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 
 			case SETTLEMENT:
 			case CITY:
+			case WALL:
 				// select a vertex
 				select = boardGeometry.getNearestVertex(x, y);
 				break;

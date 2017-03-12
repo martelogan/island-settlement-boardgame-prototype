@@ -1,7 +1,5 @@
 package com.catandroid.app.common.components;
 
-import android.util.Log;
-
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
@@ -59,12 +57,29 @@ public class Board {
 		return count;
 	}
 
-	private enum Phase {
+	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_FIRST_R, SETUP_CITY, SETUP_SECOND_R,
-		PRODUCTION, BUILD, PROGRESS_CARD_1, PROGRESS_CARD_2, ROBBER, DONE
+		PRODUCTION, BUILD, PROGRESS_CARD_1, PROGRESS_CARD_2, ROBBER, DONE,
+		TRADE_PROPOSED, TRADE_RESPONDED
 	}
 
-	private Phase phase, returnPhase;
+	public void setPhase(Phase phase) {
+		this.phase = phase;
+	}
+
+	public Phase getPhase() {
+		return phase;
+	}
+
+	private Phase phase;
+
+	private int barbarianPosition;
+
+	public void setReturnPhase(Phase returnPhase) {
+		this.returnPhase = returnPhase;
+	}
+
+	private Phase returnPhase;
 
 	private Hexagon[] hexagons;
 	private Vertex[] vertices;
@@ -75,6 +90,16 @@ public class Board {
 	private Stack<Integer> playerIdsYetToDiscard;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
+
+	public TradeProposal getTradeProposal() {
+		return tradeProposal;
+	}
+
+	public void setTradeProposal(TradeProposal tradeProposal) {
+		this.tradeProposal = tradeProposal;
+	}
+
+	private TradeProposal tradeProposal = null;
 
 	private Integer curRobberHexId = null, prevRobberHexId = null;
 	private int turn, turnNumber, roadCountId, longestRoad,
@@ -201,16 +226,34 @@ public class Board {
 
 	/**
 	 * Distribute resources for a given dice roll number
-	 * 
-	 * @param diceRollNumber
+	 *  @param diceRollNumber1
 	 *            the dice roll number to execute
+	 * @param diceRollNumber2
+	 * @param eventRoll
 	 */
-	public void executeDiceRoll(int diceRollNumber) {
+	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
+		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
+
+		//@TODO
+		//check if we distribute progress cards
+		//diceRollNumber2 is the die that we use for the number
+		for(int i = 0; i < players.length; i++){
+			getPlayerById(i).distributeProgressCard(diceRollNumber2, eventRoll);
+		}
+
+		//@TODO
+		//resolve the barbarian
+		if(eventRoll == 1 || eventRoll == 3 || eventRoll == 3){
+			resolveBarbarians();
+		}
+
+
 		if (diceRollNumber == 7) {
 			// reduce each players to 7 cards
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
-				int extra = cards > 7 ? cards / 2 : 0;
+				int walls = getPlayerById(i).getNumWalls();
+				int extra = cards > (7+walls) ? cards / 2 : 0;
 
 				if (extra == 0)
 					continue;
@@ -407,6 +450,29 @@ public class Board {
 			case ROBBER:
 				phase = returnPhase;
 				break;
+			case TRADE_PROPOSED:
+				if(!tradeProposal.isTradeReplied()){
+					//we did not accept or counteroffer. we should pass to the next player in the queue to propse to
+					int nextPlayerToRespondNum = 0;
+					if(tradeProposal.hasNextPlayerToPropose()){
+						Player nextPlayerToRespond = tradeProposal.getNextPlayerToPropose();
+						nextPlayerToRespondNum = nextPlayerToRespond.getPlayerNumber();
+						tradeProposal.setCurrentPlayerToProposeId(nextPlayerToRespondNum);
+						activeGameFragment.mListener.endTurn(gameParticipantIds.get(nextPlayerToRespondNum),false);
+
+					} else {
+						startTradeResponsedPhase();
+					}
+
+				} else {
+					startTradeResponsedPhase();
+				}
+				break;
+			case TRADE_RESPONDED:
+				//reset the board to state before trade
+				setTradeProposal(null);
+				phase = Phase.BUILD;
+				break;
 			case DONE:
 				return false;
 			}
@@ -435,8 +501,40 @@ public class Board {
 		this.curRobberHexId = null;
 		phase = Phase.ROBBER;
 		runTurn();
+		//if there are other to discard, pass the turn to them
+		//the turn passing then occurs in the turnHandler for each player.
+		//the turn is passed in the discardResourcesFragment
+		//when the stack is empty, the turn is passed back to the player that rolled 7
+		if(!playerIdsYetToDiscard.isEmpty()){
+			activeGameFragment.mListener.endTurn(getPlayerById(playerIdsYetToDiscard.peek()).getGooglePlayParticipantId(), false);
+		}
 	}
 
+	/**
+	 * Enter the trade proposal phase
+	 */
+	public void startTradeProposedPhase() {
+		this.setPhase(Board.Phase.TRADE_PROPOSED);
+		int playerPropose = tradeProposal.getCurrentPlayerToProposeId();
+		activeGameFragment.mListener.endTurn(this.getPlayerById(playerPropose).getGooglePlayParticipantId(), false);
+	}
+
+	/**
+	 * Enter the trade Responsed phase
+	 */
+	public void startTradeResponsedPhase() {
+		this.setPhase(Phase.TRADE_RESPONDED);
+		activeGameFragment.mListener.endTurn(getPlayerById(tradeProposal.getTradeCreatorPlayerId()).getGooglePlayParticipantId(), false);
+	}
+
+	public void resolveBarbarians(){
+		barbarianPosition++;
+		if(barbarianPosition == 7){
+			//the barbarians attack!!
+			//performAttack();
+			barbarianPosition = 0;
+		}
+	}
 	/**
 	 * Determine if we're in a setup phase
 	 * 
@@ -486,6 +584,10 @@ public class Board {
 	public boolean isProgressPhase2() {
 		return (phase == Phase.PROGRESS_CARD_2);
 	}
+
+	public boolean isTradeProposedPhase() { return (phase == Phase.TRADE_PROPOSED);}
+
+	public boolean isTradeRespondedPhase() { return (phase == Phase.TRADE_RESPONDED);}
 
 	/**
 	 * Get the dice number token value for a hexagons
@@ -760,6 +862,20 @@ public class Board {
 
 	/**
 	 * Get the next players queued for discarding
+	 *
+	 * @return a players or null
+	 */
+	public Player checkNextPlayerToDiscard() {
+		try {
+			Integer playerId = playerIdsYetToDiscard.peek();
+			return playerId != null ? players[playerId] : null;
+		} catch (EmptyStackException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Get the next players queued for discarding
 	 * 
 	 * @return a players or null
 	 */
@@ -799,6 +915,10 @@ public class Board {
 				return 0;
 			case ROBBER:
 				return R.string.phase_move_robber;
+			case TRADE_PROPOSED:
+				return R.string.waiting_trade_proposed;
+			case TRADE_RESPONDED:
+				return R.string.waiting_trade_responded;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -865,6 +985,21 @@ public class Board {
 		for (Player player : players) {
 			player.setBoard(this);
 		}
+	}
+
+	public boolean isMyPseudoTurn(){
+		//check if the trade proposal is currently proposed to me (my Pseudo turn)
+		if(tradeProposal != null) {
+			return (getPlayerById(tradeProposal.getCurrentPlayerToProposeId()).getGooglePlayParticipantId().equals(activeGameFragment.myParticipantId));
+		}
+		if(checkPlayerToDiscard()){
+			return true;
+		}
+		return false;
+	}
+
+	public Player getPlayerFromParticipantId(String pId){
+		return players[gameParticipantIds.indexOf(pId)];
 	}
 
 }

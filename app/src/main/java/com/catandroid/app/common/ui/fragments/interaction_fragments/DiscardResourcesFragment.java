@@ -13,6 +13,7 @@ import com.catandroid.app.R;
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.players.Player;
+import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
 
 public class DiscardResourcesFragment extends Fragment {
 
@@ -37,17 +38,19 @@ public class DiscardResourcesFragment extends Fragment {
 
 	private Board board;
 
+	private ActiveGameFragment activeGameFragment;
+
 	public void setBoard(Board board) {
 		this.board = board;
 	}
 
+	public void setActiveGameFragment(ActiveGameFragment activeGameFragment) {
+		this.activeGameFragment = activeGameFragment;
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		//super.onCreate(bundle);
-		
-		//getActivity().ActivsetFinishOnTouchOutside(false);
 
-		//setContentView(R.layout.discard_resources);
 		final View discardView = inflater.inflate(R.layout.discard_resources, null, false);
 
 		quantity = 0;
@@ -160,6 +163,12 @@ public class DiscardResourcesFragment extends Fragment {
 				}
 
 				//finish();
+				if(board.checkPlayerToDiscard()){
+					activeGameFragment.mListener.endTurn(board.checkNextPlayerToDiscard().getGooglePlayParticipantId(), false);
+				} else {
+					//pass it back to the person that rolled
+					activeGameFragment.mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+				}
 				getActivity().getSupportFragmentManager().popBackStack();
 			}
 		});
