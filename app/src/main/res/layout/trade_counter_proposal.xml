@@ -9,17 +9,18 @@
         android:orientation="vertical"
         android:padding="10dip" >
 
-        <Spinner
-            android:id="@+id/trade_type"
-            android:layout_width="fill_parent"
+        <TextView
+            android:id="@+id/trade_player_wants"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:prompt="@string/trade_requesting" >
-        </Spinner>
+            android:textColor="#FFFFFF"
+            android:textIsSelectable="false"
+            android:textSize="24sp"/>
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/trade_offering" />
+            android:text="@string/trade_counterproposal" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -506,14 +507,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
-            <Button
-                android:id="@+id/trade_bank"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/trade_bank" >
-            </Button>
 
             <Button
                 android:id="@+id/trade_propose"
@@ -525,86 +518,6 @@
             </Button>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/bankratio"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/bankratio"
-            android:textSize="20sp" />
-        <TextView
-            android:id="@+id/resource1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/lumber"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/wool"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/grain"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/brick"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/ore"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource6"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/gold"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource7"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/gold"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource8"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/gold"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/resource9"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="@string/gold"
-            android:textSize="18sp" />
     </LinearLayout>
 
 </ScrollView>

@@ -72,7 +72,7 @@ public class BoardUtils
         // for each harbor type (one of each resource, 4 any 3:1 harbors)
         for (int i = 0; i < harborCount; i++) {
             Resource.ResourceType resourceType;
-            if (i >= Resource.RESOURCE_TYPES.length)
+            if (i >= Resource.sizeResources)
             {
                 resourceType = Resource.ResourceType.ANY;
             }

@@ -54,6 +54,9 @@
 	<string name="brick">brick</string>
 	<string name="ore">ore</string>
 	<string name="gold">gold</string>
+	<string name="paper">paper</string>
+	<string name="coin">coin</string>
+	<string name="cloth">cloth</string>
 
 	<!-- Trade screen -->
 	<string name="trade">Trade</string>
@@ -61,6 +64,7 @@
 	<string name="trade_bank">Trade with the bank</string>
 	<string name="trade_requesting">Requesting</string>
 	<string name="trade_offering">Offering</string>
+	<string name="trade_counterproposal">You are requesting:</string>
 	<string name="trade_confirm">Confirm</string>
 	<string name="trade_cancel">Cancel</string>
 	<string name="trade_for_resource">Trade for %s</string> 
@@ -78,13 +82,14 @@
 	<string name="trade_propose">Propose trade</string>
 	<string name="trade_make_offer">Make offer</string>
 	<string name="trade_accept_offer">Accept offer</string>
+	<string name="trade_decline_offer">Decline offer</string>
 	<string name="trade_accepted">Trade with %s</string>
 	<string name="trade_counter">%s proposed a counter-offer</string>
 	<string name="trade_counter_offer">Counter-offer</string>
 	<string name="trade_counter_make">Make counter-offer</string>
 	<string name="trade_rejected">%s has rejected the offer</string>
 	<string name="trade_pending_offers">Pending offers</string>
-	<string name="trade_player_wants">Trade for %s</string>
+	<string name="trade_player_wants">Trade request for %s</string>
 	<string name="trade_ratio" formatted="false">%s (%d:1)</string>
 	<string name="trade_player_offer">%s is offering</string>
 
@@ -99,6 +104,7 @@
     <string name="player_road">Built a road</string>
     <string name="player_settlement">Built a settlement</string>
     <string name="player_city">Built a city</string>
+	<string name="player_wall">Built a wall</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
 	<string name="player_received_card">Received a card</string>
@@ -164,6 +170,10 @@
 	<!-- Various strings in the game -->
 	<string name="not_my_turn">It\'s not your turn!</string>
 	<string name="game_turn_summary">Turn Summary</string>
+	<string name="waiting_trade_proposed">Trade Proposed, Waiting</string>
+	<string name="waiting_trade_responded">Trade Results</string>
+	<string name="waiting_trade_responded_nobody">Nobody accepted your trade offer!</string>
+	<string name="waiting_trade_responded_somebody"> accepted your trade offer!</string>
 	<string name="game_rolled_str">Rolled</string>
 	<string name="game_move_robber">move the robber</string>
 	<string name="game_back_to_board">Back to board</string>
@@ -183,14 +193,17 @@
 	<string name="game_build_road">Build a road</string>
 	<string name="game_build_settlement">Build a settlement</string>
 	<string name="game_build_city">Build a city</string>
+	<string name="game_build_wall">Build a wall</string>
 	<string name="game_cant_build_str">Can\'t build</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
     <string name="game_build_settlements_max">Reached the maximum number of settlements.</string>
 	<string name="game_build_city_max">Reached the maximum number of cities.</string>
+	<string name="game_build_wall_max">Reached the maximum number of walls.</string>
 	<string name="game_build_road_max">Reached the maximum number of roads.</string>
 	<string name="game_cant_build_settlement">No available settlement locations.</string>
 	<string name="game_cant_build_city">No available city locations.</string>
+	<string name="game_cant_build_wall">No available wall locations.</string>
 	<string name="game_cant_build_road">No available road locations</string>
 	<string name="game_won">won</string>
 

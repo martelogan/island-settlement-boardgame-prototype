@@ -18,9 +18,12 @@ public class Player {
 
 	private static boolean FREE_BUILD = false;
 
+	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
+
 	public static final int MAX_SETTLEMENTS = 5;
 	public static final int MAX_CITIES = 4;
 	public static final int MAX_ROADS = 15;
+	public static final int MAX_WALLS = 3;
 
 	public static final int[] ROAD_COST = { 1, 0, 0, 1, 0, 0 };
 	public static final int[] SETTLEMENT_COST = { 1, 1, 1, 1, 0, 0 };
@@ -33,6 +36,7 @@ public class Player {
 	private String name;
 	protected int settlements;
 	protected int cities;
+	protected int walls;
 	private int knightsCount, privateVictoryPointsCount, tradeValue, roadLength;
 	private int[] countPerResource, countPerProgressCard;
 	private boolean[] harbors;
@@ -74,6 +78,7 @@ public class Player {
 
 		settlements = 0;
 		cities = 0;
+		walls = 0;
 		knightsCount = 0;
 		roadLength = 0;
 		privateVictoryPointsCount = 0;
@@ -119,7 +124,7 @@ public class Player {
 	 * @return the result of the executeDiceRoll
 	 */
 	public int roll() {
-		return roll((int) (Math.random() * 6) + (int) (Math.random() * 6) + 2);
+		return roll((int) (Math.random() * 6) + 1, (int) (Math.random() * 6) + 1 , (int) (Math.random() * 6) + 1);
 	}
 
 	/**
@@ -135,15 +140,23 @@ public class Player {
 	/**
 	 * Roll the dice with a predefined result
 	 *
-	 * @param roll
+	 * @param roll1
 	 *            the desired executeDiceRoll
-	 * @return the result of the executeDiceRoll
+	 * @param roll2
+	 *@param event  @return the result of the executeDiceRoll
 	 */
-	public int roll(int roll) {
-		appendAction(R.string.player_roll, Integer.toString(roll));
-		board.executeDiceRoll(roll);
+	public int roll(int roll1, int roll2, int event) {
+		String eventText = "";
+		if(event < 4){
+			eventText = "barbarian";
+		} else{
+			eventText = EVENT_ROLL_STRINGS[event];
+		}
+		appendAction(R.string.player_roll, Integer.toString(roll1));
+		appendAction("Rolled" + eventText);
+		board.executeDiceRoll(roll1, roll2, event);
 
-		return roll;
+		return roll1 + roll2;
 	}
 
 	/**
@@ -254,6 +267,11 @@ public class Player {
 			{
 				return false;
 			}
+		} else if (type == Vertex.WALL) {
+			if (!setup && !affordWall())
+			{
+				return false;
+			}
 		} else {
 			// invalid type
 			return false;
@@ -275,7 +293,7 @@ public class Player {
 			settlements += 1;
 			settlementIds.add(vertex.getId());
 			board.checkLongestRoad();
-		} else { // city
+		} else if(vertex.getBuilding() == Vertex.CITY){ // city
 			if (!setup) {
 				useResources(Resource.ResourceType.GRAIN, 2);
 				useResources(Resource.ResourceType.ORE, 3);
@@ -285,10 +303,29 @@ public class Player {
 				settlementIds.add(vertex.getId());
 			}
 			cities += 1;
+		} else if(vertex.getBuilding() == Vertex.WALL){
+			if (!setup) {
+				useResources(Resource.ResourceType.BRICK, 2);
+			}
+			walls += 1;
 		}
 
-		appendAction(type == Vertex.SETTLEMENT ? R.string.player_settlement
-				: R.string.player_city);
+		//append to the turn log
+		switch(type) {
+			case Vertex.SETTLEMENT:
+				appendAction(R.string.player_settlement);
+				break;
+			case Vertex.CITY:
+				appendAction(R.string.player_city);
+				break;
+			case Vertex.WALL:
+				appendAction(R.string.player_wall);
+				break;
+			default:
+				break;
+		}
+
+
 
 		// TODO: does settlement vs. city matter?
 		// collect resources for city during setup
@@ -365,6 +402,10 @@ public class Player {
 		{
 			return false;
 		}
+		else if (type == Vertex.WALL && walls >= MAX_WALLS)
+		{
+			return false;
+		}
 
 		return vertex.canBuild(this, type, board.isSetupPhase());
 	}
@@ -399,7 +440,56 @@ public class Player {
 	 *            number of that resource to add
 	 */
 	public void addResources(Resource.ResourceType resourceType, int count) {
-		countPerResource[resourceType.ordinal()] += count;
+		//distribute the commodities when its a city, city+wall, metropolis
+		boolean isCity = (count == 2 || count == 3 || count == 4);
+		switch(resourceType) {
+			case LUMBER:
+				if(isCity){
+					countPerResource[Resource.toResourceIndex(ResourceType.PAPER)] += 1;
+					countPerResource[resourceType.ordinal()] += 1;
+				} else {
+					countPerResource[resourceType.ordinal()] += count;
+				}
+				break;
+			case WOOL:
+				if(isCity){
+					countPerResource[Resource.toResourceIndex(ResourceType.CLOTH)] += 1;
+					countPerResource[resourceType.ordinal()] += 1;
+				} else {
+					countPerResource[resourceType.ordinal()] += count;
+				}
+				break;
+			case ORE:
+				if(isCity){
+					countPerResource[Resource.toResourceIndex(ResourceType.COIN)] += 1;
+					countPerResource[resourceType.ordinal()] += 1;
+				} else {
+					countPerResource[resourceType.ordinal()] += count;
+				}
+				break;
+			case GRAIN:
+				countPerResource[resourceType.ordinal()] += count;
+				break;
+			case BRICK:
+				countPerResource[resourceType.ordinal()] += count;
+				break;
+			case GOLD:
+				countPerResource[resourceType.ordinal()] += count;
+				break;
+			case PAPER:
+				countPerResource[resourceType.ordinal()] += count;
+				break;
+			case COIN:
+				countPerResource[resourceType.ordinal()] += count;
+				break;
+			case CLOTH:
+				countPerResource[resourceType.ordinal()] += count;
+				break;
+			default:
+				break;
+		}
+
+
 	}
 
 	/**
@@ -530,6 +620,7 @@ public class Player {
 	 *            the resources to give the player
 	 */
 	public void trade(Player player, Resource.ResourceType resourceType, int[] trade) {
+		//player is the person  that accepts the trade (loses resourceType, gains trade[]
 		addResources(resourceType, 1);
 		player.useResources(resourceType, 1);
 
@@ -603,6 +694,16 @@ public class Player {
 	public boolean affordCity() {
 		return (FREE_BUILD || cities < MAX_CITIES
 				&& getResources(Resource.ResourceType.GRAIN) >= 2 && getResources(Resource.ResourceType.ORE) >= 3);
+	}
+
+	/**
+	 * Determine if the player can build a wall
+	 *
+	 * @return true if the player can build a wall
+	 */
+	public boolean affordWall() {
+		return (FREE_BUILD || walls < MAX_WALLS
+				&& getResources(Resource.ResourceType.BRICK) >= 2);
 	}
 
 	/**
@@ -851,7 +952,7 @@ public class Player {
 	}
 
 	/**
-	 * Determine if a trade is valid
+	 * Determine if a trade is valid with baml
 	 *
 	 * @param resourceType
 	 *            the resourceType to trade for
@@ -937,6 +1038,29 @@ public class Player {
 
 		// this shouldn't happen
 		return false;
+	}
+
+	/**
+	 * Determine if a trade is valid
+	 *
+	 *
+	 * @param trade
+	 *            an array of the number of each card resourceType offered
+	 * @return true if the trade is valid
+	 */
+	public boolean canTradePlayer(int[] trade) {
+		boolean canTrade = true;
+		for (int i = 0; i < Resource.RESOURCE_TYPES.length; i++) {
+
+			// deduct from number of resource cards needed
+			int number = getResources(Resource.RESOURCE_TYPES[i]);
+			if (number < trade[i])
+			{
+				canTrade = false;
+			}
+		}
+
+		return canTrade;
 	}
 
 	/**
@@ -1092,6 +1216,15 @@ public class Player {
 	}
 
 	/**
+	 * Get the number of walls
+	 *
+	 * @return the number of walls the player has
+	 */
+	public int getNumWalls() {
+		return walls;
+	}
+
+	/**
 	 * Get the number of roads built
 	 *
 	 * @return the number of roads the player built
@@ -1100,6 +1233,10 @@ public class Player {
 		return roads.size();
 	}
 
+	public int distributeProgressCard(int diceRollNumber2, int event){
+		//if(diceRollNumber2 && event)...
+		return 0;
+	}
 	/**
 	 * Add an action to the turn log
 	 *

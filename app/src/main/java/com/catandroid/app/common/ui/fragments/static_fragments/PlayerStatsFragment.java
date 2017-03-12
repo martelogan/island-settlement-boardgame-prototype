@@ -67,18 +67,24 @@ public class PlayerStatsFragment extends Fragment {
 			message += getString(R.string.status_resources) + ": "
 					+ player.getNumResources() + "\n";
 			if(showAll) {
-				message += getString(R.string.wool) + ": "
+				message += "\t\t" + getString(R.string.wool) + ": "
 						+ player.getResources(Resource.ResourceType.WOOL) + "\n";
-				message += getString(R.string.lumber) + ": "
+				message += "\t\t" + getString(R.string.lumber) + ": "
 						+ player.getResources(Resource.ResourceType.LUMBER) + "\n";
-				message += getString(R.string.brick) + ": "
+				message += "\t\t" + getString(R.string.brick) + ": "
 						+ player.getResources(Resource.ResourceType.BRICK) + "\n";
-				message += getString(R.string.ore) + ": "
+				message += "\t\t" + getString(R.string.ore) + ": "
 						+ player.getResources(Resource.ResourceType.ORE) + "\n";
-				message += getString(R.string.gold) + ": "
+				message += "\t\t" + getString(R.string.gold) + ": "
 						+ player.getResources(Resource.ResourceType.GOLD) + "\n";
-				message += getString(R.string.grain) + ": "
-						+ player.getResources(Resource.ResourceType.GRAIN) + "\n\n";
+				message += "\t\t" + getString(R.string.grain) + ": "
+						+ player.getResources(Resource.ResourceType.GRAIN) + "\n";
+				message += "\t\t" + getString(R.string.paper) + ": "
+						+ player.getResources(Resource.ResourceType.PAPER) + "\n";
+				message += "\t\t" + getString(R.string.coin) + ": "
+						+ player.getResources(Resource.ResourceType.COIN) + "\n";
+				message += "\t\t" + getString(R.string.cloth) + ": "
+						+ player.getResources(Resource.ResourceType.CLOTH) + "\n";
 			}
 
 			//TODO: count of progress cards
@@ -114,7 +120,7 @@ public class PlayerStatsFragment extends Fragment {
 				hasHarbor = true;
 			}
 
-			for (int j = 0; j < Resource.RESOURCE_TYPES.length; j++) {
+			for (int j = 0; j < Resource.sizeResources; j++) {
 				if (player.hasHarbor(Resource.RESOURCE_TYPES[j])
 						&& Resource.RESOURCE_TYPES[j] != Resource.ResourceType.GOLD) {
 					message += getString(Resource

@@ -9,15 +9,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
 
-import com.catandroid.app.common.components.Board;
 import com.catandroid.app.R;
+import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.TradeProposal;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.players.Player;
@@ -26,7 +26,7 @@ import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class TradeRequestFragment extends Fragment {
+public class CounterOfferCreationFragment extends Fragment {
 
 	public static final int REQUEST_TRADE_COMPLETED = 0;
 
@@ -36,28 +36,22 @@ public class TradeRequestFragment extends Fragment {
 	public static final String INDEX_KEY = "com.catandroid.app.TradeIndex";
 
 	private static final int[] RESOURCES = { R.id.trade_res1, R.id.trade_res2,
-			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5, R.id.trade_res6,
-			R.id.trade_res7, R.id.trade_res8, R.id.trade_res9};
+			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5, R.id.trade_res6 };
 
 	private static final int[] OFFERS = { R.id.trade_offer1, R.id.trade_offer2,
-			R.id.trade_offer3, R.id.trade_offer4, R.id.trade_offer5, R.id.trade_offer6,
-			R.id.trade_offer7, R.id.trade_offer8, R.id.trade_offer9};
+			R.id.trade_offer3, R.id.trade_offer4, R.id.trade_offer5, R.id.trade_offer6 };
 
 	private static final int[] PLUS = { R.id.trade_plus1, R.id.trade_plus2,
-			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5, R.id.trade_plus6,
-			R.id.trade_plus7, R.id.trade_plus8, R.id.trade_plus9};
+			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5, R.id.trade_plus6 };
 
 	private static final int[] MINUS = { R.id.trade_minus1, R.id.trade_minus2,
-			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5, R.id.trade_minus6,
-			R.id.trade_minus7, R.id.trade_minus8, R.id.trade_minus9};
+			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5, R.id.trade_minus6 };
 
 	private static final int[] RES_VIEW = { R.id.resource1, R.id.resource2,
-			R.id.resource3, R.id.resource4, R.id.resource5, R.id.resource6,
-			R.id.resource7, R.id.resource8, R.id.resource9};
+			R.id.resource3, R.id.resource4, R.id.resource5, R.id.resource6 };
 
 	private static final int[] RES_STRING = { R.string.lumber, R.string.wool,
-			R.string.grain, R.string.brick, R.string.ore, R.string.gold,
-			R.string.paper, R.string.coin, R.string.cloth};
+			R.string.grain, R.string.brick, R.string.ore, R.string.gold };
 
 	private Player player;
 	private int selected;
@@ -78,6 +72,11 @@ public class TradeRequestFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		selected = 0;
+
+		Bundle extras = this.getArguments();
+		if (extras != null)
+			selected = extras.getInt(TYPE_KEY);
+
 
 		getActivity().setTitle(R.string.trade);
 
@@ -223,30 +222,25 @@ public class TradeRequestFragment extends Fragment {
 					trade[i] = Integer.parseInt((String) offer.getText(), 10);
 				}
 
+				//@TODO
+				//ADD THE LOGIC TO SEND MESSAGE FOR TRADE PROPOSAL
 
 				ArrayList<Integer> playerList = new ArrayList<Integer>();
 				for (int i = 0; i < board.getNumPlayers(); i++){
-					if(i != board.getCurrentPlayer().getPlayerNumber() && board.getPlayerById(i).getResources(Resource.RESOURCE_TYPES[selected]) > 0){
+					if(i != board.getCurrentPlayer().getPlayerNumber()){
 						playerList.add(i);
 					}
 				}
-
-				//only send the request if actually at least one person can trade with you
-				if(!playerList.isEmpty()){
-					Collections.shuffle(playerList);
-					int currentPlayerToProposeId = playerList.remove(0);
+				Collections.shuffle(playerList);
+				int currentPlayerToProposeId = playerList.remove(0);
 
 
-					TradeProposal tradeProposal = new TradeProposal(Resource.RESOURCE_TYPES[selected], board.getCurrentPlayer().getPlayerNumber(), currentPlayerToProposeId, trade, playerList);
-					board.setTradeProposal(tradeProposal);
+				TradeProposal tradeProposal = new TradeProposal(Resource.RESOURCE_TYPES[selected], board.getCurrentPlayer().getPlayerNumber(), currentPlayerToProposeId, trade, playerList);
+				board.setTradeProposal(tradeProposal);
 
-					board.startTradeProposedPhase();
+				board.startTradeProposedPhase();
 
-					getFragmentManager().popBackStack();
- 				} else {
-					toast("Nobody can trade " + getString(Resource.toRString(Resource.RESOURCE_TYPES[selected])) + " with you!");
-				}
-
+				getFragmentManager().popBackStack();
 
 
 			}
