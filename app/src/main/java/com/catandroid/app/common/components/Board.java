@@ -57,9 +57,10 @@ public class Board {
 		return count;
 	}
 
+
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_FIRST_R, SETUP_CITY, SETUP_SECOND_R,
-		PRODUCTION, BUILD, PROGRESS_CARD_1, PROGRESS_CARD_2, ROBBER, DONE,
+		PRODUCTION, BUILD, PROGRESS_CARD_1, PROGRESS_CARD_2, CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, DONE,
 		TRADE_PROPOSED, TRADE_RESPONDED
 	}
 
@@ -101,10 +102,12 @@ public class Board {
 
 	private TradeProposal tradeProposal = null;
 
-	private Integer curRobberHexId = null, prevRobberHexId = null;
+	private Integer curRobberHexId = null, prevRobberHexId = null,
+			curPirateHexId = null, prevPirateHexId = null;
 	private int turn, turnNumber, roadCountId, longestRoad,
 			maxPoints, lastDiceRollNumber;
 	private Integer longestRoadOwnerId = null, winnerId = null;
+	private int latestPlayerChoice = -1;
 
 	private boolean autoDiscard;
 
@@ -232,7 +235,9 @@ public class Board {
 	 * @param eventRoll
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
-		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
+        //TODO: remove debugging
+        int diceRollNumber = 7;
+//		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 
 		//@TODO
 		//check if we distribute progress cards
@@ -274,8 +279,8 @@ public class Board {
 				}
 			}
 
-			// enter robberphase
-			startRobberPhase();
+			// enter ChooseRobberPiratePhase
+			startChooseRobberPiratePhase();
 		} else {
 			// distribute resources
 			for (int i = 0; i < hexagons.length; i++)
@@ -308,14 +313,15 @@ public class Board {
 	 *            current ai players
 	 */
 	private void startAIRobberPhase(AutomatedPlayer current) {
-		int hex = current.placeRobber(hexagons,
+		int hexId = current.placeRobber(hexagons,
 				prevRobberHexId != null ? hexagons[prevRobberHexId] : null);
-		setRobber(hex);
+        Hexagon hex = hexagons[hexId];
+		setCurRobberHex(hex);
 
 		int count = 0;
 		for (int i = 0; i < numPlayers; i++)
 		{
-			if (players[i] != players[turn] && hexagons[hex].adjacentToPlayer(players[i]))
+			if (players[i] != players[turn] && hex.adjacentToPlayer(players[i]))
 			{
 				count++;
 			}
@@ -325,7 +331,7 @@ public class Board {
 			Player[] stealList = new Player[count];
 			for (int i = 0; i < numPlayers; i++)
 				if (players[i] != players[turn]
-						&& hexagons[hex].adjacentToPlayer(players[i]))
+						&& hex.adjacentToPlayer(players[i]))
 				{
 					stealList[--count] = players[i];
 				}
@@ -340,7 +346,7 @@ public class Board {
 	/**
 	 * Start a players's turn
 	 */
-	public void runTurn() {
+	public void runAITurn() {
 		// process ai turn
 		if (players[turn].isBot()) {
 			AutomatedPlayer current = (AutomatedPlayer) players[turn];
@@ -373,7 +379,9 @@ public class Board {
 					phase = returnPhase;
 					return;
 
+				case CHOOSE_ROBBER_PIRATE:
 				case ROBBER:
+				case PIRATE:
 					startAIRobberPhase(current);
 					return;
 
@@ -387,8 +395,7 @@ public class Board {
 
 	/**
 	 * Proceed to the next phase or next turn
-	 * 
-	 * My initial reaction was to treat it as a state machine
+	 *
 	 */
 	public boolean nextPhase() {
 		boolean turnChanged = false;
@@ -437,9 +444,9 @@ public class Board {
 				turnChanged = true;
 				players[turn].beginTurn();
 				lastDiceRollNumber = 0;
-                if(players[turn].isHuman()) {
-                    activeGameFragment.mListener.endTurn(gameParticipantIds.get(turn),false);
-                }
+				if(players[turn].isHuman()) {
+					activeGameFragment.mListener.endTurn(gameParticipantIds.get(turn),false);
+				}
 				break;
 			case PROGRESS_CARD_1:
 				phase = Phase.PROGRESS_CARD_2;
@@ -448,6 +455,9 @@ public class Board {
 				phase = returnPhase;
 				break;
 			case ROBBER:
+				phase = returnPhase;
+				break;
+			case PIRATE:
 				phase = returnPhase;
 				break;
 			case TRADE_PROPOSED:
@@ -475,39 +485,44 @@ public class Board {
 				break;
 			case DONE:
 				return false;
-			}
+		}
 
 		return turnChanged;
 	}
 
 	/**
-	 * Enter progress phase 1 (road building)
+	 * Proceed to the next phase or next turn
+	 *
+	 */
+	public boolean nextPhase(int choice) {
+		boolean turnChanged = false;
+
+		switch (phase) {
+			case CHOOSE_ROBBER_PIRATE:
+				if (choice == 0) {
+					startRobberPhase();
+				}
+				else if (choice == 1) {
+					startPiratePhase();
+				}
+				else {
+					return false;
+				}
+				break;
+			case DONE:
+				return false;
+		}
+
+		return turnChanged;
+	}
+
+	/**
+	 * Enter progress card phase 1
 	 */
 	public void startProgressPhase1() {
 		returnPhase = phase;
 		phase = Phase.PROGRESS_CARD_1;
-		runTurn();
-	}
-
-	/**
-	 * Enter the robber placement phase
-	 */
-	public void startRobberPhase() {
-		if(this.curRobberHexId != null) {
-			hexagons[this.curRobberHexId].removeRobber();
-		}
-		this.prevRobberHexId = this.curRobberHexId;
-		this.returnPhase = phase;
-		this.curRobberHexId = null;
-		phase = Phase.ROBBER;
-		runTurn();
-		//if there are other to discard, pass the turn to them
-		//the turn passing then occurs in the turnHandler for each player.
-		//the turn is passed in the discardResourcesFragment
-		//when the stack is empty, the turn is passed back to the player that rolled 7
-		if(!playerIdsYetToDiscard.isEmpty()){
-			activeGameFragment.mListener.endTurn(getPlayerById(playerIdsYetToDiscard.peek()).getGooglePlayParticipantId(), false);
-		}
+		runAITurn();
 	}
 
 	/**
@@ -561,8 +576,16 @@ public class Board {
 		return (phase == Phase.SETUP_CITY || phase == Phase.SETUP_SECOND_R);
 	}
 
+	public boolean isChooseRobberPiratePhase() {
+		return (phase == Phase.CHOOSE_ROBBER_PIRATE);
+	}
+
 	public boolean isRobberPhase() {
 		return (phase == Phase.ROBBER);
+	}
+
+	public boolean isPiratePhase() {
+		return (phase == Phase.PIRATE);
 	}
 
 	public boolean isProduction() {
@@ -708,8 +731,50 @@ public class Board {
 	 */
 	public ProgressCard.ProgressCardType getRandomProgressCard() {
 		//TODO: implement progress cards
-		ProgressCard.ProgressCardType card =null;
+		ProgressCard.ProgressCardType card = null;
 		return card;
+	}
+
+	public void startChooseRobberPiratePhase() {
+		this.returnPhase = phase;
+		this.phase = Phase.CHOOSE_ROBBER_PIRATE;
+		//if there are other to discard, pass the turn to them
+		//the turn passing then occurs in the turnHandler for each player.
+		//the turn is passed in the discardResourcesFragment
+		//when the stack is empty, the turn is passed back to the player that rolled 7
+		if(!playerIdsYetToDiscard.isEmpty()){
+			activeGameFragment.mListener.endTurn(getPlayerById(playerIdsYetToDiscard.peek()).getGooglePlayParticipantId(), false);
+		}
+		// run AI's turn
+		runAITurn();
+	}
+
+	/**
+	 * Enter the robber placement phase
+	 */
+	public void  startRobberPhase() {
+		if(this.curRobberHexId != null) {
+			hexagons[this.curRobberHexId].removeRobber();
+		}
+		this.prevRobberHexId = this.curRobberHexId;
+		this.curRobberHexId = null;
+		phase = Phase.ROBBER;
+		// run AI's turn
+		runAITurn();
+	}
+
+	/**
+	 * Enter the pirate placement phase
+	 */
+	public void startPiratePhase() {
+		if(this.curPirateHexId != null) {
+			hexagons[this.curPirateHexId].removePirate();
+		}
+		this.prevPirateHexId = this.curPirateHexId;
+		this.curPirateHexId = null;
+		phase = Phase.PIRATE;
+		// run AI's turn
+		runAITurn();
 	}
 
 	/**
@@ -722,12 +787,21 @@ public class Board {
 	}
 
 	/**
+	 * Get the hexagon with the pirate
+	 *
+	 * @return the hexagon with the pirate
+	 */
+	public Hexagon getCurPirateHex() {
+		return curPirateHexId != null ? hexagons[curPirateHexId] : null;
+	}
+
+	/**
 	 * If the robber is being moved, return the last hexagons where it last
 	 * resided, or otherwise the current location
 	 *
 	 * @return the last location of the robber
 	 */
-	public Hexagon getPrevRobberHexId() {
+	public Hexagon getPrevRobberHex() {
 		int hexCount = this.boardGeometry.getHexCount();
 		int curRobberId = this.curRobberHexId != null ? hexagons[this.curRobberHexId].getId() : -1;
 		int prevRobberId = this.prevRobberHexId != null ? hexagons[this.prevRobberHexId].getId() : -1;
@@ -742,6 +816,30 @@ public class Board {
 			return null;
 		}
 	}
+
+    /**
+     * If the pirate is being moved, return the last hexagons where it last
+     * resided, or otherwise the current location
+     *
+     * @return the last location of the pirate
+     */
+    public Hexagon getPrevPirateHex() {
+        int hexCount = this.boardGeometry.getHexCount();
+        int curPirateHexId = this.curPirateHexId != null ?
+                hexagons[this.curPirateHexId].getId() : -1;
+        int prevPirateHexId = this.prevPirateHexId != null
+                ? hexagons[this.prevPirateHexId].getId() : -1;
+        if (this.phase == Phase.PIRATE && prevPirateHexId >= 0 && prevPirateHexId < hexCount)
+        {
+            return hexagons[this.prevPirateHexId];
+        }
+        else if (curPirateHexId >= 0 && curPirateHexId < hexCount) {
+            return hexagons[this.curPirateHexId];
+        }
+        else {
+            return null;
+        }
+    }
 
 	/**
 	 * Set the current robber hexagon
@@ -759,21 +857,21 @@ public class Board {
 		return true;
 	}
 
-	/**
-	 * Set the index for the robber
-	 *
-	 * @param curRobberHexId
-	 *            id of the hexagon with the robber
-	 * @return true if the robber was placed
-	 */
-	public boolean setRobber(int curRobberHexId) {
-		if (this.curRobberHexId != null  && hexagons != null) {
-			hexagons[this.curRobberHexId].removeRobber();
-		}
-		this.curRobberHexId = curRobberHexId;
-		hexagons[this.curRobberHexId].setRobber();
-		return true;
-	}
+    /**
+     * Set the current robber hexagon
+     *
+     * @param curPirateHex
+     *            current robber hexagon
+     * @return true iff the currebt robber hex was set
+     */
+    public boolean setCurPirateHex(Hexagon curPirateHex) {
+        if (this.curPirateHexId != null && hexagons != null) {
+            hexagons[curPirateHexId].removePirate();
+        }
+        this.curPirateHexId = curPirateHex.getId();
+        curPirateHex.setPirate();
+        return true;
+    }
 
 	/**
 	 * Get the number of points required to win
@@ -856,7 +954,7 @@ public class Board {
 	 * 
 	 * @return true if one or more players need to discard_resources
 	 */
-	public boolean checkPlayerToDiscard() {
+	public boolean hasPlayersYetToDiscard() {
 		return !playerIdsYetToDiscard.empty();
 	}
 
@@ -913,8 +1011,12 @@ public class Board {
 			case PROGRESS_CARD_2:
 				// TODO: progress card step 2
 				return 0;
+			case CHOOSE_ROBBER_PIRATE:
+				return R.string.phase_make_choice;
 			case ROBBER:
 				return R.string.phase_move_robber;
+			case PIRATE:
+				return R.string.phase_move_pirate;
 			case TRADE_PROPOSED:
 				return R.string.waiting_trade_proposed;
 			case TRADE_RESPONDED:
@@ -990,11 +1092,18 @@ public class Board {
 	public boolean isMyPseudoTurn(){
 		//check if the trade proposal is currently proposed to me (my Pseudo turn)
 		if(tradeProposal != null) {
-			return (getPlayerById(tradeProposal.getCurrentPlayerToProposeId()).getGooglePlayParticipantId().equals(activeGameFragment.myParticipantId));
+			return (getPlayerById(
+			        tradeProposal.getCurrentPlayerToProposeId()
+            ).getGooglePlayParticipantId().equals(activeGameFragment.myParticipantId));
 		}
-		if(checkPlayerToDiscard()){
+		else if(hasPlayersYetToDiscard()){
 			return true;
 		}
+        else if(phase == Phase.CHOOSE_ROBBER_PIRATE &&
+                !getPlayerById(turn).getGooglePlayParticipantId().equals(
+                        activeGameFragment.myParticipantId)) {
+            return true;
+        }
 		return false;
 	}
 

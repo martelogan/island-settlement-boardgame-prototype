@@ -18,7 +18,7 @@ import com.catandroid.app.common.ui.resources.Square;
 public class GameRenderer implements Renderer {
 
 	public enum Action {
-		NONE, SETTLEMENT, CITY, ROAD, ROBBER, WALL
+		NONE, SETTLEMENT, CITY, ROAD, CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, WALL
 	}
 
 	private TextureManager texture;

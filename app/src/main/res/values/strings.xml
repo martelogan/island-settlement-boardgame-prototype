@@ -32,7 +32,6 @@
 	<string name="blue">blue</string>
 
 	<!-- Skeleton Multiplayer -->
-	<string name="hello_world">Hello world!</string>
 	<string name="sign_out">Sign Out</string>
 	<string name="match_instructions">Type in a new word for the data in this game, then hit done.</string>
 	<string name="quick_match">Quick match</string>
@@ -164,7 +163,9 @@
     <string name="phase_second_road">Place 2nd road</string>
     <string name="phase_your_turn">Your turn</string>
     <string name="phase_build">Build</string>
+	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
+	<string name="phase_move_pirate">Move the pirate</string>
     <string name="phase_game_over">Game over</string>
 
 	<!-- Various strings in the game -->
@@ -175,7 +176,6 @@
 	<string name="waiting_trade_responded_nobody">Nobody accepted your trade offer!</string>
 	<string name="waiting_trade_responded_somebody"> accepted your trade offer!</string>
 	<string name="game_rolled_str">Rolled</string>
-	<string name="game_move_robber">move the robber</string>
 	<string name="game_back_to_board">Back to board</string>
 	<string name="game_return_to_menu">Return to menu</string>
 	<string name="game_use_str">Use</string>
@@ -183,6 +183,9 @@
 	<string name="game_ok_str">OK</string>
 	<string name="game_cancel_str">Cancel</string>
 	<string name="game_resources_str">resources</string>
+	<string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>
+	<string name="game_choose_robber">Move Robber</string>
+	<string name="game_choose_pirate">Move Pirate</string>
 	<string name="game_steal_title">Pick a victim</string>
 	<string name="game_steal_from_str">Steal from</string>
 	<string name="game_steal_fail_str">Nobody to steal from</string>
@@ -197,6 +200,10 @@
 	<string name="game_cant_build_str">Can\'t build</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
+	<string name="game_robber_sea">The ocean is no place for a robber!</string>
+	<string name="game_cant_move_pirate">Can\'t move pirate</string>
+	<string name="game_pirate_same">You must move the pirate to a new location</string>
+	<string name="game_pirate_land">The land is no place for a pirate!</string>
     <string name="game_build_settlements_max">Reached the maximum number of settlements.</string>
 	<string name="game_build_city_max">Reached the maximum number of cities.</string>
 	<string name="game_build_wall_max">Reached the maximum number of walls.</string>

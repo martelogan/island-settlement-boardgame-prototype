@@ -238,7 +238,7 @@ public class TextureManager {
 
         int numToken = hexagon.getNumberTokenAsInt();
 
-        if (!hexagon.hasRobber() && lastRoll != 0 && numToken == lastRoll)
+        if (!hexagon.hasRobber() && lastRoll != 0 && lastRoll != 7 && numToken == lastRoll)
         {
             square.get(hash(TextureType.HEX_ACTIVE, 0)).render(gl);
         }
@@ -252,7 +252,7 @@ public class TextureManager {
         int id = hexagon.getId();
         gl.glTranslatef(boardGeometry.getHexagonX(id), boardGeometry.getHexagonY(id), 0);
 
-        if (hexagon.hasRobber())
+        if (hexagon.hasRobber() || hexagon.hasPirate())
         {
             square.get(hash(TextureType.HEX_ROBBER, 0)).render(gl);
         }

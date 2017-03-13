@@ -277,6 +277,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 				return false;
 
 			case ROBBER:
+			case PIRATE:
 				// select a hexagon
 				select = boardGeometry.getNearestHexagon(x, y);
 				break;
@@ -306,7 +307,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		// consider buttons
 		for (UIButton button : buttons) {
 			if (button != null && button.press(x, height - y))
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -320,7 +323,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			if (button.release(x, height - y)) {
 				released = true;
 				if (activate)
+				{
 					game.buttonPress(button.getButtonType());
+				}
 			}
 		}
 

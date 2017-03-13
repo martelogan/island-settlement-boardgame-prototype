@@ -163,7 +163,7 @@ public class DiscardResourcesFragment extends Fragment {
 				}
 
 				//finish();
-				if(board.checkPlayerToDiscard()){
+				if(board.hasPlayersYetToDiscard()){
 					activeGameFragment.mListener.endTurn(board.checkNextPlayerToDiscard().getGooglePlayParticipantId(), false);
 				} else {
 					//pass it back to the person that rolled

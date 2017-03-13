@@ -118,7 +118,7 @@ public class ActiveGameFragment extends Fragment {
 					return;
 				}
 
-				if (board.checkPlayerToDiscard()) {
+				if (board.hasPlayersYetToDiscard()) {
 					//show popup if we are the ones that should discard
 					if(board.checkNextPlayerToDiscard().getGooglePlayParticipantId().equals(myParticipantId)){
 						Message discard = new Message();
@@ -126,7 +126,7 @@ public class ActiveGameFragment extends Fragment {
 						turnHandler.sendMessage(discard);
 					}
 				} else if (board.getCurrentPlayer().isBot()) {
-					board.runTurn();
+					board.runAITurn();
 					Message change = new Message();
 					change.what = UPDATE_MESSAGE;
 					turnHandler.sendMessage(change);
@@ -295,6 +295,7 @@ public class ActiveGameFragment extends Fragment {
 	public void select(Action action, int id) {
 		switch (action) {
 			case ROBBER:
+			case PIRATE:
 				select(action, board.getHexagonById(id));
 				break;
 
@@ -317,12 +318,31 @@ public class ActiveGameFragment extends Fragment {
 
 	private void select(Action action, Hexagon hexagon) {
 		if (action == Action.ROBBER) {
-			if (hexagon != board.getPrevRobberHexId()) {
-				board.setRobber(hexagon.getId());
-				showState(false);
-			} else {
+			if (hexagon == board.getPrevRobberHex()) {
 				popup(getString(R.string.game_cant_move_robber),
 						getString(R.string.game_robber_same));
+			}
+			else if (hexagon.getTerrainType() == Hexagon.TerrainType.SEA) {
+				popup(getString(R.string.game_cant_move_robber),
+						getString(R.string.game_robber_sea));
+			}
+			else {
+				board.setCurRobberHex(hexagon);
+				showState(false);
+			}
+		}
+		else if (action == Action.PIRATE) {
+			if (hexagon == board.getPrevPirateHex()) {
+				popup(getString(R.string.game_cant_move_pirate),
+						getString(R.string.game_pirate_same));
+			}
+			else if (hexagon.getTerrainType() != Hexagon.TerrainType.SEA) {
+				popup(getString(R.string.game_cant_move_pirate),
+						getString(R.string.game_pirate_land));
+			}
+			else {
+				board.setCurPirateHex(hexagon);
+				showState(false);
 			}
 		}
 	}
@@ -409,15 +429,18 @@ public class ActiveGameFragment extends Fragment {
 				int roll1 = (int) (Math.random() * 6) + 1;
 				int roll2 = (int) (Math.random() * 6) + 1;
 				int event = (int) (Math.random() * 6) + 1;
-				int roll = roll1 + roll2;
+				//TODO: remove debugging
+				int roll = 7;
+//				int roll = roll1 + roll2;
 				board.getCurrentPlayer().roll(roll1, roll2 , event);
-				showState(true);
+				//TODO: what is this
+//				showState(true);
 				mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
 
 				if (roll == 7) {
 					toast(getString(R.string.game_rolled_str) + " 7 " + ROLL_STRINGS[roll1]
 							+ ROLL_STRINGS[roll2] + " "
-							+ getString(R.string.game_move_robber));
+							+ getString(R.string.game_chooseRobberPirate_title));
 					showState(true);
 					break;
 				} else {
@@ -597,15 +620,23 @@ public class ActiveGameFragment extends Fragment {
 	private void showState(boolean setZoom) {
 		Player player = board.getCurrentPlayer();
 
-		renderer.setState(board, (player.isHuman() && board.itsMyTurn(myParticipantId) && !board.isMyPseudoTurn())  ? player : null, texture, board.getLastDiceRollNumber());
+		renderer.setState(board, (player.isHuman() && board.itsMyTurn(myParticipantId) &&
+				!board.isMyPseudoTurn())  ? player : null, texture, board.getLastDiceRollNumber());
 
 		if (setZoom)
+		{
 			renderer.getGeometry().zoomOut();
+		}
 
-		// show card stealing dialog
-		if (board.isRobberPhase() && board.getCurRobberHex() != null){
-            steal();
+		if (board.isChooseRobberPiratePhase() && !board.isMyPseudoTurn()) {
+			chooseRobberPirate();
+		}
+		else if (board.isRobberPhase() && board.getCurRobberHex() != null){
+            rob();
         }
+        else if (board.isPiratePhase() && board.getCurPirateHex() != null) {
+			pirate();
+		}
 
 		// display winner
 		boolean hadWinner = board.getWinner() != null;
@@ -633,13 +664,28 @@ public class ActiveGameFragment extends Fragment {
 
 		Action action = Action.NONE;
 		if (board.isSetupSettlement())
+		{
 			action = Action.SETTLEMENT;
+		}
 		else if (board.isSetupCity())
+		{
 			action = Action.CITY;
+		}
 		else if (board.isSetupRoad() || board.isProgressPhase())
+		{
 			action = Action.ROAD;
+		}
+		else if (board.isChooseRobberPiratePhase()) {
+			action = Action.CHOOSE_ROBBER_PIRATE;
+		}
 		else if (board.isRobberPhase() && board.getCurRobberHex() == null)
+		{
 			action = Action.ROBBER;
+		}
+		else if (board.isPiratePhase() && board.getCurPirateHex() == null)
+		{
+			action = Action.PIRATE;
+		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -663,7 +709,9 @@ public class ActiveGameFragment extends Fragment {
 				getActivity().setTitle(R.string.not_my_turn);
 			}
 		else
+		{
 			getActivity().setTitle(player.getName());
+		}
 
 		if(board.getTradeProposal() != null && board.isMyPseudoTurn() && board.isTradeProposedPhase()){
             //We are in a phase of trade somehow
@@ -707,7 +755,8 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isProgressPhase()) {
 			// TODO: add ability to cancel card use
 			// consider what happens if there's nowhere to build a road
-		} else if (board.isRobberPhase()) {
+		} else if (board.isChooseRobberPiratePhase() ||
+				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
 		} else if (action != Action.NONE) {
 			// cancel the action
@@ -954,20 +1003,114 @@ public class ActiveGameFragment extends Fragment {
 
 	}
 
-	private void steal() {
-		if (!board.isRobberPhase()) {
+	private void chooseRobberPirate() {
+		if (!board.isChooseRobberPiratePhase()) {
 			Log.w(getActivity().getClass().getName(),
-					"shouldn't be calling steal() out of robber phase");
+					"shouldn't be calling chooseRobberPirate() out of choice phase");
 			return;
 		}
 
 		Hexagon robbing = board.getCurRobberHex();
 		if (robbing == null) {
 			Log.w(getActivity().getClass().getName(),
-					"shouldn't be calling steal() without robber location set");
+					"shouldn't be calling chooseRobberPirate() without robber location set");
 			showState(false);
 			return;
 		}
+
+		Hexagon pirating = board.getCurPirateHex();
+		if (pirating == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling chooseRobberPirate() without pirate location set");
+			showState(false);
+			return;
+		}
+
+		CharSequence[] items = new CharSequence[2];
+		items[0] = getString(R.string.game_choose_robber);
+		items[1] = getString(R.string.game_choose_pirate);
+
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_chooseRobberPirate_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+				chooseRobberPirate(item);
+			}
+		});
+
+		AlertDialog chooseRobberPirateDialog = builder.create();
+		chooseRobberPirateDialog.setCancelable(false);
+		chooseRobberPirateDialog.show();
+	}
+
+	private void chooseRobberPirate(int select) {
+		if (!board.isChooseRobberPiratePhase()) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling chooseRobberPirate() out of choice phase");
+			return;
+		}
+
+		Hexagon robbing = board.getCurRobberHex();
+		if (robbing == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling rob() without robber location set");
+			return;
+		}
+
+		Hexagon pirating = board.getCurPirateHex();
+		if (pirating == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling chooseRobberPirate() without pirate location set");
+			return;
+		}
+
+		if (select == 0) {// Chose Robber
+			board.nextPhase(0);
+		}
+		else { // Chose Pirate
+			board.nextPhase(1);
+		}
+		showState(false);
+	}
+
+	private void rob() {
+		if (!board.isRobberPhase()) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling rob() out of robber phase");
+			return;
+		}
+
+		Hexagon targetHex = board.getCurRobberHex();
+		if (targetHex == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling rob() without robber location set");
+			showState(false);
+			return;
+		}
+
+		steal(targetHex);
+	}
+
+	private void pirate() {
+		if (!board.isPiratePhase()) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling pirate() out of pirate phase");
+			return;
+		}
+
+		Hexagon targetHex = board.getCurPirateHex();
+		if (targetHex == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling pirate() without pirate location set");
+			showState(false);
+			return;
+		}
+
+		steal(targetHex);
+	}
+
+	private void steal(Hexagon target) {
 
 		Player current = board.getCurrentPlayer();
 
@@ -978,13 +1121,13 @@ public class ActiveGameFragment extends Fragment {
 		for (int i = 0; i < board.getNumPlayers(); i++) {
 			player = board.getPlayerById(i);
 
-			// don't steal from self or players without a settlement/city
-			if (player == current || !robbing.adjacentToPlayer(player))
+			// don't rob from self or players without a settlement/city
+			if (player == current || !target.adjacentToPlayer(player))
 			{
 				continue;
 			}
 
-			// add to list of players to steal from
+			// add to list of players to rob from
 			int count = player.getResourceCount();
 			list[index++] = getString(R.string.game_steal_from_str) + " "
 					+ player.getName() + " (" + count + " "
@@ -992,14 +1135,14 @@ public class ActiveGameFragment extends Fragment {
 		}
 
 		if (index == 0) {
-			// nobody to steal from
+			// nobody to rob from
 			toast(getString(R.string.game_steal_fail_str));
 
 			board.nextPhase();
 			showState(false);
 			return;
 		} else if (index == 1) {
-			// automatically steal if only one player is listed
+			// automatically rob if only one player is listed
 			steal(0);
 			return;
 		}
@@ -1024,31 +1167,32 @@ public class ActiveGameFragment extends Fragment {
 		AlertDialog stealDialog = builder.create();
 		stealDialog.setCancelable(false);
 		stealDialog.show();
+
 	}
 
-	private void steal(int select) {
-		if (!board.isRobberPhase())
-		{
-			return;
-		}
-
+	private void steal(int victim) {
 		Player current = board.getCurrentPlayer();
-
-		Hexagon robbing = board.getCurRobberHex();
-		if (robbing == null)
-		{
+		Hexagon target = null;
+		if(board.isRobberPhase()) {
+			target = board.getCurRobberHex();
+		}
+		else if (board.isPiratePhase()) {
+			target = board.getCurPirateHex();
+		}
+		else {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling steal() out of pirate or robber phase");
 			return;
 		}
-
 		int index = 0;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
 			Player player = board.getPlayerById(i);
-			if (player == current || !robbing.adjacentToPlayer(player))
+			if (player == current || !target.adjacentToPlayer(player))
 			{
 				continue;
 			}
 
-			if (index == select) {
+			if (index == victim) {
 				Resource.ResourceType resourceType = board.getCurrentPlayer().steal(player);
 
 				if (resourceType != null)
@@ -1071,6 +1215,7 @@ public class ActiveGameFragment extends Fragment {
 
 			index++;
 		}
+
 	}
 
 	private void cantBuild(Action action) {

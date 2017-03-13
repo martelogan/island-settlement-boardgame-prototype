@@ -17,7 +17,7 @@ public class Hexagon {
 	private int[] vertexIds = {-1, -1, -1, -1, -1, -1};
 	private int[] edgeIds = {-1, -1, -1, -1, -1, -1};
 	private AxialHexLocation coord;
-	private boolean hasRobber = false;
+	private boolean hasRobber = false, hasPirate = false;
 	private int id;
 	private transient Board board;
 
@@ -360,8 +360,24 @@ public class Hexagon {
 	 * @return true if the hexagon now has the robber
 	 */
 	public boolean setRobber() {
-		this.hasRobber = true;
-		return true;
+		if (this.terrainType != TerrainType.SEA) {
+			this.hasRobber = true;
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Set the pirate on this hexagon
+	 *
+	 * @return true if the hexagon now has the pirate
+	 */
+	public boolean setPirate() {
+		if (this.terrainType == TerrainType.SEA) {
+			this.hasPirate = true;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -379,12 +395,35 @@ public class Hexagon {
 	}
 
 	/**
+	 * Remove the pirate from this hexagon
+	 *
+	 * @return true iff pirate was indeed removed
+	 */
+	public boolean removePirate() {
+		if (this.hasPirate) {
+			this.hasPirate = false;
+			return true;
+		}
+		// pirate is not on this hex
+		return false;
+	}
+
+	/**
 	 * Check if the hexagon has the robber
 	 *
 	 * @return true iff the hexagon has the robber
 	 */
 	public boolean hasRobber() {
 		return (this.hasRobber);
+	}
+
+	/**
+	 * Check if the hexagon has the pirate
+	 *
+	 * @return true iff the hexagon has the pirate
+	 */
+	public boolean hasPirate() {
+		return (this.hasPirate);
 	}
 
 	/**

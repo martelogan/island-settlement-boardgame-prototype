@@ -26,7 +26,7 @@ public class BoardUtils
      */
     public static Hexagon[] initRandomHexes(Board board) {
         int hexCount, curTerrainTypeCount, typeIndex;
-        boolean isRobberSet = false;
+        boolean isRobberSet = false, isPirateSet = false;
         hexCount = board.getBoardGeometry().getHexCount();
         Hexagon[] hexagons = new Hexagon[hexCount];
         Hexagon.TerrainType[] terrainTypes = Hexagon.TerrainType.values();
@@ -47,6 +47,13 @@ public class BoardUtils
                             if(!isRobberSet) {
                                 board.setCurRobberHex(hexagons[index]);
                                 isRobberSet = true;
+                            }
+                        }
+                        if (terrainType == Hexagon.TerrainType.SEA) {
+                            hexagons[index].placeNumberToken(7);
+                            if(!isPirateSet) {
+                                board.setCurPirateHex(hexagons[index]);
+                                isPirateSet = true;
                             }
                         }
 
