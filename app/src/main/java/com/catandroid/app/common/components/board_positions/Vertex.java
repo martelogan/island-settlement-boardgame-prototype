@@ -12,7 +12,7 @@ public class Vertex {
 	public static final int WALL = 3;
 
 	private int id;
-	private int building;
+	private int curUnitType;
 
 	private int owner;
 
@@ -31,7 +31,7 @@ public class Vertex {
 	public Vertex(Board board, int id) {
 		this.id = id;
 		owner = -1;
-		building = NONE;
+		curUnitType = NONE;
 
 		edgeIds = new int[3];
 		edgeIds[0] = edgeIds[1] = edgeIds[2] = -1;
@@ -169,7 +169,7 @@ public class Vertex {
 	 * @return true if there is a settlement or city for any player
 	 */
 	public boolean hasBuilding() {
-		return (building != NONE);
+		return (curUnitType != NONE);
 	}
 
 	/**
@@ -189,8 +189,8 @@ public class Vertex {
 	 * @return the type of building at the vertex (equal to the number of
 	 *         points)
 	 */
-	public int getBuilding() {
-		return building;
+	public int getCurUnitType() {
+		return curUnitType;
 	}
 
 	/**
@@ -203,16 +203,62 @@ public class Vertex {
 	}
 
 	/**
-	 * Check for adjacent roads
+	 * Check for adjacent edgeUnit
+	 *
+	 * @param player
+	 *            the player to check for
+	 * @return true if one of the adjacent edges has an edgeUnit of player
+	 */
+	public boolean connectedToEdgeUnitOwnedBy(Player player) {
+		Edge curEdge = null;
+		for (int i = 0; i < 3; i++) {
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge.getOwnerPlayer() == player)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check for adjacent road
 	 * 
 	 * @param player
 	 *            the player to check for
-	 * @return true if one of the adjacent edgeIds has a road for player
+	 * @return true if one of the adjacent edges has a road of player
 	 */
-	public boolean hasRoad(Player player) {
+	public boolean connectedToRoadOwnedBy(Player player) {
+		Edge curEdge = null;
 		for (int i = 0; i < 3; i++) {
-			if (edgeIds[i] != -1 && board.getEdgeById(edgeIds[i]).getOwnerPlayer() == player)
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge.getOwnerPlayer() == player
+					&& curEdge.getCurUnitType() == Edge.ROAD)
+			{
 				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check for adjacent ship
+	 *
+	 * @param player
+	 *            the player to check for
+	 * @return true if one of the adjacent edges has a ship of player
+	 */
+	public boolean connectedToShipOwnedBy(Player player) {
+		Edge curEdge = null;
+		for (int i = 0; i < 3; i++) {
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge.getOwnerPlayer() == player
+					&& curEdge.getCurUnitType() == Edge.SHIP)
+			{
+				return true;
+			}
 		}
 
 		return false;
@@ -223,9 +269,9 @@ public class Vertex {
 		int numToGive = 0;
 
 		//determine how many resources to distribute
-		if(building == 1){
+		if(curUnitType == 1){
 			numToGive = 1;
-		} else if(building == 2 || building == 3){
+		} else if(curUnitType == 2 || curUnitType == 3){
 			numToGive = 2;
 		}
 
@@ -303,7 +349,7 @@ public class Vertex {
 		}
 
 		// check if owner has road to vertex
-		if (!this.hasRoad(player)) {
+		if (!this.connectedToEdgeUnitOwnedBy(player)) {
 			return false;
 		}
 
@@ -313,11 +359,11 @@ public class Vertex {
 		}
 		// can build city
 		else if(board.getPlayerById(owner) != null && type == CITY){
-			return board.getPlayerById(owner) == player && type == CITY && building == SETTLEMENT;
+			return board.getPlayerById(owner) == player && type == CITY && curUnitType == SETTLEMENT;
 		}
 		//can build a wall
 		else if(board.getPlayerById(owner) != null && type == WALL){
-			return board.getPlayerById(owner) == player && type == WALL && building == CITY;
+			return board.getPlayerById(owner) == player && type == WALL && curUnitType == CITY;
 		}
 		else{
 			return false;
@@ -349,16 +395,16 @@ public class Vertex {
 			return false;
 		}
 
-		switch (building) {
+		switch (curUnitType) {
 			case NONE:
 				owner = player.getPlayerNumber();
-				building = board.isSetupPhase2() ? CITY : SETTLEMENT;
+				curUnitType = board.isSetupPhase2() ? CITY : SETTLEMENT;
 				break;
 			case SETTLEMENT:
-				building = CITY;
+				curUnitType = CITY;
 				break;
 			case CITY:
-				building = WALL;
+				curUnitType = WALL;
 				break;
 			case WALL:
 				return false;

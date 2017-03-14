@@ -59,7 +59,7 @@ public class Board {
 
 
 	public enum Phase {
-		SETUP_SETTLEMENT, SETUP_FIRST_R, SETUP_CITY, SETUP_SECOND_R,
+		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
 		PRODUCTION, BUILD, PROGRESS_CARD_1, PROGRESS_CARD_2, CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, DONE,
 		TRADE_PROPOSED, TRADE_RESPONDED
 	}
@@ -358,14 +358,14 @@ public class Board {
 				case SETUP_CITY:
 					current.setupCity(vertices);
 					break;
-				case SETUP_FIRST_R:
-				case SETUP_SECOND_R:
+				case SETUP_EDGE_UNIT_1:
+				case SETUP_EDGE_UNIT_2:
 					current.setupRoad(edges);
 					break;
 
 				case PRODUCTION:
 					current.productionPhase();
-					players[turn].roll();
+					players[turn].rollDice();
 					break;
 
 				case BUILD:
@@ -402,9 +402,9 @@ public class Board {
 
 		switch (phase) {
 			case SETUP_SETTLEMENT:
-				phase = Phase.SETUP_FIRST_R;
+				phase = Phase.SETUP_EDGE_UNIT_1;
 				break;
-			case SETUP_FIRST_R:
+			case SETUP_EDGE_UNIT_1:
 				if (turn < numPlayers-1) {
 					turn++;
 					turnChanged = true;
@@ -417,9 +417,9 @@ public class Board {
 				}
 				break;
 			case SETUP_CITY:
-				phase = Phase.SETUP_SECOND_R;
+				phase = Phase.SETUP_EDGE_UNIT_2;
 				break;
-			case SETUP_SECOND_R:
+			case SETUP_EDGE_UNIT_2:
 				if (turn > 0) {
 					turn--;
 					turnChanged = true;
@@ -556,8 +556,8 @@ public class Board {
 	 * @return true if the game is in setup phase
 	 */
 	public boolean isSetupPhase() {
-		return (phase == Phase.SETUP_SETTLEMENT || phase == Phase.SETUP_FIRST_R
-				|| phase == Phase.SETUP_CITY || phase == Phase.SETUP_SECOND_R);
+		return (phase == Phase.SETUP_SETTLEMENT || phase == Phase.SETUP_EDGE_UNIT_1
+				|| phase == Phase.SETUP_CITY || phase == Phase.SETUP_EDGE_UNIT_2);
 	}
 
 	public boolean isSetupSettlement() {
@@ -568,12 +568,12 @@ public class Board {
 		return (phase == Phase.SETUP_CITY);
 	}
 
-	public boolean isSetupRoad() {
-		return (phase == Phase.SETUP_FIRST_R || phase == Phase.SETUP_SECOND_R);
+	public boolean isSetupRoadOrShip() {
+		return (phase == Phase.SETUP_EDGE_UNIT_1 || phase == Phase.SETUP_EDGE_UNIT_2);
 	}
 
 	public boolean isSetupPhase2() {
-		return (phase == Phase.SETUP_CITY || phase == Phase.SETUP_SECOND_R);
+		return (phase == Phase.SETUP_CITY || phase == Phase.SETUP_EDGE_UNIT_2);
 	}
 
 	public boolean isChooseRobberPiratePhase() {
@@ -900,7 +900,7 @@ public class Board {
 
 		// find longest road
 		for (int i = 0; i < edges.length; i++) {
-			if (edges[i].hasRoad()) {
+			if (edges[i].hasEdgeUnit()) {
 				int length = edges[i].getRoadLength(++roadCountId);
 
 				Player owner = edges[i].getOwnerPlayer();
@@ -995,11 +995,11 @@ public class Board {
 		switch (phase) {
 			case SETUP_SETTLEMENT:
 				return R.string.phase_first_settlement;
-			case SETUP_FIRST_R:
+			case SETUP_EDGE_UNIT_1:
 				return R.string.phase_first_road;
 			case SETUP_CITY:
 				return R.string.phase_first_city;
-			case SETUP_SECOND_R:
+			case SETUP_EDGE_UNIT_2:
 				return R.string.phase_second_road;
 			case PRODUCTION:
 				return R.string.phase_your_turn;

@@ -22,31 +22,28 @@ public class Player {
 
 	public static final int MAX_SETTLEMENTS = 5;
 	public static final int MAX_CITIES = 4;
+	public static final int MAX_CITY_WALLS = 3;
 	public static final int MAX_ROADS = 15;
-	public static final int MAX_WALLS = 3;
+	public static final int MAX_SHIPS = 15;
 
 	public static final int[] ROAD_COST = { 1, 0, 0, 1, 0, 0 };
 	public static final int[] SETTLEMENT_COST = { 1, 1, 1, 1, 0, 0 };
 	public static final int[] CITY_COST = { 0, 0, 2, 0, 3, 0 };
-	public static final int[] CARD_COST = { 0, 1, 1, 0, 1, 0 };
 
 	private String googlePlayParticipantId;
 	private int playerNumber;
 	private Color color;
-	private String name;
-	protected int settlements;
-	protected int cities;
-	protected int walls;
-	private int knightsCount, privateVictoryPointsCount, tradeValue, roadLength;
+	private String playerName;
+	protected int numOwnedSettlements, numOwnedCities, numOwnedCityWalls, knightsCount;
+	protected Vector<Integer> settlementIds, reachingVertexIds;
+	protected Vector<Edge> roads, ships;
+	private int playerType, privateVictoryPointsCount,
+			tradeValue, roadLength, lastVertexPieceId;
 	private int[] countPerResource, countPerProgressCard;
 	private boolean[] harbors;
 	private Vector<ProgressCardType> newCards;
-	private boolean usedCard;
-	private int type, lastVertexPieceId;
+	private boolean usedCardThisTurn;
 	private String actionLog;
-
-	protected Vector<Integer> settlementIds, reachingIds;
-	protected Vector<Edge> roads;
 
 	protected transient Board board;
 
@@ -63,35 +60,36 @@ public class Player {
 	 *
 	 * @param board
 	 *            board costs_reference
-	 * @param name
+	 * @param playerName
 	 *            player name
-	 * @param type
+	 * @param playerType
 	 *            PLAYER_HUMAN, PLAYER_BOT, or PLAYER_ONLINE
 	 */
-	public Player(Board board, int playerNumber, String googlePlayParticipantId, Color color, String name, int type) {
+	public Player(Board board, int playerNumber, String googlePlayParticipantId, Color color, String playerName, int playerType) {
 		this.board = board;
 		this.googlePlayParticipantId = googlePlayParticipantId;
 		this.color = color;
-		this.name = name;
-		this.type = type;
+		this.playerName = playerName;
+		this.playerType = playerType;
 		this.playerNumber = playerNumber;
 
-		settlements = 0;
-		cities = 0;
-		walls = 0;
+		numOwnedSettlements = 0;
+		numOwnedCities = 0;
+		numOwnedCityWalls = 0;
 		knightsCount = 0;
 		roadLength = 0;
 		privateVictoryPointsCount = 0;
 		tradeValue = 4;
-		usedCard = false;
+		usedCardThisTurn = false;
 		actionLog = "";
 		lastVertexPieceId = -1;
 
 		newCards = new Vector<ProgressCardType>();
 
 		settlementIds = new Vector<Integer>();
-		reachingIds = new Vector<Integer>();
+		reachingVertexIds = new Vector<Integer>();
 		roads = new Vector<Edge>();
+		ships = new Vector<Edge>();
 
 		// initialise number of each kind of progress card
 		//TODO: track player's hand
@@ -119,15 +117,6 @@ public class Player {
 	}
 
 	/**
-	 * Roll the dice
-	 *
-	 * @return the result of the executeDiceRoll
-	 */
-	public int roll() {
-		return roll((int) (Math.random() * 6) + 1, (int) (Math.random() * 6) + 1 , (int) (Math.random() * 6) + 1);
-	}
-
-	/**
 	 * Set the board
 	 *
 	 * @param board
@@ -138,25 +127,35 @@ public class Player {
 	}
 
 	/**
+	 * Roll the dice
+	 *
+	 * @return the result of dice roll
+	 */
+	public int rollDice() {
+		return rollDice((int) (Math.random() * 6) + 1,
+				(int) (Math.random() * 6) + 1 , (int) (Math.random() * 6) + 1);
+	}
+
+	/**
 	 * Roll the dice with a predefined result
 	 *
-	 * @param roll1
-	 *            the desired executeDiceRoll
-	 * @param roll2
-	 *@param event  @return the result of the executeDiceRoll
+	 * @param redDie
+	 * @param yellowDie
+	 * @param eventDie
+	 * @return the result of the dice roll
 	 */
-	public int roll(int roll1, int roll2, int event) {
+	public int rollDice(int redDie, int yellowDie, int eventDie) {
 		String eventText = "";
-		if(event < 4){
+		if(eventDie < 4){
 			eventText = "barbarian";
 		} else{
-			eventText = EVENT_ROLL_STRINGS[event];
+			eventText = EVENT_ROLL_STRINGS[eventDie];
 		}
-		appendAction(R.string.player_roll, Integer.toString(roll1));
+		appendAction(R.string.player_roll, Integer.toString(redDie));
 		appendAction("Rolled" + eventText);
-		board.executeDiceRoll(roll1, roll2, event);
+		board.executeDiceRoll(redDie, yellowDie, eventDie);
 
-		return roll1 + roll2;
+		return redDie + yellowDie;
 	}
 
 	/**
@@ -168,7 +167,7 @@ public class Player {
 	}
 
 	/**
-	 * Function called at the end of the build phase
+	 * Function called at the end of the trun (after build phase finishes)
 	 */
 	public void endTurn() {
 		//TODO: track player's hand
@@ -179,32 +178,33 @@ public class Player {
 //		}
 //
 //		newCards.clear();
-//		usedCard = false;
+//		usedCardThisTurn = false;
 
 		appendAction(R.string.player_ended_turn);
 	}
 
 	/**
-	 * Attempt to build a road on edge. Returns true on success
-	 *
-	 * @param edge
-	 *            edge to build on
-	 * @return
-	 */
-	public boolean build(Edge edge) {
-		if (edge == null || !canBuild(edge))
+	* Attempt to build a road on an edge. Returns true on success
+	*
+	* @param edge
+	*            road destination
+	* @return
+	*/
+	public boolean buildRoad(Edge edge) {
+		if (edge == null || !canBuildRoad(edge))
 		{
 			return false;
 		}
 
 		// check resources
-		boolean free = board.isSetupPhase() || board.isProgressPhase();
+		//TODO: progress card effect?
+		boolean free = board.isSetupPhase();
 		if (!free && !affordRoad())
 		{
 			return false;
 		}
 
-		if (!edge.build(this))
+		if (!edge.buildRoad(this))
 		{
 			return false;
 		}
@@ -227,29 +227,92 @@ public class Player {
 		roads.add(edge);
 
 		int vertexId = edge.getV0Clockwise().getId();
-		if (!reachingIds.contains(vertexId))
+		if (!reachingVertexIds.contains(vertexId))
 		{
-			reachingIds.add(vertexId);
+			reachingVertexIds.add(vertexId);
 		}
 
 		vertexId = edge.getV1Clockwise().getId();
-		if (!reachingIds.contains(vertexId))
+		if (!reachingVertexIds.contains(vertexId))
 		{
-			reachingIds.add(vertexId);
+			reachingVertexIds.add(vertexId);
 		}
 
 		return true;
 	}
 
 	/**
+	 * Attempt to build a ship on edge. Returns true on success
+	 *
+	 * @param edge
+	 *            ship destination
+	 * @return
+	 */
+	public boolean buildShip(Edge edge) {
+		if (edge == null || !canBuildShip(edge))
+		{
+			return false;
+		}
+
+		// check resources
+		//TODO: progress card effect?
+		boolean free = board.isSetupPhase();
+		if (!free && !affordShip())
+		{
+			return false;
+		}
+
+		if (!edge.buildShip(this))
+		{
+			return false;
+		}
+
+		if (!free) {
+			useResources(Resource.ResourceType.LUMBER, 1);
+			useResources(Resource.ResourceType.WOOL, 1);
+		}
+
+		//TODO: longest trade route (extend with road)
+//		appendAction(R.string.player_ship);
+//
+//		boolean hadLongest = (board.getLongestRoadOwner() == this);
+//		board.checkLongestRoad();
+//
+//		if (!hadLongest && board.getLongestRoadOwner() == this)
+//		{
+//			appendAction(R.string.player_longest_road);
+//		}
+
+		ships.add(edge);
+
+		int vertexId = edge.getV0Clockwise().getId();
+		if (!reachingVertexIds.contains(vertexId))
+		{
+			reachingVertexIds.add(vertexId);
+		}
+
+		vertexId = edge.getV1Clockwise().getId();
+		if (!reachingVertexIds.contains(vertexId))
+		{
+			reachingVertexIds.add(vertexId);
+		}
+
+		return true;
+	}
+
+
+
+	/**
 	 * Attempt to build an establishment on vertex. Returns true on success
 	 *
 	 * @param vertex
 	 *            vertex to build on
+	 * @param unitType
+	 * 			  type of vertexUnit to build
 	 * @return
 	 */
-	public boolean build(Vertex vertex, int type) {
-		if (vertex == null || !canBuild(vertex, type))
+	public boolean buildVertexUnit(Vertex vertex, int unitType) {
+		if (vertex == null || !canBuildVertexUnit(vertex, unitType))
 		{
 			return false;
 		}
@@ -257,17 +320,17 @@ public class Player {
 		boolean setup = board.isSetupPhase();
 
 		// check resources based on type we want to build
-		if (type == Vertex.SETTLEMENT) {
+		if (unitType == Vertex.SETTLEMENT) {
 			if (!setup && !affordSettlement())
 			{
 				return false;
 			}
-		} else if (type == Vertex.CITY) {
+		} else if (unitType == Vertex.CITY) {
 			if (!setup && !affordCity())
 			{
 				return false;
 			}
-		} else if (type == Vertex.WALL) {
+		} else if (unitType == Vertex.WALL) {
 			if (!setup && !affordWall())
 			{
 				return false;
@@ -277,41 +340,41 @@ public class Player {
 			return false;
 		}
 
-		if (!vertex.build(this, type, setup))
+		if (!vertex.build(this, unitType, setup))
 		{
 			return false;
 		}
 
 		// deduct resources based on type
-		if (vertex.getBuilding() == Vertex.SETTLEMENT) {
+		if (vertex.getCurUnitType() == Vertex.SETTLEMENT) {
 			if (!setup) {
 				useResources(Resource.ResourceType.BRICK, 1);
 				useResources(Resource.ResourceType.LUMBER, 1);
 				useResources(Resource.ResourceType.GRAIN, 1);
 				useResources(Resource.ResourceType.WOOL, 1);
 			}
-			settlements += 1;
+			numOwnedSettlements += 1;
 			settlementIds.add(vertex.getId());
 			board.checkLongestRoad();
-		} else if(vertex.getBuilding() == Vertex.CITY){ // city
+		} else if(vertex.getCurUnitType() == Vertex.CITY){ // city
 			if (!setup) {
 				useResources(Resource.ResourceType.GRAIN, 2);
 				useResources(Resource.ResourceType.ORE, 3);
-				settlements -= 1;
+				numOwnedSettlements -= 1;
 			}
 			else {
 				settlementIds.add(vertex.getId());
 			}
-			cities += 1;
-		} else if(vertex.getBuilding() == Vertex.WALL){
+			numOwnedCities += 1;
+		} else if(vertex.getCurUnitType() == Vertex.WALL){
 			if (!setup) {
 				useResources(Resource.ResourceType.BRICK, 2);
 			}
-			walls += 1;
+			numOwnedCityWalls += 1;
 		}
 
 		//append to the turn log
-		switch(type) {
+		switch(unitType) {
 			case Vertex.SETTLEMENT:
 				appendAction(R.string.player_settlement);
 				break;
@@ -361,14 +424,17 @@ public class Player {
 	}
 
 	/**
-	 * Can you build on this edge? Maybe
+	 * Can you build an edge unit on this edge?
 	 *
 	 * @param edge
 	 * @return
 	 */
-	public boolean canBuild(Edge edge) {
-		if (edge == null || roads.size() >= MAX_ROADS)
+	public boolean canBuildEdgeUnit(Edge edge) {
+		if (edge == null ||
+				(roads.size() + ships.size() >= MAX_ROADS + MAX_SHIPS))
+		{
 			return false;
+		}
 
 		if (board.isSetupPhase()) {
 			Vertex v;
@@ -381,42 +447,100 @@ public class Player {
 			// check if the edge is adjacent to the last settlement built
 			if (v != edge.getV0Clockwise() &&
 					v != edge.getV1Clockwise())
+			{
 				return false;
+			}
 		}
 
-		return edge.canBuild(this);
+		return edge.canBuildEdgeUnit(this);
+	}
+
+	/**
+	 * Can you build a road on this edge?
+	 *
+	 * @param edge
+	 * @return
+	 */
+	public boolean canBuildRoad(Edge edge) {
+		if (edge == null || roads.size() >= MAX_ROADS)
+		{
+			return false;
+		}
+
+		if (board.isSetupPhase()) {
+			Vertex v;
+			if (lastVertexPieceId == -1) {
+				v = null;
+			}
+			else {
+				v = board.getVertexById(lastVertexPieceId);
+			}
+			// check if the edge is adjacent to the last settlement built
+			if (v != edge.getV0Clockwise() &&
+					v != edge.getV1Clockwise())
+			{
+				return false;
+			}
+		}
+
+		return edge.canBuildRoad(this);
+	}
+
+	/**
+	 * Can you build a ship on this edge?
+	 *
+	 * @param edge
+	 * @return
+	 */
+	public boolean canBuildShip(Edge edge) {
+		if (edge == null || ships.size() >= MAX_SHIPS)
+		{
+			return false;
+		}
+
+		if (board.isSetupPhase()) {
+			Vertex v;
+			if (lastVertexPieceId == -1) {
+				v = null;
+			}
+			else {
+				v = board.getVertexById(lastVertexPieceId);
+			}
+			// check if the edge is adjacent to the last settlement built
+			if (v != edge.getV0Clockwise() &&
+					v != edge.getV1Clockwise())
+			{
+				return false;
+			}
+		}
+
+		return edge.canBuildShip(this);
 	}
 
 	/**
 	 * Can you build on this vertex?
 	 *
 	 * @param vertex
+	 *            vertex to build on
+	 * @param unitType
+	 * 			  type of vertexUnit to build
 	 * @return
 	 */
-	public boolean canBuild(Vertex vertex, int type) {
-		if (type == Vertex.SETTLEMENT && settlements >= MAX_SETTLEMENTS)
+	public boolean canBuildVertexUnit(Vertex vertex, int unitType) {
+		if (unitType == Vertex.SETTLEMENT && numOwnedSettlements >= MAX_SETTLEMENTS)
 		{
 			return false;
 		}
-		else if (type == Vertex.CITY && cities >= MAX_CITIES)
+		else if (unitType == Vertex.CITY && numOwnedCities >= MAX_CITIES)
 		{
 			return false;
 		}
-		else if (type == Vertex.WALL && walls >= MAX_WALLS)
+		else if (unitType == Vertex.WALL && numOwnedCityWalls >= MAX_CITY_WALLS)
 		{
 			return false;
 		}
 
-		return vertex.canBuild(this, type, board.isSetupPhase());
-	}
-
-	/**
-	 * Returns the player's participant id
-	 *
-	 * @return googlePlayParticipantId
-	 */
-	public String getGooglePlayParticipantId() {
-		return googlePlayParticipantId;
+		return vertex.canBuild(this, unitType, board.isSetupPhase());
 	}
 
 	/**
@@ -577,7 +701,7 @@ public class Player {
 	public Resource.ResourceType steal(Player from, Resource.ResourceType resourceType) {
 		if (resourceType != null) {
 			addResources(resourceType, 1);
-			appendAction(R.string.player_stole_from, from.getName());
+			appendAction(R.string.player_stole_from, from.getPlayerName());
 		}
 
 		return resourceType;
@@ -639,7 +763,7 @@ public class Player {
 			}
 		}
 
-		appendAction(R.string.player_traded_with, player.getName());
+		appendAction(R.string.player_traded_with, player.getPlayerName());
 		appendAction(R.string.player_received_resource, Resource
 				.toRString(resourceType));
 	}
@@ -663,14 +787,46 @@ public class Player {
 	}
 
 	/**
+	 * Returns the player's participant id
+	 *
+	 * @return googlePlayParticipantId
+	 */
+	public String getGooglePlayParticipantId() {
+		return googlePlayParticipantId;
+	}
+
+	/**
+	 * Determine if the player can build an edge unit
+	 *
+	 * @return true if the player can build a unit
+	 */
+	public boolean affordEdgeUnit() {
+		return (FREE_BUILD || (roads.size() + ships.size())< MAX_ROADS + MAX_SHIPS
+				&& getResources(Resource.ResourceType.LUMBER) >= 1
+				&& (getResources(Resource.ResourceType.BRICK) >= 1
+				|| getResources(Resource.ResourceType.WOOL) >= 1));
+	}
+
+	/**
 	 * Determine if the player can build a road
 	 *
 	 * @return true if the player can build a road
 	 */
 	public boolean affordRoad() {
 		return (FREE_BUILD || roads.size() < MAX_ROADS
-				&& getResources(Resource.ResourceType.BRICK) >= 1
-				&& getResources(Resource.ResourceType.LUMBER) >= 1);
+				&& getResources(Resource.ResourceType.LUMBER) >= 1
+				&& getResources(Resource.ResourceType.BRICK) >= 1);
+	}
+
+	/**
+	 * Determine if the player can build a ship
+	 *
+	 * @return true if the player can build a ship
+	 */
+	public boolean affordShip() {
+		return (FREE_BUILD || ships.size() < MAX_SHIPS
+				&& getResources(Resource.ResourceType.LUMBER) >= 1
+				&& getResources(Resource.ResourceType.WOOL) >= 1);
 	}
 
 	/**
@@ -679,7 +835,7 @@ public class Player {
 	 * @return true if the player can build a settlement
 	 */
 	public boolean affordSettlement() {
-		return (FREE_BUILD || settlements < MAX_SETTLEMENTS
+		return (FREE_BUILD || numOwnedSettlements < MAX_SETTLEMENTS
 				&& getResources(Resource.ResourceType.BRICK) >= 1
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& getResources(Resource.ResourceType.GRAIN) >= 1
@@ -692,7 +848,7 @@ public class Player {
 	 * @return true if the player can build a city
 	 */
 	public boolean affordCity() {
-		return (FREE_BUILD || cities < MAX_CITIES
+		return (FREE_BUILD || numOwnedCities < MAX_CITIES
 				&& getResources(Resource.ResourceType.GRAIN) >= 2 && getResources(Resource.ResourceType.ORE) >= 3);
 	}
 
@@ -702,7 +858,7 @@ public class Player {
 	 * @return true if the player can build a wall
 	 */
 	public boolean affordWall() {
-		return (FREE_BUILD || walls < MAX_WALLS
+		return (FREE_BUILD || numOwnedCityWalls < MAX_CITY_WALLS
 				&& getResources(Resource.ResourceType.BRICK) >= 2);
 	}
 
@@ -712,7 +868,7 @@ public class Player {
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getPublicVictoryPoints() {
-		int points = settlements + 2 * cities;
+		int points = numOwnedSettlements + 2 * numOwnedCities;
 
 		//TODO: add other public vps
 		if (board.hasLongestRoad(this))
@@ -777,7 +933,7 @@ public class Player {
 //	 * @return true if the player is allowed to use a card
 //	 */
 //	public boolean canUseCard() {
-//		if (usedCard)
+//		if (usedCardThisTurn)
 //			return false;
 //
 //		for (int i = 0; i < cards.length; i++) {
@@ -799,7 +955,7 @@ public class Player {
 //	public void addCard(ProgressCardType card, boolean canUse) {
 //		if (canUse) {
 //			cards[card.ordinal()] += 1;
-//			usedCard = false;
+//			usedCardThisTurn = false;
 //		} else {
 //			newCards.add(card);
 //		}
@@ -824,7 +980,7 @@ public class Player {
 //	 * @return true if the card was used successfully
 //	 */
 //	public boolean useCard(ProgressCardType card) {
-//		if (!hasCard(card) || usedCard)
+//		if (!hasCard(card) || usedCardThisTurn)
 //			return false;
 //
 //		switch (card) {
@@ -838,7 +994,7 @@ public class Player {
 //		}
 //
 //		cards[card.ordinal()] -= 1;
-//		usedCard = true;
+//		usedCardThisTurn = true;
 //
 //		appendAction(R.string.player_played_card, ProgressCard
 //				.getCardStringResource(card));
@@ -1116,7 +1272,7 @@ public class Player {
 	 * @return true if the player is human controlled on this device
 	 */
 	public boolean isHuman() {
-		return (type == PLAYER_HUMAN);
+		return (playerType == PLAYER_HUMAN);
 	}
 
 	/**
@@ -1125,7 +1281,7 @@ public class Player {
 	 * @return true if the player is a bot
 	 */
 	public boolean isBot() {
-		return (type == PLAYER_BOT);
+		return (playerType == PLAYER_BOT);
 	}
 
 	/**
@@ -1134,17 +1290,17 @@ public class Player {
 	 * @return
 	 */
 	public boolean isOnline() {
-		return (type == PLAYER_ONLINE);
+		return (playerType == PLAYER_ONLINE);
 	}
 
 	/**
 	 * Set the player's name
 	 *
-	 * @param name
+	 * @param playerName
 	 *            the player's new name
 	 */
-	public void setName(String name) {
-		this.name = name;
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
 	}
 
 	/**
@@ -1152,8 +1308,8 @@ public class Player {
 	 *
 	 * @return the player's name
 	 */
-	public String getName() {
-		return name;
+	public String getPlayerName() {
+		return playerName;
 	}
 
 	/**
@@ -1190,7 +1346,7 @@ public class Player {
 	 * @return the number of settlements owned by the player
 	 */
 	public int getNumSettlements() {
-		return settlements;
+		return numOwnedSettlements;
 	}
 
 	/**
@@ -1212,7 +1368,7 @@ public class Player {
 	 * @return the number of cities the player has
 	 */
 	public int getNumCities() {
-		return cities;
+		return numOwnedCities;
 	}
 
 	/**
@@ -1221,7 +1377,7 @@ public class Player {
 	 * @return the number of walls the player has
 	 */
 	public int getNumWalls() {
-		return walls;
+		return numOwnedCityWalls;
 	}
 
 	/**
@@ -1231,6 +1387,15 @@ public class Player {
 	 */
 	public int getNumRoads() {
 		return roads.size();
+	}
+
+	/**
+	 * Get the number of ships built
+	 *
+	 * @return the number of ships the player built
+	 */
+	public int getNumShips() {
+		return ships.size();
 	}
 
 	public int distributeProgressCard(int diceRollNumber2, int event){

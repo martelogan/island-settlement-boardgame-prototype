@@ -413,7 +413,10 @@ public class BoardGeometry {
         Vertex myClockwiseV0, myClockwiseV1;
         int neighborEdgeDirect = AxialHexLocation.complementAxialDirection(myV0index);
         Edge neighborEdge = myNeighbor.getEdge(neighborEdgeDirect);
-        neighborEdge.setNeighborHex(myNeighbor);
+
+		// first, let's set ourselves as the newfound neighbor for this edge
+        neighborEdge.setNeighborHex(myHex);
+
         Hexagon.TerrainType myHexTerrain = myHex.getTerrainType(),
                 neighborHexTerrain = myNeighbor.getTerrainType();
         boolean myLandNeighborsSea, mySeaNeighborsLand, isPortEdge;

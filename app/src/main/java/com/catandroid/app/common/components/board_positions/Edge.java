@@ -5,9 +5,14 @@ import com.catandroid.app.common.players.Player;
 
 public class Edge {
 
+	public static final int NONE = 0;
+	public static final int ROAD = 1;
+	public static final int SHIP = 2;
+
 	private int id;
+	private int curUnitType;
 	private int[] vertexIds;
-	private int ownerPlayerNumber;
+	private int ownerPlayerNumber = -1;
 	private int lastRoadCountId;
 	private int originHexId;
     private int originHexDirect;
@@ -23,6 +28,7 @@ public class Edge {
 	 */
 	public Edge(Board board, int id) {
 		this.id = id;
+		curUnitType = NONE;
 		vertexIds = new int[2];
 		vertexIds[0] = vertexIds[1] = -1;
 		ownerPlayerNumber = -1;
@@ -56,25 +62,10 @@ public class Edge {
 	}
 
 	/**
-	 * Set vertices for the edge by id
-	 * 
-	 * @param v0_Id
-	 *            the id of the first vertex
-	 * @param v1_Id
-	 *            the id of the second vertex
-	 */
-	public void setVerticesById(int v0_Id, int v1_Id) {
-		vertexIds[0] = v0_Id;
-		vertexIds[1] = v1_Id;
-		board.getVertexById(v0_Id).addEdge(this);
-		board.getVertexById(v1_Id).addEdge(this);
-	}
-
-	/**
-	 * Check if the edge has a given vertexIds
+	 * Check if the edge has a given vertexI
 	 * 
 	 * @param v
-	 *            the vertexIds to check for
+	 *            the vertex to check for
 	 * @return true if v is associated with the edge
 	 */
 	public boolean hasVertex(int v) {
@@ -100,31 +91,20 @@ public class Edge {
 	}
 
 	/**
-	 * Get the other vertex associated with edge
-	 *
-	 * @param vertexId
-	 *            id of the vertex
-	 * @return the other associated vertexIds or null if not completed
+	 * Check if an edgeUnit has been build at the edge
+	 * 
+	 * @return true if an edgeUnit was built
 	 */
-	public Vertex getAdjacentById(int vertexId) {
-		if (vertexIds[0] == vertexId) {
-			return board.getVertexById(vertexIds[1]);
-		}
-		else if (vertexIds[1] == vertexId) {
-			return board.getVertexById(vertexIds[0]);
-		}
-
-		return null;
+	public boolean hasEdgeUnit() {
+		return (ownerPlayerNumber != -1);
 	}
 
 	/**
-	 * Check if a road has been build at the edge
-	 * 
-	 * @return true if a road was built
+	 * Get current unit type on this ede
+	 *
+	 * @return int rep. of current unit type on this edge
 	 */
-	public boolean hasRoad() {
-		return (ownerPlayerNumber != -1);
-	}
+	public int getCurUnitType() {return  curUnitType;}
 
 	/**
 	 * Get the owner of this edge
@@ -136,22 +116,76 @@ public class Edge {
 	}
 
 	/**
-	 * Determine if player can build a road on edge
+	 * Determine if the player can build an edgeUnit on this edge
 	 * 
 	 * @param player
 	 *            the player to check for
-	 * @return true if player can build a road on edge
+	 * @return 	true iff the player has an edgeUnit to an unoccupied vertex
+	 *			or the player has an adjacent vertexUnit
 	 */
-	public boolean canBuild(Player player) {
+	public boolean canBuildEdgeUnit(Player player) {
 		if (ownerPlayerNumber != -1) {
 			return false;
 		}
 
-		// check for roads to each vertexIds
+		// check for edgeUnits between each vertex
 		for (int i = 0; i < 2; i++) {
-			// the player has a road to an unoccupied vertexIds,
+			// the player has an edgeUnit to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).hasRoad(player) && !board.getVertexById(vertexIds[i]).hasBuilding()
+			if (board.getVertexById(vertexIds[i]).connectedToEdgeUnitOwnedBy(player) &&
+					!board.getVertexById(vertexIds[i]).hasBuilding()
+					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determine if the player can build a road on this edge
+	 *
+	 * @param player
+	 *            the player to check for
+	 * @return true if the player can build a road on this edge
+	 */
+	public boolean canBuildRoad(Player player) {
+		if (ownerPlayerNumber != -1) {
+			return false;
+		}
+
+		// check for edgeUnits between each vertex
+		for (int i = 0; i < 2; i++) {
+			// the player has a road to an unoccupied vertex
+			// or the player has an adjacent building
+			if (board.getVertexById(vertexIds[i]).connectedToRoadOwnedBy(player) &&
+					!board.getVertexById(vertexIds[i]).hasBuilding()
+					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determine if the player can build a ship on this edge
+	 *
+	 * @param player
+	 *            the player to check for
+	 * @return true if the player can build a ship on this edge
+	 */
+	public boolean canBuildShip(Player player) {
+		if (ownerPlayerNumber != -1 || !isAvailableForShip()) {
+			return false;
+		}
+
+		// check for ships between each vertex
+		for (int i = 0; i < 2; i++) {
+			// the player has a ship to an unoccupied vertex
+			// or the player has an adjacent building
+			if (board.getVertexById(vertexIds[i]).connectedToShipOwnedBy(player) &&
+					!board.getVertexById(vertexIds[i]).hasBuilding()
 					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
 				return true;
 			}
@@ -173,17 +207,6 @@ public class Edge {
 	}
 
 	/**
-	 * Set the port hexagon
-	 * @param hexId
-	 *            the id of hex to set
-	 * @return
-	 */
-	public void setPortHexById(int hexId) {
-		this.portHexId = hexId;
-		this.portHexDirect = board.getHexagonById(hexId).findEdgeDirect(this);
-	}
-
-	/**
 	 * Remove port hexagon (candidacy lost)
 	 * @return
 	 */
@@ -200,6 +223,18 @@ public class Edge {
 
 	public boolean isBorderingSea() {
 		return isBorderingSea;
+	}
+
+	public boolean isAvailableForShip() {
+		if (ownerPlayerNumber != -1) {
+			return false;
+		}
+		Hexagon.TerrainType originTerrain = originHexId != -1 ?
+                board.getHexagonById(originHexId).getTerrainType() : null;
+        Hexagon.TerrainType neighborTerrain = neighborHexId != -1 ?
+                board.getHexagonById(neighborHexId).getTerrainType() : null;
+		return originTerrain == Hexagon.TerrainType.SEA
+				|| neighborTerrain	== Hexagon.TerrainType.SEA;
 	}
 
 	/**
@@ -246,17 +281,6 @@ public class Edge {
     public void setOriginHex(Hexagon h) {
         this.originHexId = h.getId();
     }
-
-    /**
-     * Set the origin hexagon
-     * @param hexId
-     *            the id of hex to set
-     * @return
-     */
-    public void setOriginHexById(int hexId) {
-        this.originHexId = hexId;
-    }
-
 
     /**
      * Get the origin hexagon
@@ -321,32 +345,12 @@ public class Edge {
 	}
 
 	/**
-	 * Set the neighbor hexagon by id
-	 * @param hexId
-	 *            the id of hex to set
-	 * @return
-	 */
-	public void setNeighborHexById(int hexId) {
-		this.neighborHexId = hexId;
-	}
-
-
-	/**
 	 * Get the neighbor hexagon
 	 *
 	 * @return the neighbor hexagon
 	 */
 	public Hexagon getNeighborHex() {
 		return board.getHexagonById(neighborHexId);
-	}
-
-	/**
-	 * Get the neighbor hexagon id
-	 *
-	 * @return the neighbor hexagon id
-	 */
-	public int getNeighborHexId() {
-		return neighborHexId;
 	}
 
 	/**
@@ -368,23 +372,12 @@ public class Edge {
 		this.myHarborId = harbor.getId();
 	}
 
-	/**
-	 * Set a harbor on this edge by id
-	 * @param harborId
-	 *            the id of harbor to set
-	 * @return
-	 */
-	public void setMyHarborById(int harborId) {
-		board.getHarborById(harborId).setEdgeById(this.getId());
-		this.myHarborId = harborId;
-	}
-
     /**
      * Get the harbor on this edge
      * @return the harbor
      */
-    public int getMyHarborId() {
-        return this.myHarborId;
+    public Harbor getMyHarbor() {
+        return board.getHarborById(this.myHarborId);
     }
 
 	/**
@@ -419,15 +412,33 @@ public class Edge {
 	 * Build a road on edge
 	 * 
 	 * @param player
-	 *            the road ownerPlayerNumber
-	 * @return true if player can build a road on edge
+	 *            the edgeUnit ownerPlayerNumber
+	 * @return true if player can build an edgeUnit on edge
 	 */
-	public boolean build(Player player) {
-		if (!canBuild(player)) {
+	public boolean buildRoad(Player player) {
+		if (!canBuildRoad(player)) {
 			return false;
 		}
 
 		ownerPlayerNumber = player.getPlayerNumber();
+		curUnitType = ROAD;
+		return true;
+	}
+
+	/**
+	 * Build an edgeUnit on edge
+	 *
+	 * @param player
+	 *            the edgeUnit ownerPlayerNumber
+	 * @return true if player can build an edgeUnit on edge
+	 */
+	public boolean buildShip(Player player) {
+		if (!canBuildShip(player)) {
+			return false;
+		}
+
+		ownerPlayerNumber = player.getPlayerNumber();
+		curUnitType = SHIP;
 		return true;
 	}
 

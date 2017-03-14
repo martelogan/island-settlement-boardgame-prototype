@@ -24,7 +24,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             done = true;
 
             boolean hasLongest = board.getLongestRoadOwner() == this;
-            boolean settlementPriority = settlements + cities < 4;
+            boolean settlementPriority = numOwnedSettlements + numOwnedCities < 4;
             boolean roadContender = board.getLongestRoad() - getRoadLength() <= 3;
 
             boolean canSettle = false;
@@ -55,7 +55,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             // try to build a settlement
             if (canSettle && affordSettlement()) {
                 Vertex pick = pickSettlement();
-                if (pick != null && build(pick, Vertex.SETTLEMENT))
+                if (pick != null && buildVertexUnit(pick, Vertex.SETTLEMENT))
                 {
                     done = false;
                 }
@@ -65,8 +65,8 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             if (canCity && affordCity()) {
                 for (int i = 0; i < settlementIds.size(); i++) {
                     Vertex settlement = board.getVertexById(settlementIds.get(i));
-                    if (settlement.getBuilding() == Vertex.SETTLEMENT
-                            && build(settlement, Vertex.CITY))
+                    if (settlement.getCurUnitType() == Vertex.SETTLEMENT
+                            && buildVertexUnit(settlement, Vertex.CITY))
                     {
                         done = false;
                     }
@@ -79,18 +79,18 @@ public class BalancedAI extends Player implements AutomatedPlayer {
 
                 // try to build towards somewhere nearby to settle
                 if (settlementPriority) {
-                    for (int i = 0; i < reachingIds.size(); i++) {
-                        Vertex vertex = board.getVertexById(reachingIds.get(i));
+                    for (int i = 0; i < reachingVertexIds.size(); i++) {
+                        Vertex vertex = board.getVertexById(reachingVertexIds.get(i));
                         for (int j = 0; j < 3; j++) {
                             Edge edge = vertex.getEdge(j);
-                            if (edge == null || edge.hasRoad())
+                            if (edge == null || edge.hasEdgeUnit())
                             {
                                 continue;
                             }
 
                             Vertex other = edge.getAdjacent(vertex);
                             if (!other.hasBuilding() && other.couldBuild()
-                                    && build(edge)) {
+                                    && buildRoad(edge)) {
                                 builtRoad = true;
                                 break;
                             }
@@ -104,18 +104,18 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                 }
 
                 // build off an existing road
-                if (!builtRoad && reachingIds.size() > 0) {
+                if (!builtRoad && reachingVertexIds.size() > 0) {
                     for (int i = 0; i < 3; i++) {
-                        Vertex lastRoadEnd = board.getVertexById(reachingIds.get(reachingIds.size() - 1));
+                        Vertex lastRoadEnd = board.getVertexById(reachingVertexIds.get(reachingVertexIds.size() - 1));
                         Edge edge = lastRoadEnd.getEdge(i);
-                        if (edge != null && build(edge))
+                        if (edge != null && buildRoad(edge))
                         {
                             builtRoad = true;
                         }
                     }
                 }
 
-                // try and addCubic to another recent road
+                // try and addto another recent road
                 if (!builtRoad) {
                     for (int i = roads.size() - 1; i >= 0; i--) {
                         Edge road = roads.get(i);
@@ -126,7 +126,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                             Edge edge1 = v1.getEdge(j);
                             Edge edge2 = v2.getEdge(j);
 
-                            if (build(edge1) || build(edge2))
+                            if (buildRoad(edge1) || buildRoad(edge2))
                             {
                                 done = false;
                             }
@@ -193,7 +193,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                     (int) (Math.random() * settlementIds.size())));
             int pick = (int) (Math.random() * 3);
             Edge edge = vertex.getEdge(pick);
-            if (edge != null && build(edge))
+            if (edge != null && buildRoad(edge))
             {
                 return edge.getId();
             }
@@ -207,11 +207,11 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             return -1;
 
         Vertex from = road.getV0Clockwise();
-        if (from.getOwner() == this || from.hasRoad(this) && build(road))
+        if (from.getOwner() == this || from.connectedToRoadOwnedBy(this) && buildRoad(road))
             return road.getId();
 
         from = road.getV1Clockwise();
-        if (from.getOwner() == this || from.hasRoad(this) && build(road))
+        if (from.getOwner() == this || from.connectedToRoadOwnedBy(this) && buildRoad(road))
             return road.getId();
 
         return -1;
@@ -229,14 +229,14 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             }
 
             int score = vertexValue(vertices[i], preference);
-            if (score > highest && canBuild(vertices[i], Vertex.SETTLEMENT)) {
+            if (score > highest && canBuildVertexUnit(vertices[i], Vertex.SETTLEMENT)) {
                 highest = score;
                 index = i;
             }
         }
 
-        build(vertices[index], Vertex.SETTLEMENT);
-        reachingIds.add(index);
+        buildVertexUnit(vertices[index], Vertex.SETTLEMENT);
+        reachingVertexIds.add(index);
         return index;
     }
 
@@ -252,14 +252,14 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             }
 
             int score = vertexValue(vertices[i], preference);
-            if (score > highest && canBuild(vertices[i], Vertex.CITY)) {
+            if (score > highest && canBuildVertexUnit(vertices[i], Vertex.CITY)) {
                 highest = score;
                 index = i;
             }
         }
 
-        build(vertices[index], Vertex.CITY);
-        reachingIds.add(index);
+        buildVertexUnit(vertices[index], Vertex.CITY);
+        reachingVertexIds.add(index);
         return index;
     }
 
@@ -339,11 +339,11 @@ public class BalancedAI extends Player implements AutomatedPlayer {
 
     protected Edge pickRoad() {
         // build off an existing road
-        if (reachingIds.size() > 0) {
-            Vertex lastRoadEnd = board.getVertexById(reachingIds.get(reachingIds.size() - 1));
+        if (reachingVertexIds.size() > 0) {
+            Vertex lastRoadEnd = board.getVertexById(reachingVertexIds.get(reachingVertexIds.size() - 1));
             for (int i = 0; i < 3; i++) {
                 Edge edge = lastRoadEnd.getEdge(i);
-                if (edge != null && canBuild(edge))
+                if (edge != null && canBuildRoad(edge))
                     return edge;
             }
         }
@@ -358,13 +358,13 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                 // null checking is in canBuild
 
                 Edge edge1 = v1.getEdge(j);
-                if (canBuild(edge1))
+                if (canBuildRoad(edge1))
                 {
                     return edge1;
                 }
 
                 Edge edge2 = v2.getEdge(j);
-                if (canBuild(edge2))
+                if (canBuildRoad(edge2))
                 {
                     return edge2;
                 }
@@ -553,8 +553,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
         // see if we can build anything new
         if ((compareList(extra, ROAD_COST) >= 0)
                 || (compareList(extra, SETTLEMENT_COST) >= 0)
-                || (compareList(extra, CITY_COST) >= 0)
-                || (compareList(extra, CARD_COST) >= 0))
+                || (compareList(extra, CITY_COST) >= 0))
         {
             return offer;
         }

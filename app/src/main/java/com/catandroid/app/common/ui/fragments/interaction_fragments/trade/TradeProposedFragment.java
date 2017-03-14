@@ -56,7 +56,7 @@ public class TradeProposedFragment extends Fragment {
 		playerOffering = board.getPlayerById(tradeProposal.getTradeCreatorPlayerId());
 		currentPlayer = board.getPlayerFromParticipantId(activeGameFragment.myParticipantId);
 
-		Log.d(getClass().getName(), playerOffering.getName() + " (index " + index
+		Log.d(getClass().getName(), playerOffering.getPlayerName() + " (index " + index
 				+ ") considering originalOffer");
 
 		final View counterOfferView = inflater.inflate(R.layout.trade_proposed, null, false);
@@ -67,7 +67,7 @@ public class TradeProposedFragment extends Fragment {
 
 		final TextView playerOffer = (TextView) counterOfferView.findViewById(R.id.trade_player_offer);
 		playerOffer.setText(String.format(
-				getString(R.string.trade_player_offer), playerOffering.getName()));
+				getString(R.string.trade_player_offer), playerOffering.getPlayerName()));
 
 		for (int i = 0; i < RESOURCES.length; i++) {
 			TextView offer = (TextView) counterOfferView.findViewById(OFFER[i]);

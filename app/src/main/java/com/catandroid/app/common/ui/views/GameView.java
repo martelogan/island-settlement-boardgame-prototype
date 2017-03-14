@@ -276,20 +276,22 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			case NONE:
 				return false;
 
-			case ROBBER:
-			case PIRATE:
+			case MOVE_ROBBER:
+			case MOVE_PIRATE:
 				// select a hexagon
 				select = boardGeometry.getNearestHexagon(x, y);
 				break;
 
-			case SETTLEMENT:
-			case CITY:
-			case WALL:
+			case BUILD_SETTLEMENT:
+			case BUILD_CITY:
+			case BUILD_CITY_WALL:
 				// select a vertex
 				select = boardGeometry.getNearestVertex(x, y);
 				break;
 
-			case ROAD:
+			case BUILD_EDGE_UNIT:
+			case BUILD_ROAD:
+			case BUILD_SHIP:
 				// select an edge
 				select = boardGeometry.getNearestEdge(x, y);
 				break;

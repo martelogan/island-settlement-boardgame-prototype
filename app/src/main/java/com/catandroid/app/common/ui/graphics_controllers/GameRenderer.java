@@ -18,7 +18,8 @@ import com.catandroid.app.common.ui.resources.Square;
 public class GameRenderer implements Renderer {
 
 	public enum Action {
-		NONE, SETTLEMENT, CITY, ROAD, CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, WALL
+		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_EDGE_UNIT, BUILD_ROAD,
+		BUILD_SHIP,	CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
 
 	private TextureManager texture;
@@ -156,7 +157,7 @@ public class GameRenderer implements Renderer {
 				texture.drawHexTerrain(board.getHexagonById(i), gl, boardGeometry);
 			}
 
-			// draw the executeDiceRoll numbers, robber, and highlighting
+			// draw the number tokens, robber, pirate, and active hexes
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
 				texture.drawRobber(board.getHexagonById(i), gl, boardGeometry);
@@ -178,25 +179,41 @@ public class GameRenderer implements Renderer {
 
 			// draw edges
 			for (int i = 0; i < EDGE_COUNT; i++) {
-                Edge edge = board.getEdgeById(i);
-                boolean build = action == Action.ROAD && player != null
-                        && player.canBuild(edge);
-
-                if (build || edge.getOwnerPlayer() != null)
-				{
-					texture.drawEdge(edge, build, gl, boardGeometry);
+				Edge edge = board.getEdgeById(i);
+				boolean buildable = false;
+				if(player == null) {
+					buildable = false;
 				}
-            }
+				else if(action == Action.BUILD_EDGE_UNIT) {
+					buildable = action == Action.BUILD_EDGE_UNIT
+							&& player.canBuildEdgeUnit(edge);
+				}
+				else if(action == Action.BUILD_ROAD) {
+					buildable = action == Action.BUILD_ROAD
+							&& player.canBuildRoad(edge);
+				}
+				else if(action == Action.BUILD_SHIP) {
+					buildable = action == Action.BUILD_SHIP
+							&& player.canBuildShip(edge);
+				}
+				if (edge.getOwnerPlayer() != null) {
+					Log.d("t", "here");
+				}
+				if (buildable || edge.getOwnerPlayer() != null)
+				{
+					texture.drawEdge(edge, buildable, gl, boardGeometry);
+				}
+			}
 
 			// draw vertices
 			for (int i = 0; i < VERTEX_COUNT; i++) {
                 Vertex vertex = board.getVertexById(i);
-                boolean settlement = player != null && action == Action.SETTLEMENT
-                        && player.canBuild(vertex, Vertex.SETTLEMENT);
-                boolean city = player != null && action == Action.CITY
-                        && player.canBuild(vertex, Vertex.CITY);
-				boolean wall = player != null && action == Action.WALL
-						&& player.canBuild(vertex, Vertex.WALL);
+                boolean settlement = player != null && action == Action.BUILD_SETTLEMENT
+                        && player.canBuildVertexUnit(vertex, Vertex.SETTLEMENT);
+                boolean city = player != null && action == Action.BUILD_CITY
+                        && player.canBuildVertexUnit(vertex, Vertex.CITY);
+				boolean wall = player != null && action == Action.BUILD_CITY_WALL
+						&& player.canBuildVertexUnit(vertex, Vertex.WALL);
 
                 texture.drawVertex(vertex, settlement, city, wall, gl, boardGeometry);
             }

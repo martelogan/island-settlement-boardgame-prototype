@@ -101,6 +101,7 @@
     <!-- Player turn log messages -->
     <string name="player_roll">Rolled %s</string>
     <string name="player_road">Built a road</string>
+	<string name="player_ship">Built a ship</string>
     <string name="player_settlement">Built a settlement</string>
     <string name="player_city">Built a city</string>
 	<string name="player_wall">Built a wall</string>
@@ -128,6 +129,7 @@
 	<string name="status_settlements">Settlements (1 point)</string>
 	<string name="status_cities">Cities (2 points)</string>
 	<string name="status_roads">Total roads</string>
+	<string name="status_ships">Total ships</string>
 	<string name="status_best_road_length">Your longest road length</string>
 	<string name="status_has_longest_road">Longest road</string>
 	<string name="status_progress_cards">Progress cards</string>
@@ -157,10 +159,10 @@
 	<string name="button_cancel">Cancel</string>
 
     <!-- Prompt strings -->
-    <string name="phase_first_settlement">Place first settlement</string>
-    <string name="phase_first_road">Place first road</string>
-    <string name="phase_first_city">Place first city</string>
-    <string name="phase_second_road">Place 2nd road</string>
+    <string name="phase_first_settlement">Place a settlement</string>
+    <string name="phase_first_road">Place a road/ship</string>
+    <string name="phase_first_city">Place a city</string>
+    <string name="phase_second_road">Place 2nd road/ship</string>
     <string name="phase_your_turn">Your turn</string>
     <string name="phase_build">Build</string>
 	<string name="phase_make_choice">Time to choose!</string>
@@ -193,7 +195,11 @@
 	<string name="game_from_str">from</string>
 	<string name="game_player_couldnt_steal">Couldn\'t steal from</string>
 	<string name="game_did_nothing_str">Did nothing</string>
+	<string name="game_choose_road">Build road</string>
+	<string name="game_choose_ship">Build ship</string>
+	<string name="game_road_ship_title">Build a road or ship?</string>
 	<string name="game_build_road">Build a road</string>
+	<string name="game_build_ship">Build a ship</string>
 	<string name="game_build_settlement">Build a settlement</string>
 	<string name="game_build_city">Build a city</string>
 	<string name="game_build_wall">Build a wall</string>
@@ -207,11 +213,15 @@
     <string name="game_build_settlements_max">Reached the maximum number of settlements.</string>
 	<string name="game_build_city_max">Reached the maximum number of cities.</string>
 	<string name="game_build_wall_max">Reached the maximum number of walls.</string>
+	<string name="game_build_edge_unit_max">Reached the maximum number of edge units.</string>
 	<string name="game_build_road_max">Reached the maximum number of roads.</string>
+	<string name="game_build_ship_max">Reached the maximum number of ships.</string>
 	<string name="game_cant_build_settlement">No available settlement locations.</string>
 	<string name="game_cant_build_city">No available city locations.</string>
 	<string name="game_cant_build_wall">No available wall locations.</string>
+	<string name="game_cant_build_edge_unit">No available road/ship locations</string>
 	<string name="game_cant_build_road">No available road locations</string>
+	<string name="game_cant_build_ship">No available ship locations</string>
 	<string name="game_won">won</string>
 
 

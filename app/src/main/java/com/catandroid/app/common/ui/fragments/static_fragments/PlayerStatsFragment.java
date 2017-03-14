@@ -98,6 +98,8 @@ public class PlayerStatsFragment extends Fragment {
 					+ player.getNumCities() + " / " + Player.MAX_CITIES + "\n";
 			message += getString(R.string.status_roads) + ": "
 					+ player.getNumRoads() + " / " + Player.MAX_ROADS + "\n";
+			message += getString(R.string.status_ships) + ": "
+					+ player.getNumShips() + " / " + Player.MAX_SHIPS+ "\n";
 
 			message += "\n";
 
@@ -108,7 +110,6 @@ public class PlayerStatsFragment extends Fragment {
 						+ "2 " + getString(R.string.status_points_str) + "\n";
 
 			message += "\n";
-
 
 			//TODO: show progress cards?
 //			if (showAll) {
@@ -213,7 +214,7 @@ public class PlayerStatsFragment extends Fragment {
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			return board.getPlayerById(position).getName();
+			return board.getPlayerById(position).getPlayerName();
 		}
 	}
 }

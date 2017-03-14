@@ -73,11 +73,11 @@ public class DiscardResourcesFragment extends Fragment {
 			return null;
 		}
 
-		getActivity().setTitle(String.format(getString(R.string.discard_reason), board.getCurrentPlayer().getName()));
+		getActivity().setTitle(String.format(getString(R.string.discard_reason), board.getCurrentPlayer().getPlayerName()));
 
 		String instructionText = getString(R.string.discard_instruction);
 		TextView instruction = (TextView) discardView.findViewById(R.id.discard_instruction);
-		instruction.setText(player.getName() + ": "
+		instruction.setText(player.getPlayerName() + ": "
 				+ String.format(instructionText, quantity));
 
 		for (int i = 0; i < RESOURCES.length; i++) {

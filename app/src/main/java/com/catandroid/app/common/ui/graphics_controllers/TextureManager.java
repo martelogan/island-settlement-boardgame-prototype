@@ -109,7 +109,7 @@ public class TextureManager {
                 res);
 
         //load large wall textures
-        //@TODO ADD RESOURCES FOR WALL
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALL, Player.Color.SELECT.ordinal(), R.drawable.city_grey,
                 res);
         add(TextureType.WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
@@ -161,6 +161,9 @@ public class TextureManager {
 				res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_ROAD.ordinal(), R.drawable.button_build_road,
 				res);
+        //TODO: fix button image
+        add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SHIP.ordinal(), R.drawable.button_player_stats,
+                res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SETTLEMENT.ordinal(),
 				R.drawable.button_build_settlement, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY.ordinal(), R.drawable.button_build_city,
@@ -282,15 +285,15 @@ public class TextureManager {
                            boolean buildWall, GL10 gl, BoardGeometry boardGeometry) {
 
         TextureType textureType = TextureType.NONE;
-        if (vertex.getBuilding() == Vertex.CITY || buildCity || buildWall)
+        if (vertex.getCurUnitType() == Vertex.CITY || buildCity || buildWall)
         {
             textureType = TextureType.CITY;
         }
-        else if (vertex.getBuilding() == Vertex.SETTLEMENT || buildsettlement)
+        else if (vertex.getCurUnitType() == Vertex.SETTLEMENT || buildsettlement)
         {
             textureType = TextureType.SETTLEMENT;
         }
-        else if (vertex.getBuilding() == Vertex.WALL)
+        else if (vertex.getCurUnitType() == Vertex.WALL)
         {
             textureType = TextureType.WALL;
         }
