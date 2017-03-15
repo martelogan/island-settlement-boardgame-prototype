@@ -300,15 +300,34 @@ public class Hexagon {
 	}
 
 	/**
-	 * Check if a given player owns land adjacent to the hexagon
+	 * Check if a given player owns a vertex unit adjacent to the hexagon
 	 *
 	 * @param player
 	 *            the player to check
-	 * @return true iff player has a settlement adjacent to the hexagon
+	 * @return true iff player has a vertex unit adjacent to the hexagon
 	 */
-	public boolean adjacentToPlayer(Player player) {
+	public boolean adjacentToVertexUnitOwnedBy(Player player) {
 		for (int i = 0; i < 6; i++) {
 			if (board.getVertexById(vertexIds[i]).getOwnerPlayer() == player) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if a given player owns a ship adjacent to the hexagon
+	 *
+	 * @param player
+	 *            the player to check
+	 * @return true iff player has a ship adjacent to the hexagon
+	 */
+	public boolean adjacentToShipOwnedBy(Player player) {
+		Edge curEdge = null;
+		for (int i = 0; i < 6; i++) {
+			curEdge = board.getEdgeById(edgeIds[i]);
+			if (curEdge.getCurUnitType() == Edge.SHIP
+					&& curEdge.getOwnerPlayer() == player) {
 				return true;
 			}
 		}
@@ -374,6 +393,15 @@ public class Hexagon {
 	 */
 	public boolean setPirate() {
 		if (this.terrainType == TerrainType.SEA) {
+			Edge curEdge;
+			for (int i = 0; i < 6; i++) {
+				curEdge = board.getEdgeById(edgeIds[i]);
+				// TODO: technically a dirty write
+				if(curEdge != null && !curEdge.setBlockedByPirate()) {
+					// something went wrong
+					return false;
+				}
+			}
 			this.hasPirate = true;
 			return true;
 		}
@@ -401,6 +429,15 @@ public class Hexagon {
 	 */
 	public boolean removePirate() {
 		if (this.hasPirate) {
+			Edge curEdge;
+			for (int i = 0; i < 6; i++) {
+				curEdge = board.getEdgeById(edgeIds[i]);
+				// TODO: technically a dirty write
+				if(curEdge != null && !curEdge.removePirate()) {
+					// something went wrong
+					return false;
+				}
+			}
 			this.hasPirate = false;
 			return true;
 		}

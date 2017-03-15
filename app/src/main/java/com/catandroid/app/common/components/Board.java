@@ -167,16 +167,19 @@ public class Board {
 		hexIdMap = new HashMap<Long, Integer>();
 
 		// randomly initialize hexagons
-		hexagons = BoardUtils.initRandomHexes(this);
-		harbors = BoardUtils.initRandomHarbors(this, boardGeometry.getHarborCount());
 		vertices = BoardUtils.generateVertices(this, boardGeometry.getVertexCount());
 		edges = BoardUtils.generateEdges(this, boardGeometry.getEdgeCount());
+		hexagons = BoardUtils.initRandomHexes(this);
+		harbors = BoardUtils.initRandomHarbors(this, boardGeometry.getHarborCount());
 
 		// populate board map with starting parameters
 		boardGeometry.populateBoard(hexagons, vertices, edges, harbors, hexIdMap);
 
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
+
+		// reset the pirate hex now that the edges are ready
+		getCurPirateHex().setPirate();
 	}
 
 	/**
@@ -323,7 +326,7 @@ public class Board {
 		int count = 0;
 		for (int i = 0; i < numPlayers; i++)
 		{
-			if (players[i] != players[curPlayerNumber] && hex.adjacentToPlayer(players[i]))
+			if (players[i] != players[curPlayerNumber] && hex.adjacentToVertexUnitOwnedBy(players[i]))
 			{
 				count++;
 			}
@@ -333,7 +336,7 @@ public class Board {
 			Player[] stealList = new Player[count];
 			for (int i = 0; i < numPlayers; i++)
 				if (players[i] != players[curPlayerNumber]
-						&& hex.adjacentToPlayer(players[i]))
+						&& hex.adjacentToVertexUnitOwnedBy(players[i]))
 				{
 					stealList[--count] = players[i];
 				}

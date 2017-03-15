@@ -22,6 +22,7 @@ public class Edge {
 	private int portHexDirect = -1;
     private int myHarborId = -1;
 	private boolean isBorderingSea = false;
+	private boolean isBlockedByPirate = false;
 	private transient Board board;
 
 	/**
@@ -129,6 +130,12 @@ public class Edge {
 			return false;
 		}
 
+
+		if(isAvailableForShip() && !isBorderingSea() & isBlockedByPirate()) {
+			// ship only edge is blocked by pirate
+			return false;
+		}
+
 		// check for edgeUnits between each vertex
 		for (int i = 0; i < 2; i++) {
 			// the player has an edgeUnit to an unoccupied vertex
@@ -151,7 +158,7 @@ public class Edge {
 	 * @return true if the player can build a road on this edge
 	 */
 	public boolean canBuildRoad(Player player) {
-		if (ownerPlayerNumber != -1) {
+		if (ownerPlayerNumber != -1 || this.isAvailableForShip() && !this.isBorderingSea()) {
 			return false;
 		}
 
@@ -177,7 +184,7 @@ public class Edge {
 	 * @return true if the player can build a ship on this edge
 	 */
 	public boolean canBuildShip(Player player) {
-		if (ownerPlayerNumber != -1 || !isAvailableForShip()) {
+		if (ownerPlayerNumber != -1 || isBlockedByPirate || !isAvailableForShip()) {
 			return false;
 		}
 
@@ -226,6 +233,40 @@ public class Edge {
 		return isBorderingSea;
 	}
 
+
+	/**
+	 * Check if the edge is currently blocked by the pirate
+	 *
+	 * @return true iff the edge is currently blocked by the pirate
+	 */
+	public boolean isBlockedByPirate() {
+		return (this.isBlockedByPirate);
+	}
+
+	/**
+	 * Set the pirate to block this edge
+	 *
+	 * @return true if the edge is now blocked by the pirate
+	 */
+	public boolean setBlockedByPirate() {
+		this.isBlockedByPirate = true;
+		return true;
+	}
+
+	/**
+	 * Remove the pirate from blocking this edge
+	 *
+	 * @return true iff pirate was indeed removed
+	 */
+	public boolean removePirate() {
+		if (this.isBlockedByPirate) {
+			this.isBlockedByPirate = false;
+			return true;
+		}
+		// pirate is not blocking this edge
+		return false;
+	}
+
 	public boolean isAvailableForShip() {
 		if (ownerPlayerNumber != -1) {
 			return false;
@@ -239,7 +280,7 @@ public class Edge {
 	}
 
 	public boolean canRemoveShipFromHere(Player player) {
-		if (curUnitType != SHIP || player.getPlayerNumber() != ownerPlayerNumber
+		if (curUnitType != SHIP || isBlockedByPirate || player.getPlayerNumber() != ownerPlayerNumber
 				|| board.getGameTurnNumber() == turnShipWasBuilt) {
 			return false;
 		}

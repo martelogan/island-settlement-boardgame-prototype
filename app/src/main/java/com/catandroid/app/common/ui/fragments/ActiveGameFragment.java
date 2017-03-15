@@ -379,7 +379,7 @@ public class ActiveGameFragment extends Fragment {
 
 	private void select(Action action, Edge edge) {
         if (action == Action.BUILD_EDGE_UNIT ) {
-            if (edge.isAvailableForShip()) {
+            if (edge.isAvailableForShip() && !edge.isBlockedByPirate()) {
 				if(edge.isBorderingSea()) { // choice of road or ship
 					CharSequence[] items = new CharSequence[2];
 					items[0] = getString(R.string.game_choose_road);
@@ -1277,19 +1277,30 @@ public class ActiveGameFragment extends Fragment {
 
 	private void steal(Hexagon target) {
 
+		boolean stealFromShipsOnly = board.isPiratePhase();
 		Player current = board.getCurrentPlayer();
 
 		CharSequence[] list = new CharSequence[3];
 		int index = 0;
 
 		Player player = null;
+		boolean somethingToStealFrom = false;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
+			somethingToStealFrom = false;
 			player = board.getPlayerById(i);
 
-			// don't rob from self or players without a settlement/city
-			if (player == current || !target.adjacentToPlayer(player))
+			if (player == current)
 			{
+				// don't steal from ourselves...
 				continue;
+			}
+			else {
+				somethingToStealFrom = stealFromShipsOnly ? target.adjacentToShipOwnedBy(player)
+						: target.adjacentToVertexUnitOwnedBy(player);
+				if(!somethingToStealFrom) {
+					// nothing to steal from
+					continue;
+				}
 			}
 
 			// add to list of players to rob from
@@ -1337,6 +1348,7 @@ public class ActiveGameFragment extends Fragment {
 
 	private void steal(int victim) {
 		Player current = board.getCurrentPlayer();
+		boolean stealFromShipsOnly = board.isPiratePhase();
 		Hexagon target = null;
 		if(board.isRobberPhase()) {
 			target = board.getCurRobberHex();
@@ -1352,9 +1364,19 @@ public class ActiveGameFragment extends Fragment {
 		int index = 0;
 		for (int i = 0; i < board.getNumPlayers(); i++) {
 			Player player = board.getPlayerById(i);
-			if (player == current || !target.adjacentToPlayer(player))
+			boolean somethingToStealFrom = false;
+			if (player == current)
 			{
+				// don't steal from ourselves...
 				continue;
+			}
+			else {
+				somethingToStealFrom = stealFromShipsOnly ? target.adjacentToShipOwnedBy(player)
+						: target.adjacentToVertexUnitOwnedBy(player);
+				if(!somethingToStealFrom) {
+					// nothing to steal from
+					continue;
+				}
 			}
 
 			if (index == victim) {
