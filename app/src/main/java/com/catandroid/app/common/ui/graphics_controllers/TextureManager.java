@@ -167,13 +167,10 @@ public class TextureManager {
 				res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_ROAD.ordinal(), R.drawable.button_build_road,
 				res);
-
-        //TODO: fix below 2 button images
-        add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SHIP.ordinal(), R.drawable.button_player_stats,
+        add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SHIP.ordinal(), R.drawable.button_build_ship,
                 res);
-        add(TextureType.BUTTON, UIButton.ButtonType.MOVE_SHIP.ordinal(), R.drawable.button_progress_cards,
+        add(TextureType.BUTTON, UIButton.ButtonType.MOVE_SHIP.ordinal(), R.drawable.button_move_ship,
                 res);
-
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SETTLEMENT.ordinal(),
 				R.drawable.button_build_settlement, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY.ordinal(), R.drawable.button_build_city,
