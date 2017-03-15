@@ -14,7 +14,7 @@ public class Vertex {
 	private int id;
 	private int curUnitType;
 
-	private int owner;
+	private int ownerPlayerNumber;
 
 	private int[] edgeIds;
 	private int[] hexagonIds;
@@ -30,7 +30,7 @@ public class Vertex {
 	 */
 	public Vertex(Board board, int id) {
 		this.id = id;
-		owner = -1;
+		ownerPlayerNumber = -1;
 		curUnitType = NONE;
 
 		edgeIds = new int[3];
@@ -64,23 +64,6 @@ public class Vertex {
 				edgeIds[i] = e.getId();
 				return;
 			} else if (edgeIds[i] == e.getId()) {
-				return;
-			}
-		}
-	}
-
-	/**
-	 * Associate an edge with vertex
-	 *
-	 * @param edgeId
-	 *            id of the edge to add (ignored if already associated)
-	 */
-	public void addEdgeById(int edgeId) {
-		for (int i = 0; i < 3; i++) {
-			if (edgeIds[i] == -1) {
-				edgeIds[i] = edgeId;
-				return;
-			} else if (edgeIds[i] == edgeId) {
 				return;
 			}
 		}
@@ -141,18 +124,6 @@ public class Vertex {
 	}
 
 	/**
-	 * Determine if an edge is connected to vertex
-	 * 
-	 * @param e
-	 *            the edge to check for
-	 * @return true if e is connected to the vertex
-	 */
-	public boolean hasEdge(Edge e) {
-		int edgeId = e.getId();
-		return (edgeIds[0] == edgeId || edgeIds[1] == edgeId || edgeIds[2] == edgeId);
-	}
-
-	/**
 	 * Get the edge at the given index of edgeIds
 	 *
 	 * @param index
@@ -180,7 +151,7 @@ public class Vertex {
 	 * @return true if player has a building on the vertexS
 	 */
 	public boolean hasBuilding(int player) {
-		return (board.getPlayerById(owner) == board.getPlayerById(player));
+		return (board.getPlayerById(ownerPlayerNumber) == board.getPlayerById(player));
 	}
 
 	/**
@@ -194,12 +165,12 @@ public class Vertex {
 	}
 
 	/**
-	 * Get the player number of the owner of a building at vertex
+	 * Get the owner of any unit at this vertex
 	 * 
 	 * @return the Player that owns it, or null
 	 */
-	public Player getOwner() {
-		return board.getPlayerById(owner);
+	public Player getOwnerPlayer() {
+		return board.getPlayerById(ownerPlayerNumber);
 	}
 
 	/**
@@ -264,6 +235,29 @@ public class Vertex {
 		return false;
 	}
 
+	/**
+	 * Check for adjacent ship
+	 *
+	 * @param player
+	 *            the player to check for
+	 * @param edgeToIgnore
+	 *            do not count this edge in the check
+	 * @return true if one of the adjacent edges has a ship of player
+	 */
+	public boolean connectedToShipOwnedBy(Player player, Edge edgeToIgnore) {
+		Edge curEdge = null;
+		for (int i = 0; i < 3; i++) {
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge != edgeToIgnore && curEdge.getOwnerPlayer() == player
+					&& curEdge.getCurUnitType() == Edge.SHIP)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public void distributeResources(Resource.ResourceType resourceType) {
 
 		int numToGive = 0;
@@ -275,7 +269,7 @@ public class Vertex {
 			numToGive = 2;
 		}
 
-		if (owner == -1)
+		if (ownerPlayerNumber == -1)
 		{
 			return;
 		}
@@ -283,9 +277,9 @@ public class Vertex {
 		if (resourceType != null) {
 			//Gold gets two times more on distribution (2 for settlement, 4 for city)
 			if(resourceType == Resource.ResourceType.GOLD){
-				board.getPlayerById(owner).addResources(resourceType, numToGive*2);
+				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive*2);
 			} else {
-				board.getPlayerById(owner).addResources(resourceType, numToGive);
+				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
 			}
 		}
 	}
@@ -345,7 +339,7 @@ public class Vertex {
 		//TODO: change this to cities & knights version
 		// only allow building settlements
 		if (setup) {
-			return (board.getPlayerById(owner) == null);
+			return (board.getPlayerById(ownerPlayerNumber) == null);
 		}
 
 		// check if owner has road to vertex
@@ -354,16 +348,16 @@ public class Vertex {
 		}
 
 		// can build settlement
-		if (board.getPlayerById(owner) == null && type == SETTLEMENT) {
+		if (board.getPlayerById(ownerPlayerNumber) == null && type == SETTLEMENT) {
 			return true;
 		}
 		// can build city
-		else if(board.getPlayerById(owner) != null && type == CITY){
-			return board.getPlayerById(owner) == player && type == CITY && curUnitType == SETTLEMENT;
+		else if(board.getPlayerById(ownerPlayerNumber) != null && type == CITY){
+			return board.getPlayerById(ownerPlayerNumber) == player && type == CITY && curUnitType == SETTLEMENT;
 		}
 		//can build a wall
-		else if(board.getPlayerById(owner) != null && type == WALL){
-			return board.getPlayerById(owner) == player && type == WALL && curUnitType == CITY;
+		else if(board.getPlayerById(ownerPlayerNumber) != null && type == WALL){
+			return board.getPlayerById(ownerPlayerNumber) == player && type == WALL && curUnitType == CITY;
 		}
 		else{
 			return false;
@@ -397,7 +391,7 @@ public class Vertex {
 
 		switch (curUnitType) {
 			case NONE:
-				owner = player.getPlayerNumber();
+				ownerPlayerNumber = player.getPlayerNumber();
 				curUnitType = board.isSetupPhase2() ? CITY : SETTLEMENT;
 				break;
 			case SETTLEMENT:
@@ -442,7 +436,7 @@ public class Vertex {
 		// calculated with whichever happens to be picked first
 
 		// another player's road breaks the road chain
-		if (board.getPlayerById(owner) != null && board.getPlayerById(owner) != player)
+		if (board.getPlayerById(ownerPlayerNumber) != null && board.getPlayerById(ownerPlayerNumber) != player)
 		{
 			return 0;
 		}

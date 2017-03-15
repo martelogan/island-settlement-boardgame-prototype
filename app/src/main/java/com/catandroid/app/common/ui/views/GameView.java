@@ -55,7 +55,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		buttons = new UIButton[ButtonType.values().length];
 		int size = (int) (0.5 * BoardGeometry.BUTTON_PNG_SCALE * getResources().getDisplayMetrics().density);
 		for (ButtonType buttonType : ButtonType.values())
+		{
 			buttons[buttonType.ordinal()] = new UIButton(buttonType, size, size);
+		}
 		
 		buttonsPlaced = false;
 	}
@@ -88,8 +90,12 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distX, float distY) {
 		// ignore scrolling started over a button
 		for (UIButton button : buttons)
+		{
 			if (button.isPressed())
+			{
 				return false;
+			}
+		}
 
 		// shift the board
 		renderer.getGeometry().translate(distX, distY);
@@ -144,7 +150,6 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		// consider buttons then a click on the board
 		if (release((int) event.getX(), (int) event.getY(), true) ||
 				click((int) event.getX(), (int) event.getY())) {
-
 			vibrator.vibrate(50);
 		} else {
 			vibrator.vibrate(20);
@@ -161,7 +166,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 	public boolean onDoubleTap(MotionEvent event) {
 		// try to ignore double taps on a button
 		if (release((int) event.getX(), (int) event.getY(), false))
+		{
 			return true;
+		}
 
 		// double top zooms to point or zooms out
 		BoardGeometry boardGeometry = renderer.getGeometry();
@@ -198,12 +205,16 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 
 	public void removeButtons() {
 		for (UIButton button : buttons)
+		{
 			button.setEnabled(false);
+		}
 	}
 
 	public void placeButtons(int width, int height) {
 		if (buttonsPlaced)
+		{
 			return;
+		}
 		
 		// first button is always in the top left corner
 		int x = 0;
@@ -211,7 +222,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 
 		for (UIButton button : buttons) {
 			if (!button.isEnabled())
+			{
 				continue;
+			}
 			
 			int endwidth = width - button.getWidth() / 2;
 			int endheight = button.getHeight() / 2;
@@ -222,10 +235,14 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 					|| buttonType == ButtonType.END_TURN) {
 				// set position to far right/bottom
 				if (width < height)
+				{
 					button.setPosition(endwidth,
 							height - button.getHeight() / 2);
+				}
 				else
+				{
 					button.setPosition(button.getWidth() / 2, endheight);
+				}
 			} else {
 				// set to next available position
 				button.setPosition(x + button.getWidth() / 2,
@@ -257,8 +274,12 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 	
 	public void drawButtons(TextureManager texture, GL10 gl) {
 		for (UIButton button : buttons) {
-			if (button.isEnabled())
-				texture.drawButton(button, gl);
+			{
+				if (button.isEnabled())
+				{
+					texture.drawButton(button, gl);
+				}
+			}
 		}
 	}
 
@@ -268,7 +289,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		GameRenderer.Action action = renderer.getAction();
 
 		if (!player.isHuman() || !board.itsMyTurn(myParticipantId))
+		{
 			return false;
+		}
 
 		int select = -1;
 
@@ -292,6 +315,8 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			case BUILD_EDGE_UNIT:
 			case BUILD_ROAD:
 			case BUILD_SHIP:
+			case MOVE_SHIP_1:
+			case MOVE_SHIP_2:
 				// select an edge
 				select = boardGeometry.getNearestEdge(x, y);
 				break;

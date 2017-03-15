@@ -308,6 +308,8 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_EDGE_UNIT:
 			case BUILD_ROAD:
 			case BUILD_SHIP:
+			case MOVE_SHIP_1:
+			case MOVE_SHIP_2:
 				select(action, board.getEdgeById(id));
 				break;
 
@@ -376,10 +378,9 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void select(Action action, Edge edge) {
-        //TODO: choose road or ship
         if (action == Action.BUILD_EDGE_UNIT ) {
             if (edge.isAvailableForShip()) {
-				if(edge.isBorderingSea()) { // choice of road or edge
+				if(edge.isBorderingSea()) { // choice of road or ship
 					CharSequence[] items = new CharSequence[2];
 					items[0] = getString(R.string.game_choose_road);
 					items[1] = getString(R.string.game_choose_ship);
@@ -435,7 +436,7 @@ public class ActiveGameFragment extends Fragment {
 //
 //					if (!canBuild) {
 //						board.nextPhase();
-//						cantBuild(Action.BUILD_ROAD);
+//						cantAct(Action.BUILD_ROAD);
 //					}
 //
 //					showState(false);
@@ -446,7 +447,6 @@ public class ActiveGameFragment extends Fragment {
 			}
 		}
 		else if (action == Action.BUILD_SHIP) {
-			//TODO: test build ship
 			if (player.buildShip(edge)) {
 				renderer.setAction(Action.NONE);
 
@@ -468,7 +468,7 @@ public class ActiveGameFragment extends Fragment {
 //
 //					if (!canBuild) {
 //						board.nextPhase();
-//						cantBuild(Action.BUILD_SHIP);
+//						cantAct(Action.BUILD_SHIP);
 //					}
 //
 //					showState(false);
@@ -478,11 +478,26 @@ public class ActiveGameFragment extends Fragment {
 				}
 			}
 		}
+		else if (action == Action.MOVE_SHIP_1) {
+			//TODO: test move ship
+			if (player.removeShipFrom(edge)) {
+				renderer.setAction(Action.MOVE_SHIP_2);
+				showState(false);
+			}
+		}
+		else if (action == Action.MOVE_SHIP_2) {
+            //TODO: test move ship
+            if (player.moveShipTo(edge)) {
+				board.nextPhase();
+                renderer.setAction(Action.NONE);
+                showState(true);
+            }
+        }
 	}
 
 
 	public boolean buttonPress(UIButton.ButtonType button) {
-		boolean canBuild = false;
+		boolean canAct = false;
 		Player player = board.getCurrentPlayer();
 		
 		switch (button) {
@@ -534,12 +549,12 @@ public class ActiveGameFragment extends Fragment {
 				for (Edge edge : board.getEdges()) {
 					if (edge.canBuildRoad(player))
 					{
-						canBuild = true;
+						canAct = true;
 					}
 				}
 
-				if (!canBuild) {
-					cantBuild(Action.BUILD_ROAD);
+				if (!canAct) {
+					cantAct(Action.BUILD_ROAD);
 					break;
 				}
 
@@ -559,12 +574,12 @@ public class ActiveGameFragment extends Fragment {
 				for (Edge edge : board.getEdges()) {
 					if (edge.canBuildShip(player))
 					{
-						canBuild = true;
+						canAct = true;
 					}
 				}
 
-				if (!canBuild) {
-					cantBuild(Action.BUILD_SHIP);
+				if (!canAct) {
+					cantAct(Action.BUILD_SHIP);
 					break;
 				}
 
@@ -581,14 +596,41 @@ public class ActiveGameFragment extends Fragment {
 
 				break;
 
+			case  MOVE_SHIP:
+				boolean hasEdgeToRemove = false, hasSomewhereToMove = false;
+				for (Edge edge : board.getEdges()) {
+					if (edge.canRemoveShipFromHere(player))
+					{
+						hasEdgeToRemove = true;
+					}
+					if (edge.canMoveShipToHere(player)) {
+						hasSomewhereToMove = true;
+					}
+					if (hasEdgeToRemove && hasSomewhereToMove) {
+						canAct = true;
+						break;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.MOVE_SHIP_1);
+					break;
+				}
+
+				renderer.setAction(Action.MOVE_SHIP_1);
+				setButtons(Action.MOVE_SHIP_1);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_move_ship));
+				break;
+
 			case BUILD_SETTLEMENT:
 				for (Vertex vertex : board.getVertices()) {
 					if (vertex.canBuild(player, Vertex.SETTLEMENT, false))
-						canBuild = true;
+						canAct = true;
 				}
 
-				if (!canBuild) {
-					cantBuild(Action.BUILD_SETTLEMENT);
+				if (!canAct) {
+					cantAct(Action.BUILD_SETTLEMENT);
 					break;
 				}
 
@@ -607,11 +649,11 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_CITY:
 				for (Vertex vertex : board.getVertices()) {
 					if (vertex.canBuild(player, Vertex.CITY, false))
-						canBuild = true;
+						canAct = true;
 				}
 
-				if (!canBuild) {
-					cantBuild(Action.BUILD_CITY);
+				if (!canAct) {
+					cantAct(Action.BUILD_CITY);
 					break;
 				}
 
@@ -634,11 +676,11 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_WALL:
 				for (Vertex vertex : board.getVertices()) {
 					if (vertex.canBuild(player, Vertex.WALL, false))
-						canBuild = true;
+						canAct = true;
 				}
 
-				if (!canBuild) {
-					cantBuild(Action.BUILD_CITY_WALL);
+				if (!canAct) {
+					cantAct(Action.BUILD_CITY_WALL);
 					break;
 				}
 
@@ -687,6 +729,12 @@ public class ActiveGameFragment extends Fragment {
 				// return false if there is nothing to cancel
 				boolean result = renderer.cancel();
 
+				if (renderer.getAction() == Action.MOVE_SHIP_2) {
+					board.cancelMovingShipPhase();
+				}
+
+				//TODO: could this be moved?
+				// sets renderer action to cancel
 				showState(false);
 				return result;
 			}
@@ -695,7 +743,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	public boolean clickResource(int index) {
-		if (!board.getCurrentPlayer().isHuman() || !board.isBuild())
+		if (!board.getCurrentPlayer().isHuman() || !board.isBuildPhase())
 			return false;
 
 
@@ -790,6 +838,9 @@ public class ActiveGameFragment extends Fragment {
 		{
 			action = Action.MOVE_PIRATE;
 		}
+		else if (board.isMovingShipPhase()) {
+			action = Action.MOVE_SHIP_2;
+		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -845,6 +896,7 @@ public class ActiveGameFragment extends Fragment {
 		}
 		return false;
 	}
+
 	private void setButtons(Action action) {
 		view.removeButtons();
 
@@ -872,7 +924,7 @@ public class ActiveGameFragment extends Fragment {
 //            {
 //                view.addButton(ButtonType.PROGRESS_CARD);
 //            }
-		} else if (board.isBuild()) {
+		} else if (board.isBuildPhase()) {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
 
@@ -890,6 +942,10 @@ public class ActiveGameFragment extends Fragment {
             if (player.affordShip())
             {
 				view.addButton(UIButton.ButtonType.BUILD_SHIP);
+			}
+
+			if(!player.movedShipThisTurn()) {
+				view.addButton(UIButton.ButtonType.MOVE_SHIP);
 			}
 
 			if (player.affordSettlement())
@@ -942,7 +998,7 @@ public class ActiveGameFragment extends Fragment {
 		int offset = board.getCurrentPlayer().getPlayerNumber() + 1;
 		for (int i = offset; i < offset + board.getNumPlayers()-1; i++) {
 			// don't include players after you on your first turn
-			if (board.getTurnNumber() == 1 && (i % board.getNumPlayers()) >= offset)
+			if (board.getGameRoundNumber() == 1 && (i % board.getNumPlayers()) >= offset)
 			{
 				continue;
 			}
@@ -1153,7 +1209,7 @@ public class ActiveGameFragment extends Fragment {
 		chooseRobberPirateDialog.show();
 	}
 
-	private void chooseRobberPirate(int select) {
+	private void chooseRobberPirate(int choice) {
 		if (!board.isChooseRobberPiratePhase()) {
 			Log.w(getActivity().getClass().getName(),
 					"shouldn't be calling chooseRobberPirate() out of choice phase");
@@ -1174,7 +1230,7 @@ public class ActiveGameFragment extends Fragment {
 			return;
 		}
 
-		if (select == 0) {// Chose Robber
+		if (choice == 0) {// Chose Robber
 			board.nextPhase(0);
 		}
 		else { // Chose Pirate
@@ -1327,7 +1383,7 @@ public class ActiveGameFragment extends Fragment {
 
 	}
 
-	private void cantBuild(Action action) {
+	private void cantAct(Action action) {
 		Player player = board.getCurrentPlayer();
 
 		String message = "";
@@ -1341,7 +1397,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_cant_build_edge_unit);
+					message = getString(R.string.game_nothing_available_edge_unit);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1359,7 +1415,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_cant_build_road);
+					message = getString(R.string.game_nothing_available_road);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1377,7 +1433,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_cant_build_ship);
+					message = getString(R.string.game_nothing_available_ship_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1388,11 +1444,18 @@ public class ActiveGameFragment extends Fragment {
 
 				break;
 
+			case MOVE_SHIP_1:
+			case MOVE_SHIP_2:
+
+				message = getString(R.string.game_nothing_available_ship_move);
+
+				break;
+
 			case BUILD_SETTLEMENT:
 				if (player.getNumSettlements() == Player.MAX_SETTLEMENTS)
 					message = getString(R.string.game_build_settlements_max);
 				else
-					message = getString(R.string.game_cant_build_settlement);
+					message = getString(R.string.game_nothing_available_settlement);
 
 				break;
 
@@ -1400,7 +1463,7 @@ public class ActiveGameFragment extends Fragment {
 				if (player.getNumCities() == Player.MAX_CITIES)
 					message = getString(R.string.game_build_city_max);
 				else
-					message = getString(R.string.game_cant_build_city);
+					message = getString(R.string.game_nothing_available_city);
 
 				break;
 
@@ -1408,7 +1471,7 @@ public class ActiveGameFragment extends Fragment {
 				if (player.getNumWalls() == Player.MAX_CITY_WALLS)
 					message = getString(R.string.game_build_wall_max);
 				else
-					message = getString(R.string.game_cant_build_wall);
+					message = getString(R.string.game_nothing_available_city_wall);
 				break;
 
 			default:
@@ -1429,7 +1492,7 @@ public class ActiveGameFragment extends Fragment {
 //		CharSequence[] list = new CharSequence[Board.ProgressCardType.values().length + 2];
 //		int index = 0;
 //
-//		if (player.affordCard() && board.isBuild())
+//		if (player.affordCard() && board.isBuildPhase())
 //			list[index++] = getString(R.string.to_remove_str);
 //
 //		for (int i = 0; i < Board.ProgressCardType.values().length; i++) {
@@ -1463,7 +1526,7 @@ public class ActiveGameFragment extends Fragment {
 //			public void onClick(DialogInterface dialog, int item) {
 //				Player player = board.getCurrentPlayer();
 //
-//				if (player.affordCard() && board.isBuild()) {
+//				if (player.affordCard() && board.isBuildPhase()) {
 //					// buy a card
 //					if (item == 0) {
 //						Board.ProgressCardType card = player.buyCard();
@@ -1515,7 +1578,7 @@ public class ActiveGameFragment extends Fragment {
 //							}
 //
 //							if (!canBuild) {
-//								cantBuild(Action.BUILD_EDGE_UNIT);
+//								cantAct(Action.BUILD_EDGE_UNIT);
 //								return;
 //							} else if (player.useCard(type)) {
 //								toast(getString(R.string.to_remove_str));

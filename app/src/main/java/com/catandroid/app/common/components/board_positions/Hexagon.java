@@ -308,7 +308,7 @@ public class Hexagon {
 	 */
 	public boolean adjacentToPlayer(Player player) {
 		for (int i = 0; i < 6; i++) {
-			if (board.getVertexById(vertexIds[i]).getOwner() == player) {
+			if (board.getVertexById(vertexIds[i]).getOwnerPlayer() == player) {
 				return true;
 			}
 		}
@@ -323,7 +323,7 @@ public class Hexagon {
 	public Vector<Player> getPlayers() {
 		Vector<Player> players = new Vector<Player>();
 		for (int i = 0; i < 6; i++) {
-			Player owner = board.getVertexById(vertexIds[i]).getOwner();
+			Player owner = board.getVertexById(vertexIds[i]).getOwnerPlayer();
 			if (owner != null && !players.contains(owner)) {
 				players.add(owner);
 			}

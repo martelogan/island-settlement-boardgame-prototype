@@ -19,7 +19,7 @@ public class GameRenderer implements Renderer {
 
 	public enum Action {
 		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_EDGE_UNIT, BUILD_ROAD,
-		BUILD_SHIP,	CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
+		BUILD_SHIP,	MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
 
 	private TextureManager texture;
@@ -84,8 +84,7 @@ public class GameRenderer implements Renderer {
 
 	public boolean cancel() {
 		// TODO: cancel intermediate interactions
-
-		return ((board.isProduction() || board.isBuild()) && action != Action.NONE);
+		return ((board.isProduction() || board.isBuildPhase()) && action != Action.NONE);
 	}
 
 	@Override
@@ -115,9 +114,13 @@ public class GameRenderer implements Renderer {
 
 		float aspect = (float) width / (float) height;
 		if (width > height)
+		{
 			background = new Square(backgroundColors, 0, 0, 0, 2 * aspect, 2);
+		}
 		else
+		{
 			background = new Square(backgroundColors, 0, 0, 0, 2, 2 / aspect);
+		}
 
 		gl.glViewport(0, 0, width, height);
 	}
@@ -180,28 +183,33 @@ public class GameRenderer implements Renderer {
 			// draw edges
 			for (int i = 0; i < EDGE_COUNT; i++) {
 				Edge edge = board.getEdgeById(i);
-				boolean buildable = false;
+				boolean selectable = false;
+				int edgeUnitType = Edge.NONE;
 				if(player == null) {
-					buildable = false;
+					selectable = false;
 				}
 				else if(action == Action.BUILD_EDGE_UNIT) {
-					buildable = action == Action.BUILD_EDGE_UNIT
-							&& player.canBuildEdgeUnit(edge);
+					selectable = player.canBuildEdgeUnit(edge);
 				}
 				else if(action == Action.BUILD_ROAD) {
-					buildable = action == Action.BUILD_ROAD
-							&& player.canBuildRoad(edge);
+					selectable = player.canBuildRoad(edge);
+					edgeUnitType = Edge.ROAD;
 				}
 				else if(action == Action.BUILD_SHIP) {
-					buildable = action == Action.BUILD_SHIP
-							&& player.canBuildShip(edge);
+					selectable = player.canBuildShip(edge);
+					edgeUnitType = Edge.SHIP;
 				}
-				if (edge.getOwnerPlayer() != null) {
-					Log.d("t", "here");
+				else if(action == Action.MOVE_SHIP_1) {
+					selectable = player.canRemoveShipFrom(edge);
+					edgeUnitType = Edge.SHIP;
 				}
-				if (buildable || edge.getOwnerPlayer() != null)
+				else if(action == Action.MOVE_SHIP_2) {
+					selectable = player.canMoveShipTo(edge);
+					edgeUnitType = Edge.SHIP;
+				}
+				if (selectable || edge.getOwnerPlayer() != null)
 				{
-					texture.drawEdge(edge, buildable, gl, boardGeometry);
+					texture.drawEdge(edge, edgeUnitType, selectable, gl, boardGeometry);
 				}
 			}
 

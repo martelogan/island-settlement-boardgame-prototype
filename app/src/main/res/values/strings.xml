@@ -160,11 +160,12 @@
 
     <!-- Prompt strings -->
     <string name="phase_first_settlement">Place a settlement</string>
-    <string name="phase_first_road">Place a road/ship</string>
+    <string name="phase_first_edge_unit">Place a road/ship</string>
     <string name="phase_first_city">Place a city</string>
-    <string name="phase_second_road">Place 2nd road/ship</string>
+    <string name="phase_second_edge_unit">Place 2nd road/ship</string>
     <string name="phase_your_turn">Your turn</string>
     <string name="phase_build">Build</string>
+	<string name="phase_move_ship">Move the ship</string>
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
 	<string name="phase_move_pirate">Move the pirate</string>
@@ -200,6 +201,7 @@
 	<string name="game_road_ship_title">Build a road or ship?</string>
 	<string name="game_build_road">Build a road</string>
 	<string name="game_build_ship">Build a ship</string>
+    <string name="game_move_ship">Ship to move?</string>
 	<string name="game_build_settlement">Build a settlement</string>
 	<string name="game_build_city">Build a city</string>
 	<string name="game_build_wall">Build a wall</string>
@@ -216,12 +218,13 @@
 	<string name="game_build_edge_unit_max">Reached the maximum number of edge units.</string>
 	<string name="game_build_road_max">Reached the maximum number of roads.</string>
 	<string name="game_build_ship_max">Reached the maximum number of ships.</string>
-	<string name="game_cant_build_settlement">No available settlement locations.</string>
-	<string name="game_cant_build_city">No available city locations.</string>
-	<string name="game_cant_build_wall">No available wall locations.</string>
-	<string name="game_cant_build_edge_unit">No available road/ship locations</string>
-	<string name="game_cant_build_road">No available road locations</string>
-	<string name="game_cant_build_ship">No available ship locations</string>
+	<string name="game_nothing_available_settlement">No buildable settlement locations.</string>
+	<string name="game_nothing_available_city">No buildable city locations.</string>
+	<string name="game_nothing_available_city_wall">No buildable wall locations.</string>
+	<string name="game_nothing_available_edge_unit">No buildable road/ship locations</string>
+	<string name="game_nothing_available_road">No buildable road locations</string>
+	<string name="game_nothing_available_ship_build">No buildable ship locations</string>
+	<string name="game_nothing_available_ship_move">Ship movement would not be possible right now</string>
 	<string name="game_won">won</string>
 
 

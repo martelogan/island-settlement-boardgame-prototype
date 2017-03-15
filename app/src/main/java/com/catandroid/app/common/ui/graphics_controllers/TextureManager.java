@@ -4,6 +4,8 @@ import java.util.Hashtable;
 
 import javax.microedition.khronos.opengles.GL10;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,7 +29,7 @@ public class TextureManager {
 
 	private enum TextureType {
 		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, BUTTON_BG, BUTTON,
+		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SHIP, SETTLEMENT, CITY, BUTTON_BG, BUTTON,
         WALL
 	}
 
@@ -88,7 +90,7 @@ public class TextureManager {
                 res);
 
         // load large settlement textures
-        add(TextureType.SETTLEMENT, Player.Color.SELECT.ordinal(),
+        add(TextureType.SETTLEMENT, Player.Color.SELECTING.ordinal(),
                 R.drawable.settlement_grey, res);
         add(TextureType.SETTLEMENT, Player.Color.RED.ordinal(), R.drawable.settlement_r,
                 res);
@@ -100,7 +102,7 @@ public class TextureManager {
                 R.drawable.settlement_y, res);
 
         // load large city textures
-        add(TextureType.CITY, Player.Color.SELECT.ordinal(), R.drawable.city_grey,
+        add(TextureType.CITY, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
         add(TextureType.CITY, Player.Color.RED.ordinal(), R.drawable.city_r, res);
         add(TextureType.CITY, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
@@ -110,7 +112,7 @@ public class TextureManager {
 
         //load large wall textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
-        add(TextureType.WALL, Player.Color.SELECT.ordinal(), R.drawable.city_grey,
+        add(TextureType.WALL, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
         add(TextureType.WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
         add(TextureType.WALL, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
@@ -136,7 +138,11 @@ public class TextureManager {
                 R.drawable.harbor_southwest, res);
 
         // load road texture
-        add(TextureType.ROAD, 0, R.drawable.edge_unit, res);
+        add(TextureType.ROAD, 0, R.drawable.edge_unit_road, res);
+
+        //TODO: adapt graphics to incorporate ship
+        // load ship texture
+        add(TextureType.SHIP, 0, R.drawable.edge_unit_ship, res);
 
 		// load number token textures
 		add(TextureType.NUMBER_TOKEN, 2, R.drawable.num_2, res);
@@ -161,9 +167,13 @@ public class TextureManager {
 				res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_ROAD.ordinal(), R.drawable.button_build_road,
 				res);
-        //TODO: fix button image
+
+        //TODO: fix below 2 button images
         add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SHIP.ordinal(), R.drawable.button_player_stats,
                 res);
+        add(TextureType.BUTTON, UIButton.ButtonType.MOVE_SHIP.ordinal(), R.drawable.button_progress_cards,
+                res);
+
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_SETTLEMENT.ordinal(),
 				R.drawable.button_build_settlement, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY.ordinal(), R.drawable.button_build_city,
@@ -299,10 +309,10 @@ public class TextureManager {
         }
 
         Player.Color color;
-        Player owner = vertex.getOwner();
+        Player owner = vertex.getOwnerPlayer();
         if (buildsettlement || buildCity || buildWall)
         {
-            color = Player.Color.SELECT;
+            color = Player.Color.SELECTING;
         }
         else if (owner != null)
         {
@@ -323,7 +333,17 @@ public class TextureManager {
         }
     }
 
-    public void drawEdge(Edge edge, boolean build, GL10 gl, BoardGeometry boardGeometry) {
+
+    //TODO: fix this to differentiate between roads and ships
+    private void renderEdge(Edge edge, GL10 gl, BoardGeometry boardGeometry, TextureType texture, float dx, float dy) {
+        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()), texture.ordinal());
+        gl.glRotatef((float) (180 / Math.PI * Math.atan(dy / dx)), 0, 0, 1);
+
+        square.get(hash(texture, 0)).render(gl);
+    }
+
+    public void drawEdge(Edge edge, int edgeUnitType, boolean isSelectable,
+                         GL10 gl, BoardGeometry boardGeometry) {
         float[] x = new float[2];
         float[] y = new float[2];
         x[0] = boardGeometry.getVertexX(edge.getV0Clockwise().getId());
@@ -333,13 +353,13 @@ public class TextureManager {
 
         Player owner = edge.getOwnerPlayer();
         float[] color;
-        if (owner != null)
+        if (owner != null && !isSelectable)
         {
             color = getColorArray(getColor(owner.getColor()));
         }
         else
         {
-            color = getColorArray(getColor(Player.Color.SELECT));
+            color = getColorArray(getColor(Player.Color.SELECTING));
         }
 
         float dx = x[1] - x[0];
@@ -349,10 +369,50 @@ public class TextureManager {
 
         gl.glPushMatrix();
 
+        // OLD METHOD (everything looks like a road)
         gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()), TextureType.ROAD.ordinal());
         gl.glRotatef((float) (180 / Math.PI * Math.atan(dy / dx)), 0, 0, 1);
 
         square.get(hash(TextureType.ROAD, 0)).render(gl);
+
+// FIXME: below attempt at rendering ships vs. roads caused strange OpenGL issues (noted below)
+// NEW ATTEMPT AT EDGE RENDERING
+//        int curEdgeUnitType = edge.getCurUnitType();
+//        if (curEdgeUnitType != Edge.NONE) { // has a type already
+//            switch(curEdgeUnitType) {
+//                case Edge.ROAD:
+//                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+//                    break;
+//                case Edge.SHIP:
+//                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+//                    break;
+//            }
+//        }
+//        else { // render based on requested type (ie. during piece selection)
+//            switch(edgeUnitType) {
+//                case Edge.NONE: // ambiguous
+//                    if (edge.isAvailableForShip()) {
+//                        if(edge.isBorderingSea()) { // choice of road or ship
+//                            // just render it as a ship for now
+//                            //FIXME: strange OpenGL issues when road and ship rendered in same execution
+//                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+//                        }
+//                        else { // can only build a ship here
+//                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+//                        }
+//                    }
+//                    else { // can only build a road here
+//                        renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+//                    }
+//                    break;
+//                case Edge.ROAD:
+//                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+//                    break;
+//                case Edge.SHIP:
+//                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+//                    break;
+//            }
+//        }
 
         gl.glPopMatrix();
 

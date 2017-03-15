@@ -60,8 +60,8 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, BUILD, PROGRESS_CARD_1, PROGRESS_CARD_2, CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, DONE,
-		TRADE_PROPOSED, TRADE_RESPONDED
+		PRODUCTION, BUILD, MOVING_SHIP, PROGRESS_CARD_1, PROGRESS_CARD_2,
+		CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE,TRADE_PROPOSED, TRADE_RESPONDED, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -104,10 +104,11 @@ public class Board {
 
 	private Integer curRobberHexId = null, prevRobberHexId = null,
 			curPirateHexId = null, prevPirateHexId = null;
-	private int turn, turnNumber, roadCountId, longestRoad,
+	private int curPlayerNumber, gameTurnNumber, gameRoundNumber, roadCountId, longestRoad,
 			maxPoints, lastDiceRollNumber;
 	private Integer longestRoadOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
+    private int tempEdgeIdMemory = -1;
 
 	private boolean autoDiscard;
 
@@ -152,8 +153,9 @@ public class Board {
 	}
 
 	private void commonInit() {
-		turn = 0;
-		turnNumber = 1;
+		curPlayerNumber = 0;
+		gameRoundNumber = 1;
+		gameTurnNumber = 1;
 		phase = Phase.SETUP_SETTLEMENT;
 		roadCountId = 0;
 		longestRoad = 4;
@@ -208,7 +210,7 @@ public class Board {
 		if (players == null)
 			return null;
 
-		return players[turn];
+		return players[curPlayerNumber];
 	}
 
 
@@ -321,7 +323,7 @@ public class Board {
 		int count = 0;
 		for (int i = 0; i < numPlayers; i++)
 		{
-			if (players[i] != players[turn] && hex.adjacentToPlayer(players[i]))
+			if (players[i] != players[curPlayerNumber] && hex.adjacentToPlayer(players[i]))
 			{
 				count++;
 			}
@@ -330,14 +332,14 @@ public class Board {
 		if (count > 0) {
 			Player[] stealList = new Player[count];
 			for (int i = 0; i < numPlayers; i++)
-				if (players[i] != players[turn]
+				if (players[i] != players[curPlayerNumber]
 						&& hex.adjacentToPlayer(players[i]))
 				{
 					stealList[--count] = players[i];
 				}
 
 			int who = current.steal(stealList);
-			players[turn].steal(stealList[who]);
+			players[curPlayerNumber].steal(stealList[who]);
 		}
 
 		phase = returnPhase;
@@ -348,8 +350,8 @@ public class Board {
 	 */
 	public void runAITurn() {
 		// process ai turn
-		if (players[turn].isBot()) {
-			AutomatedPlayer current = (AutomatedPlayer) players[turn];
+		if (players[curPlayerNumber].isBot()) {
+			AutomatedPlayer current = (AutomatedPlayer) players[curPlayerNumber];
 			switch (phase) {
 
 				case SETUP_SETTLEMENT:
@@ -365,12 +367,16 @@ public class Board {
 
 				case PRODUCTION:
 					current.productionPhase();
-					players[turn].rollDice();
+					players[curPlayerNumber].rollDice();
 					break;
 
 				case BUILD:
 					current.buildPhase();
 					break;
+
+                case MOVING_SHIP:
+                    //TODO: automate
+                    break;
 
 				case PROGRESS_CARD_1:
 					current.progressRoad(edges);
@@ -405,12 +411,13 @@ public class Board {
 				phase = Phase.SETUP_EDGE_UNIT_1;
 				break;
 			case SETUP_EDGE_UNIT_1:
-				if (turn < numPlayers-1) {
-					turn++;
+				if (curPlayerNumber < numPlayers-1) {
+					curPlayerNumber++;
+					gameTurnNumber++;
 					turnChanged = true;
 					phase = Phase.SETUP_SETTLEMENT;
-					if(players[turn].isHuman()) {
-						activeGameFragment.mListener.endTurn(gameParticipantIds.get(turn), false);
+					if(players[curPlayerNumber].isHuman()) {
+						activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber), false);
 					}
 				} else {
 					phase = Phase.SETUP_CITY;
@@ -420,12 +427,13 @@ public class Board {
 				phase = Phase.SETUP_EDGE_UNIT_2;
 				break;
 			case SETUP_EDGE_UNIT_2:
-				if (turn > 0) {
-					turn--;
+				if (curPlayerNumber > 0) {
+					curPlayerNumber--;
+                    gameTurnNumber++;
 					turnChanged = true;
 					phase = Phase.SETUP_CITY;
-					if(players[turn].isHuman()) {
-						activeGameFragment.mListener.endTurn(gameParticipantIds.get(turn), false);
+					if(players[curPlayerNumber].isHuman()) {
+						activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber), false);
 					}
 				} else {
 					phase = Phase.PRODUCTION;
@@ -435,18 +443,25 @@ public class Board {
 				phase = Phase.BUILD;
 				break;
 			case BUILD:
-				if (turn == numPlayers - 1)
-					turnNumber += 1;
-				players[turn].endTurn();
-				phase = Phase.PRODUCTION;
-				turn++;
-				turn %= numPlayers;
-				turnChanged = true;
-				players[turn].beginTurn();
-				lastDiceRollNumber = 0;
-				if(players[turn].isHuman()) {
-					activeGameFragment.mListener.endTurn(gameParticipantIds.get(turn),false);
+				if (curPlayerNumber == numPlayers - 1)
+				{
+					gameRoundNumber += 1;
 				}
+				players[curPlayerNumber].endTurn();
+				phase = Phase.PRODUCTION;
+				curPlayerNumber++;
+				gameTurnNumber++;
+				curPlayerNumber %= numPlayers;
+				turnChanged = true;
+				players[curPlayerNumber].beginTurn();
+				lastDiceRollNumber = 0;
+				if(players[curPlayerNumber].isHuman()) {
+					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber),false);
+				}
+				break;
+            case MOVING_SHIP:
+                phase = returnPhase;
+				tempEdgeIdMemory = -1;
 				break;
 			case PROGRESS_CARD_1:
 				phase = Phase.PROGRESS_CARD_2;
@@ -525,6 +540,25 @@ public class Board {
 		runAITurn();
 	}
 
+    /**
+     * Enter moving ship phase
+     */
+    public void startMovingShipPhase(Edge prevShipLocation) {
+        returnPhase = phase;
+        phase = Phase.MOVING_SHIP;
+        tempEdgeIdMemory = prevShipLocation.getId();
+        runAITurn();
+    }
+
+	/**
+	 * Cancel moving ship phase
+	 */
+	public void cancelMovingShipPhase() {
+		Edge prevShipLocation = getEdgeById(tempEdgeIdMemory);
+		prevShipLocation.moveShipToHere(getCurrentPlayer());
+		nextPhase();
+	}
+
 	/**
 	 * Enter the trade proposal phase
 	 */
@@ -592,9 +626,13 @@ public class Board {
 		return (phase == Phase.PRODUCTION);
 	}
 
-	public boolean isBuild() {
+	public boolean isBuildPhase() {
 		return (phase == Phase.BUILD);
 	}
+
+    public boolean isMovingShipPhase() {
+        return (phase == Phase.MOVING_SHIP);
+    }
 
 	public boolean isProgressPhase() {
 		return (phase == Phase.PROGRESS_CARD_1 || phase == Phase.PROGRESS_CARD_2);
@@ -996,15 +1034,17 @@ public class Board {
 			case SETUP_SETTLEMENT:
 				return R.string.phase_first_settlement;
 			case SETUP_EDGE_UNIT_1:
-				return R.string.phase_first_road;
+				return R.string.phase_first_edge_unit;
 			case SETUP_CITY:
 				return R.string.phase_first_city;
 			case SETUP_EDGE_UNIT_2:
-				return R.string.phase_second_road;
+				return R.string.phase_second_edge_unit;
 			case PRODUCTION:
 				return R.string.phase_your_turn;
 			case BUILD:
-				return R.string.phase_build;
+                return R.string.phase_build;
+            case MOVING_SHIP:
+                return R.string.phase_move_ship;
 			case PROGRESS_CARD_1:
 				// TODO: progress card step 1
 				return 0;
@@ -1035,11 +1075,20 @@ public class Board {
 
 	/**
 	 * Get the global turn number
-	 * 
-	 * @return the turn number (starting at 1, after setup)
+	 *
+	 * @return the turn number (one per player turn, starting at 1)
 	 */
-	public int getTurnNumber() {
-		return turnNumber;
+	public int getGameTurnNumber() {
+		return gameTurnNumber;
+	}
+
+	/**
+	 * Get the global round number
+	 * 
+	 * @return the round number (one round per full set of player turns, starting at 1)
+	 */
+	public int getGameRoundNumber() {
+		return gameRoundNumber;
 	}
 
 	/**
@@ -1100,7 +1149,7 @@ public class Board {
 			return true;
 		}
         else if(phase == Phase.CHOOSE_ROBBER_PIRATE &&
-                !getPlayerById(turn).getGooglePlayParticipantId().equals(
+                !getPlayerById(curPlayerNumber).getGooglePlayParticipantId().equals(
                         activeGameFragment.myParticipantId)) {
             return true;
         }

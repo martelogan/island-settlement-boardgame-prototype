@@ -36,19 +36,21 @@ public class Player {
 	private String playerName;
 	protected int numOwnedSettlements, numOwnedCities, numOwnedCityWalls, knightsCount;
 	protected Vector<Integer> settlementIds, reachingVertexIds;
-	protected Vector<Edge> roads, ships;
+	protected Vector<Integer> roadIds, shipIds;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, roadLength, lastVertexPieceId;
 	private int[] countPerResource, countPerProgressCard;
 	private boolean[] harbors;
 	private Vector<ProgressCardType> newCards;
 	private boolean usedCardThisTurn;
+	//TODO: set on move ship, check via canMoveShip
+	private boolean shipWasMovedThisTurn;
 	private String actionLog;
 
 	protected transient Board board;
 
 	public enum Color {
-		RED, BLUE, GREEN, YELLOW, SELECT, NONE
+		RED, BLUE, GREEN, YELLOW, SELECTING, NONE
 	}
 
 	public static final int PLAYER_HUMAN = 0;
@@ -81,6 +83,7 @@ public class Player {
 		privateVictoryPointsCount = 0;
 		tradeValue = 4;
 		usedCardThisTurn = false;
+		shipWasMovedThisTurn = false;
 		actionLog = "";
 		lastVertexPieceId = -1;
 
@@ -88,8 +91,8 @@ public class Player {
 
 		settlementIds = new Vector<Integer>();
 		reachingVertexIds = new Vector<Integer>();
-		roads = new Vector<Edge>();
-		ships = new Vector<Edge>();
+		roadIds = new Vector<Integer>();
+		shipIds = new Vector<Integer>();
 
 		// initialise number of each kind of progress card
 		//TODO: track player's hand
@@ -179,6 +182,7 @@ public class Player {
 //
 //		newCards.clear();
 //		usedCardThisTurn = false;
+		shipWasMovedThisTurn = false;
 
 		appendAction(R.string.player_ended_turn);
 	}
@@ -224,7 +228,7 @@ public class Player {
 			appendAction(R.string.player_longest_road);
 		}
 
-		roads.add(edge);
+		roadIds.add(edge.getId());
 
 		int vertexId = edge.getV0Clockwise().getId();
 		if (!reachingVertexIds.contains(vertexId))
@@ -283,7 +287,7 @@ public class Player {
 //			appendAction(R.string.player_longest_road);
 //		}
 
-		ships.add(edge);
+		shipIds.add(edge.getId());
 
 		int vertexId = edge.getV0Clockwise().getId();
 		if (!reachingVertexIds.contains(vertexId))
@@ -296,6 +300,129 @@ public class Player {
 		{
 			reachingVertexIds.add(vertexId);
 		}
+
+		return true;
+	}
+
+
+	/**
+	 * Attempt to remove a ship from an edge. Returns true on success
+	 *
+	 * @param edge
+	 *            current location of ship to move
+	 * @return
+	 */
+	public boolean removeShipFrom(Edge edge) {
+		if (edge == null || !canRemoveShipFrom(edge))
+		{
+			return false;
+		}
+
+		if (!edge.removeShipFromHere(this))
+		{
+			return false;
+		}
+
+		// update board to intermediately moving the edge
+		board.startMovingShipPhase(edge);
+
+		// remove vertex ids it was reaching (unless reached by another edge)
+
+		int vertexId = edge.getV0Clockwise().getId();
+		Vertex v = board.getVertexById(vertexId);
+		Edge otherEdge;
+		boolean reachedVfromAnotherEdgeUnit = false;
+		int i = 0;
+		for (i = 0; i < 3; i++) {
+			otherEdge = v.getEdge(i);
+			if  (otherEdge != null && otherEdge != edge
+					&& (roadIds.contains(otherEdge.getId()) || shipIds.contains(otherEdge.getId())))
+            { // one of our other roads/ships is reaching v
+				reachedVfromAnotherEdgeUnit = true;
+				break;
+            }
+		}
+		if (!reachedVfromAnotherEdgeUnit) { // we are moving the only edge that reached this vertex
+			// remove vertex from the ones we can reach
+			reachingVertexIds.removeElement(vertexId);
+		}
+
+		vertexId = edge.getV1Clockwise().getId();
+		v = board.getVertexById(vertexId);
+		reachedVfromAnotherEdgeUnit = false;
+		for (i = 0; i < 3; i++) {
+			otherEdge = v.getEdge(i);
+			if  (otherEdge != null && otherEdge != edge
+					&& (roadIds.contains(otherEdge) || shipIds.contains(otherEdge)))
+			{ // one of our other roads/ships is reaching v
+				reachedVfromAnotherEdgeUnit = true;
+				break;
+			}
+		}
+		if (!reachedVfromAnotherEdgeUnit) { // we are moving the only edge that reached this vertex
+			// remove vertex from the ones we can reach
+			reachingVertexIds.removeElement(vertexId);
+		}
+
+		//TODO: longest trade route (extend with road)
+//		appendAction(R.string.player_ship);
+//
+//		boolean hadLongest = (board.getLongestRoadOwner() == this);
+//		board.checkLongestRoad();
+//
+//		if (!hadLongest && board.getLongestRoadOwner() == this)
+//		{
+//			appendAction(R.string.player_longest_road);
+//		}
+
+		return true;
+	}
+
+
+	/**
+	 * Attempt to move a ship to a different edge. Returns true on success
+	 *
+	 * @param edge
+	 *            target destination of ship
+	 * @return
+	 */
+	public boolean moveShipTo(Edge edge) {
+		if (edge == null || !canMoveShipTo(edge))
+		{
+			return false;
+		}
+
+		if (!edge.moveShipToHere(this))
+		{
+			return false;
+		}
+
+		// remove vertex ids it was reaching (unless reached by another edge)
+
+		int vertexId = edge.getV0Clockwise().getId();
+		if (!reachingVertexIds.contains(vertexId))
+		{
+			reachingVertexIds.add(vertexId);
+		}
+
+		vertexId = edge.getV1Clockwise().getId();
+		if (!reachingVertexIds.contains(vertexId))
+		{
+			reachingVertexIds.add(vertexId);
+		}
+
+		//TODO: longest trade route (extend with road)
+//		appendAction(R.string.player_ship);
+//
+//		boolean hadLongest = (board.getLongestRoadOwner() == this);
+//		board.checkLongestRoad();
+//
+//		if (!hadLongest && board.getLongestRoadOwner() == this)
+//		{
+//			appendAction(R.string.player_longest_road);
+//		}
+
+		shipWasMovedThisTurn = true;
 
 		return true;
 	}
@@ -431,7 +558,7 @@ public class Player {
 	 */
 	public boolean canBuildEdgeUnit(Edge edge) {
 		if (edge == null ||
-				(roads.size() + ships.size() >= MAX_ROADS + MAX_SHIPS))
+				(roadIds.size() + shipIds.size() >= MAX_ROADS + MAX_SHIPS))
 		{
 			return false;
 		}
@@ -462,7 +589,7 @@ public class Player {
 	 * @return
 	 */
 	public boolean canBuildRoad(Edge edge) {
-		if (edge == null || roads.size() >= MAX_ROADS)
+		if (edge == null || roadIds.size() >= MAX_ROADS)
 		{
 			return false;
 		}
@@ -493,7 +620,7 @@ public class Player {
 	 * @return
 	 */
 	public boolean canBuildShip(Edge edge) {
-		if (edge == null || ships.size() >= MAX_SHIPS)
+		if (edge == null || shipIds.size() >= MAX_SHIPS)
 		{
 			return false;
 		}
@@ -541,6 +668,45 @@ public class Player {
 		}
 
 		return vertex.canBuild(this, unitType, board.isSetupPhase());
+	}
+
+	/**
+	 * Can you remove a ship from this edge?
+	 *
+	 * @param edge
+	 * @return
+	 */
+	public boolean canRemoveShipFrom(Edge edge) {
+		if (edge == null || shipWasMovedThisTurn)
+		{
+			return false;
+		}
+
+		return edge.canRemoveShipFromHere(this);
+	}
+
+	/**
+	 * Can you move a ship to this edge?
+	 *
+	 * @param edge
+	 * @return
+	 */
+	public boolean canMoveShipTo(Edge edge) {
+		if (edge == null || shipWasMovedThisTurn)
+		{
+			return false;
+		}
+
+		return edge.canMoveShipToHere(this);
+	}
+
+	/**
+	 * Was a ship moved by this player on current turn?
+	 *
+	 * @return
+	 */
+	public boolean movedShipThisTurn() {
+		return shipWasMovedThisTurn;
 	}
 
 	/**
@@ -801,7 +967,7 @@ public class Player {
 	 * @return true if the player can build a unit
 	 */
 	public boolean affordEdgeUnit() {
-		return (FREE_BUILD || (roads.size() + ships.size())< MAX_ROADS + MAX_SHIPS
+		return (FREE_BUILD || (roadIds.size() + shipIds.size())< MAX_ROADS + MAX_SHIPS
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& (getResources(Resource.ResourceType.BRICK) >= 1
 				|| getResources(Resource.ResourceType.WOOL) >= 1));
@@ -813,7 +979,7 @@ public class Player {
 	 * @return true if the player can build a road
 	 */
 	public boolean affordRoad() {
-		return (FREE_BUILD || roads.size() < MAX_ROADS
+		return (FREE_BUILD || roadIds.size() < MAX_ROADS
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& getResources(Resource.ResourceType.BRICK) >= 1);
 	}
@@ -824,7 +990,7 @@ public class Player {
 	 * @return true if the player can build a ship
 	 */
 	public boolean affordShip() {
-		return (FREE_BUILD || ships.size() < MAX_SHIPS
+		return (FREE_BUILD || shipIds.size() < MAX_SHIPS
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& getResources(Resource.ResourceType.WOOL) >= 1);
 	}
@@ -1386,7 +1552,7 @@ public class Player {
 	 * @return the number of roads the player built
 	 */
 	public int getNumRoads() {
-		return roads.size();
+		return roadIds.size();
 	}
 
 	/**
@@ -1395,7 +1561,7 @@ public class Player {
 	 * @return the number of ships the player built
 	 */
 	public int getNumShips() {
-		return ships.size();
+		return shipIds.size();
 	}
 
 	public int distributeProgressCard(int diceRollNumber2, int event){

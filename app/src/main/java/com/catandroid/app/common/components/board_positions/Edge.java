@@ -11,6 +11,7 @@ public class Edge {
 
 	private int id;
 	private int curUnitType;
+	private int turnShipWasBuilt = -1;
 	private int[] vertexIds;
 	private int ownerPlayerNumber = -1;
 	private int lastRoadCountId;
@@ -230,11 +231,55 @@ public class Edge {
 			return false;
 		}
 		Hexagon.TerrainType originTerrain = originHexId != -1 ?
-                board.getHexagonById(originHexId).getTerrainType() : null;
-        Hexagon.TerrainType neighborTerrain = neighborHexId != -1 ?
-                board.getHexagonById(neighborHexId).getTerrainType() : null;
+				board.getHexagonById(originHexId).getTerrainType() : null;
+		Hexagon.TerrainType neighborTerrain = neighborHexId != -1 ?
+				board.getHexagonById(neighborHexId).getTerrainType() : null;
 		return originTerrain == Hexagon.TerrainType.SEA
 				|| neighborTerrain	== Hexagon.TerrainType.SEA;
+	}
+
+	public boolean canRemoveShipFromHere(Player player) {
+		if (curUnitType != SHIP || player.getPlayerNumber() != ownerPlayerNumber
+				|| board.getGameTurnNumber() == turnShipWasBuilt) {
+			return false;
+		}
+
+		// return true iff at least one end of edge is not connected to piece owned by player
+		Vertex v0 = getV0Clockwise(), v1 = getV1Clockwise();
+		return !(v0.getOwnerPlayer() == player || v0.connectedToShipOwnedBy(player, this))
+				|| !(v1.getOwnerPlayer() == player || v1.connectedToShipOwnedBy(player, this));
+	}
+
+	public boolean canMoveShipToHere(Player player) {
+		if (curUnitType != NONE) {
+			return false;
+		}
+
+		return canBuildShip(player);
+	}
+
+	public boolean removeShipFromHere(Player player) {
+		if (!canRemoveShipFromHere(player)) {
+			return false;
+		}
+
+		// remove ship from this edge
+		turnShipWasBuilt = -1;
+		ownerPlayerNumber = -1;
+		curUnitType = NONE;
+		return true;
+	}
+
+	public boolean moveShipToHere(Player player) {
+		if (!canMoveShipToHere(player)) {
+			return false;
+		}
+
+		// move ship to this edge
+		//TODO: turn thing is dangerous
+		ownerPlayerNumber = player.getPlayerNumber();
+		curUnitType = SHIP;
+		return true;
 	}
 
 	/**
@@ -439,6 +484,7 @@ public class Edge {
 
 		ownerPlayerNumber = player.getPlayerNumber();
 		curUnitType = SHIP;
+		turnShipWasBuilt = board.getGameTurnNumber();
 		return true;
 	}
 
