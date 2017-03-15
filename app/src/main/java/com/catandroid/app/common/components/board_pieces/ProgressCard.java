@@ -17,13 +17,68 @@ public class ProgressCard extends InventoryItem {
      */
     public static int getCardStringResource(ProgressCardType card) {
         switch (card) {
-            //TODO: implement progress cards
+            case MERCHANT:
+                return R.string.merchant;
+            default:
+                return R.string.empty_string;
+        }
+    }
+    /**
+     * Get the string description resource for a card type
+     *
+     * @param card
+     *            the card type
+     * @return the string resource description
+     */
+    public static int getCardDescriptionStringResource(ProgressCardType card) {
+        switch (card) {
+            case MERCHANT:
+                return R.string.merchant_description;
             default:
                 return R.string.empty_string;
         }
     }
 
+    public static CityImprovement.CityImprovementType getDisciplineFromCard(ProgressCardType card){
+        switch(card){
+            case COMMERCIAL_HARBOR:
+            case MASTER_MERCHANT:
+            case MERCHANT:
+            case MERCHANT_FLEET:
+            case RESOURCE_MONOPOLY:
+            case TRADE_MONOPOLY:
+                return CityImprovement.CityImprovementType.TRADE;
+            case ALCHEMIST:
+            case CRANE:
+            case ENGINEER:
+            case INVENTOR:
+            case IRIGIATION:
+            case MEDICINE:
+            case MINING:
+            case PRINTER:
+            case ROAD_BUILLDING:
+            case SMITH:
+                return CityImprovement.CityImprovementType.SCIENCE;
+            case BISHOP:
+            case CONSTITUTION:
+            case DESERTER:
+            case DIPLOMAT:
+            case INTRIGUE:
+            case SABOTEUR:
+            case SPY:
+            case WARLORD:
+            case WEDDING:
+                return CityImprovement.CityImprovementType.POLITICS;
+            default:
+                return null;
+        }
+    }
+
     public enum ProgressCardType {
-        TEST, TEST2
+        COMMERCIAL_HARBOR, MASTER_MERCHANT, MERCHANT, MERCHANT_FLEET, RESOURCE_MONOPOLY, TRADE_MONOPOLY,
+
+        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
+
+        BISHOP, CONSTITUTION, DESERTER, DIPLOMAT, INTRIGUE, SABOTEUR, SPY, WARLORD, WEDDING
     }
 }

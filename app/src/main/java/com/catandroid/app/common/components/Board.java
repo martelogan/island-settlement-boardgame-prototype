@@ -1,6 +1,9 @@
 package com.catandroid.app.common.components;
 
+import android.widget.Toast;
+
 import com.catandroid.app.R;
+import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
@@ -14,9 +17,11 @@ import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.Vector;
 
 public class Board {
 
@@ -90,6 +95,10 @@ public class Board {
 	private Stack<Integer> playerIdsYetToDiscard;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
+
+	private ArrayList<ProgressCard.ProgressCardType> tradeDeck;
+	private ArrayList<ProgressCard.ProgressCardType> scienceDeck;
+	private ArrayList<ProgressCard.ProgressCardType> politicsDeck;
 
 	public TradeProposal getTradeProposal() {
 		return tradeProposal;
@@ -172,6 +181,9 @@ public class Board {
 
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
+
+		//generate progress card decks
+		progressCardInit();
 	}
 
 	/**
@@ -234,16 +246,31 @@ public class Board {
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 
+		CityImprovement.CityImprovementType disciplineRolled;
+		switch(eventRoll){
+			case 4:
+				disciplineRolled = CityImprovement.CityImprovementType.TRADE;
+				break;
+			case 5:
+				disciplineRolled = CityImprovement.CityImprovementType.SCIENCE;
+				break;
+			case 6:
+				disciplineRolled = CityImprovement.CityImprovementType.POLITICS;
+				break;
+			default:
+				disciplineRolled = null;
+		}
+
 		//@TODO
 		//check if we distribute progress cards
 		//diceRollNumber2 is the die that we use for the number
 		for(int i = 0; i < players.length; i++){
-			getPlayerById(i).distributeProgressCard(diceRollNumber2, eventRoll);
+			getPlayerById(i).distributeProgressCard(diceRollNumber2, disciplineRolled);
 		}
 
 		//@TODO
 		//resolve the barbarian
-		if(eventRoll == 1 || eventRoll == 3 || eventRoll == 3){
+		if(eventRoll == 1 || eventRoll == 2 || eventRoll == 3){
 			resolveBarbarians();
 		}
 
@@ -253,7 +280,7 @@ public class Board {
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
 				int walls = getPlayerById(i).getNumWalls();
-				int extra = cards > (7+walls) ? cards / 2 : 0;
+				int extra = cards > (7+walls*2) ? cards / 2 : 0;
 
 				if (extra == 0)
 					continue;
@@ -507,7 +534,9 @@ public class Board {
 		//when the stack is empty, the turn is passed back to the player that rolled 7
 		if(!playerIdsYetToDiscard.isEmpty()){
 			activeGameFragment.mListener.endTurn(getPlayerById(playerIdsYetToDiscard.peek()).getGooglePlayParticipantId(), false);
+			toast("Your turn will resume when all players have discarded! Check back later.");
 		}
+
 	}
 
 	/**
@@ -532,6 +561,7 @@ public class Board {
 		if(barbarianPosition == 7){
 			//the barbarians attack!!
 			//performAttack();
+			toast("The barbarians attack!");
 			barbarianPosition = 0;
 		}
 	}
@@ -702,17 +732,6 @@ public class Board {
 	}
 
 	/**
-	 * Get a progress card
-	 *
-	 * @return the type of progress card or null if that stack is empty
-	 */
-	public ProgressCard.ProgressCardType getRandomProgressCard() {
-		//TODO: implement progress cards
-		ProgressCard.ProgressCardType card =null;
-		return card;
-	}
-
-	/**
 	 * Get the hexagon with the robber
 	 *
 	 * @return the hexagon with the robber
@@ -782,6 +801,15 @@ public class Board {
 	 */
 	public int getMaxPoints() {
 		return maxPoints;
+	}
+
+	/**
+	 * Get the barbarian position
+	 *
+	 * @return barbarian position
+	 */
+	public int getBarbarianPosition() {
+		return barbarianPosition;
 	}
 
 	/**
@@ -856,7 +884,7 @@ public class Board {
 	 * 
 	 * @return true if one or more players need to discard_resources
 	 */
-	public boolean checkPlayerToDiscard() {
+	public boolean hasPlayersYetToDiscard() {
 		return !playerIdsYetToDiscard.empty();
 	}
 
@@ -987,12 +1015,141 @@ public class Board {
 		}
 	}
 
+	public ProgressCard.ProgressCardType pickNewProgressCard(CityImprovement.CityImprovementType type){
+		switch(type){
+			case TRADE:
+				return tradeDeck.get(0);
+			case SCIENCE:
+				return scienceDeck.get(0);
+			case POLITICS:
+				return politicsDeck.get(0);
+			default:
+				return null;
+		}
+	}
+
+	public void returnProgressCard(ProgressCard.ProgressCardType card){
+		switch(ProgressCard.getDisciplineFromCard(card)){
+			case TRADE:
+				tradeDeck.add(card);
+				break;
+			case SCIENCE:
+				scienceDeck.add(card);
+				break;
+			case POLITICS:
+				politicsDeck.add(card);
+				break;
+			default:
+				break;
+		}
+	}
+
+	public void progressCardInit(){
+
+		tradeDeck = new ArrayList<>();
+		scienceDeck = new ArrayList<>();
+		politicsDeck = new ArrayList<>();
+
+		//@TODO for testing purposes ONLY
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+
+		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+
+
+		//@TODO Implement all these progress cards
+//		tradeDeck.add(ProgressCard.ProgressCardType.COMMERCIAL_HARBOR);
+//		tradeDeck.add(ProgressCard.ProgressCardType.COMMERCIAL_HARBOR);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MASTER_MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MASTER_MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+//		tradeDeck.add(ProgressCard.ProgressCardType.TRADE_MONOPOLY);
+//		tradeDeck.add(ProgressCard.ProgressCardType.TRADE_MONOPOLY);
+//
+//		scienceDeck.add(ProgressCard.ProgressCardType.ALCHEMIST);
+//		scienceDeck.add(ProgressCard.ProgressCardType.ALCHEMIST);
+//		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+//		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+//		scienceDeck.add(ProgressCard.ProgressCardType.ENGINEER);
+//		scienceDeck.add(ProgressCard.ProgressCardType.INVENTOR);
+//		scienceDeck.add(ProgressCard.ProgressCardType.INVENTOR);
+//		scienceDeck.add(ProgressCard.ProgressCardType.IRIGIATION);
+//		scienceDeck.add(ProgressCard.ProgressCardType.IRIGIATION);
+//		scienceDeck.add(ProgressCard.ProgressCardType.MEDICINE);
+//		scienceDeck.add(ProgressCard.ProgressCardType.MEDICINE);
+//		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+//		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+//		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILLDING);
+//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILLDING);
+//		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+//		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+//
+//		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+//		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+//		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+//		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+//		politicsDeck.add(ProgressCard.ProgressCardType.DIPLOMAT);
+//		politicsDeck.add(ProgressCard.ProgressCardType.DIPLOMAT);
+//		politicsDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+//		politicsDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+//		politicsDeck.add(ProgressCard.ProgressCardType.SABOTEUR);
+//		politicsDeck.add(ProgressCard.ProgressCardType.SABOTEUR);
+//		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
+//		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
+//		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
+//		politicsDeck.add(ProgressCard.ProgressCardType.WARLORD);
+//		politicsDeck.add(ProgressCard.ProgressCardType.WARLORD);
+//		politicsDeck.add(ProgressCard.ProgressCardType.WEDDING);
+//		politicsDeck.add(ProgressCard.ProgressCardType.WEDDING);
+
+		Collections.shuffle(tradeDeck);
+		Collections.shuffle(scienceDeck);
+		Collections.shuffle(politicsDeck);
+
+	}
+
 	public boolean isMyPseudoTurn(){
 		//check if the trade proposal is currently proposed to me (my Pseudo turn)
 		if(tradeProposal != null) {
-			return (getPlayerById(tradeProposal.getCurrentPlayerToProposeId()).getGooglePlayParticipantId().equals(activeGameFragment.myParticipantId));
+			return (getPlayerById(
+					tradeProposal.getCurrentPlayerToProposeId()
+			).getGooglePlayParticipantId().equals(activeGameFragment.myParticipantId));
 		}
-		if(checkPlayerToDiscard()){
+		else if(hasPlayersYetToDiscard()){
+			return true;
+		}
+		else if(phase == Phase.ROBBER &&
+				!getPlayerById(turn).getGooglePlayParticipantId().equals(
+						activeGameFragment.myParticipantId)) {
 			return true;
 		}
 		return false;
@@ -1001,5 +1158,10 @@ public class Board {
 	public Player getPlayerFromParticipantId(String pId){
 		return players[gameParticipantIds.indexOf(pId)];
 	}
+
+    private void toast(String message) {
+        Toast.makeText(activeGameFragment.getActivity().getApplicationContext(), message, Toast.LENGTH_LONG)
+                .show();
+    }
 
 }

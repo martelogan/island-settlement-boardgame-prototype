@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -181,9 +182,48 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		if(getSupportFragmentManager().findFragmentByTag("DISCARD") != null && getSupportFragmentManager().findFragmentByTag("DISCARD").isVisible()) {
 			//DO NOTHING, AVOID USER EXITING DISCARD REQUEST
 		} else {
+			Fragment currentFragment = getSupportFragmentManager().findFragmentByTag("ACTIVEGAME");
 			if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
 				Log.d("myTag", "THERE WAS SOMETHING IN THE FRAGSTACK");
-				getSupportFragmentManager().popBackStack();
+					getSupportFragmentManager().popBackStack();
+			} else if(currentFragment != null && currentFragment.isVisible()){
+				//ask if the user really wants to quit the game
+				AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+				alertDialogBuilder.setMessage("Do you really want to quit current game?");
+				alertDialogBuilder
+						.setCancelable(true)
+						.setPositiveButton("Yes",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int id) {
+										catandroidTurn.currentBoard = null;
+										ActionBar actionBar = getActionBar();
+										actionBar.setDisplayHomeAsUpEnabled(false);
+										actionBar.setDisplayShowCustomEnabled(false);
+										setTitle("CatAndroid");
+										View item = findViewById(R.id.reference);
+										if(item != null){
+											item.setVisibility(View.GONE);
+										}
+
+
+										setContentView(R.layout.game_manager);
+										setViewVisibility();
+										// Setup signin and signout buttons
+										findViewById(R.id.sign_out_button).setOnClickListener(GameManagerActivity.this);
+										findViewById(R.id.sign_in_button).setOnClickListener(GameManagerActivity.this);
+									}
+								})
+						.setNegativeButton("No",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int id) {
+										return;
+									}
+								});
+
+				alertDialogBuilder.create().show();
+
 			} else {
 				catandroidTurn.currentBoard = null;
 				ActionBar actionBar = getActionBar();
@@ -199,8 +239,8 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				setContentView(R.layout.game_manager);
 				setViewVisibility();
 				// Setup signin and signout buttons
-				findViewById(R.id.sign_out_button).setOnClickListener(this);
-				findViewById(R.id.sign_in_button).setOnClickListener(this);
+				findViewById(R.id.sign_out_button).setOnClickListener(GameManagerActivity.this);
+				findViewById(R.id.sign_in_button).setOnClickListener(GameManagerActivity.this);
 			}
 		}
 	}
@@ -225,6 +265,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				//if we are not playing game, refresh
 				if(findViewById(R.id.sign_in_button) != null){
 					setViewVisibility();
+					updateMatch(mTurnBasedMatch);
 				}
 				return;
 			}
@@ -416,12 +457,20 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 	// Switch to gameplay view.
 	public void setGameplayUI() {
 
+		//set the fragment container if not there
+		if(findViewById(R.id.option_max_points) == null){
+			setContentView(R.layout.game_setup_options);
+			showSpinner();
+			findViewById(R.id.setup).setVisibility(View.GONE);
+		}
+
+
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		dismissSpinner();
 
 		//Start the fragment
 		fragmentManager.beginTransaction()
-				.replace(R.id.fragment_container,activeGameFragment)
+				.replace(R.id.fragment_container,activeGameFragment, "ACTIVEGAME")
 				.commit();
 
 	}

@@ -175,10 +175,12 @@ public class TextureManager {
 				R.drawable.button_cancel_action, res);
         add(TextureType.BUTTON, UIButton.ButtonType.BUILD_WALL.ordinal(),
                 R.drawable.button_cancel_action, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_PROGRESS.ordinal(),
-                R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_CITY_IMPROVEMENT.ordinal(),
+                R.drawable.button_city_improvement, res);
         add(TextureType.BUTTON, UIButton.ButtonType.KNIGHT.ordinal(),
                 R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.BARBARIAN.ordinal(),
+                R.drawable.button_barbarian_progress, res);
 	}
 
     public void drawButton(UIButton button, GL10 gl) {

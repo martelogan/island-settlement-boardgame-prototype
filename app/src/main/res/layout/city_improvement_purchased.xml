@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dip" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_tradeImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip" >
+            <TextView
+                android:id="@+id/trade_level0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="None!"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/trade_level1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/trade_level2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/trade_level3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃\nYou may trade any commodity at the 2:1 rate"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/trade_level4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/trade_level5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_scienceImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip" >
+
+            <TextView
+                android:id="@+id/science_level0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="None!"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/science_level1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/science_level2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/science_level3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃\nYou may promote strong knights to mighty knights!"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/science_level4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/science_level5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_politicsImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip" >
+
+            <TextView
+                android:id="@+id/politics_level0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="None!"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/politics_level1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/politics_level2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/politics_level3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃\nWhen get no resources, you may choose your own!"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/politics_level4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+            <TextView
+                android:id="@+id/politics_level5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F00"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅"
+                android:textSize="24sp"
+                android:visibility="gone">
+            </TextView>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

@@ -21,17 +21,21 @@ public class DiscardResourcesFragment extends Fragment {
 	public static final String PLAYER_KEY = "com.catandroid.app.DiscardPlayer";
 
 	private static final int[] RESOURCES = { R.id.trade_res1, R.id.trade_res2,
-			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5, R.id.trade_res6 };
+			R.id.trade_res3, R.id.trade_res4, R.id.trade_res5, R.id.trade_res6,
+			R.id.trade_res7, R.id.trade_res8, R.id.trade_res9};
 
 	private static final int[] SELECTIONS = { R.id.trade_offer1,
 			R.id.trade_offer2, R.id.trade_offer3, R.id.trade_offer4,
-			R.id.trade_offer5, R.id.trade_offer6 };
+			R.id.trade_offer5, R.id.trade_offer6, R.id.trade_offer7,
+			R.id.trade_offer8, R.id.trade_offer9};
 
 	private static final int[] PLUS = { R.id.trade_plus1, R.id.trade_plus2,
-			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5, R.id.trade_plus6 };
+			R.id.trade_plus3, R.id.trade_plus4, R.id.trade_plus5, R.id.trade_plus6,
+			R.id.trade_plus7, R.id.trade_plus8, R.id.trade_plus9};
 
 	private static final int[] MINUS = { R.id.trade_minus1, R.id.trade_minus2,
-			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5, R.id.trade_minus6 };
+			R.id.trade_minus3, R.id.trade_minus4, R.id.trade_minus5, R.id.trade_minus6,
+			R.id.trade_minus7, R.id.trade_minus8, R.id.trade_minus9};
 
 	private Player player;
 	private int quantity;
@@ -163,7 +167,7 @@ public class DiscardResourcesFragment extends Fragment {
 				}
 
 				//finish();
-				if(board.checkPlayerToDiscard()){
+				if(board.hasPlayersYetToDiscard()){
 					activeGameFragment.mListener.endTurn(board.checkNextPlayerToDiscard().getGooglePlayParticipantId(), false);
 				} else {
 					//pass it back to the person that rolled

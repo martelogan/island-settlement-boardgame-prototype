@@ -5,6 +5,7 @@ import java.util.Vector;
 import android.content.Context;
 
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.ProgressCard.ProgressCardType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
@@ -40,10 +41,12 @@ public class Player {
 	private int knightsCount, privateVictoryPointsCount, tradeValue, roadLength;
 	private int[] countPerResource, countPerProgressCard;
 	private boolean[] harbors;
-	private Vector<ProgressCardType> newCards;
+	private Vector<ProgressCardType> hand;
 	private boolean usedCard;
 	private int type, lastVertexPieceId;
 	private String actionLog;
+
+	private int[] cityImprovementLevels = {0, 0, 0};
 
 	protected Vector<Integer> settlementIds, reachingIds;
 	protected Vector<Edge> roads;
@@ -76,6 +79,8 @@ public class Player {
 		this.type = type;
 		this.playerNumber = playerNumber;
 
+		hand = new Vector<>();
+
 		settlements = 0;
 		cities = 0;
 		walls = 0;
@@ -87,19 +92,11 @@ public class Player {
 		actionLog = "";
 		lastVertexPieceId = -1;
 
-		newCards = new Vector<ProgressCardType>();
+		hand = new Vector<ProgressCardType>();
 
 		settlementIds = new Vector<Integer>();
 		reachingIds = new Vector<Integer>();
 		roads = new Vector<Edge>();
-
-		// initialise number of each kind of progress card
-		//TODO: track player's hand
-//		countPerProgressCard = new int[ProgressCard.ProgressCardType.values().length];
-//		for (int i = 0; i < countPerProgressCard.length; i++)
-//		{
-//			countPerProgressCard[i] = 0;
-//		}
 
 		countPerResource = new int[Resource.RESOURCE_TYPES.length];
 		harbors = new boolean[Resource.ResourceType.values().length];
@@ -152,8 +149,9 @@ public class Player {
 		} else{
 			eventText = EVENT_ROLL_STRINGS[event];
 		}
-		appendAction(R.string.player_roll, Integer.toString(roll1));
-		appendAction("Rolled" + eventText);
+		appendAction(R.string.player_roll, Integer.toString(roll1+roll2));
+		appendAction("\t\tRed Die: " + roll2);
+		appendAction("Event Rolled: " + eventText);
 		board.executeDiceRoll(roll1, roll2, event);
 
 		return roll1 + roll2;
@@ -1129,15 +1127,6 @@ public class Player {
 	}
 
 	/**
-	 * Determine if the player is an online player
-	 *
-	 * @return
-	 */
-	public boolean isOnline() {
-		return (type == PLAYER_ONLINE);
-	}
-
-	/**
 	 * Set the player's name
 	 *
 	 * @param name
@@ -1233,10 +1222,52 @@ public class Player {
 		return roads.size();
 	}
 
-	public int distributeProgressCard(int diceRollNumber2, int event){
-		//if(diceRollNumber2 && event)...
-		return 0;
+	public void distributeProgressCard(int diceRollNumber2, CityImprovement.CityImprovementType type){
+		boolean barbarianRolled = type == null;
+		//if we rolled a cityimprovement, attempt to distribute progress
+		if(!barbarianRolled){
+			int playerDisciplineLevel = cityImprovementLevels[CityImprovement.toCityImprovementIndex(type)];
+			boolean mustGiveProgresCard = playerDisciplineLevel != 0 && diceRollNumber2 <= playerDisciplineLevel+1;
+			if(mustGiveProgresCard){
+				switch(type){
+					case TRADE:
+						//distribute trade Progress Card
+						hand.add(board.pickNewProgressCard(CityImprovement.CityImprovementType.TRADE));
+						break;
+					case SCIENCE:
+						//distribute science Progress Card
+						hand.add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+						break;
+					case POLITICS:
+						//distribute politics Progress Card
+						hand.add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+						break;
+					default:
+						//DO NOT GIVE THE PLAYER ANY PROGRESS CARDS
+						break;
+				}
+			}
+		}
 	}
+
+	/**
+	 * Get the players hand
+	 *
+	 * @return the players hand
+	 */
+	public Vector<ProgressCardType> getHand(){
+		return hand;
+	}
+
+	/**
+	 * Get the players cityImprovement levels
+	 *
+	 * @return the players city improvement levels
+	 */
+	public int[] getCityImprovementLevels() {
+		return cityImprovementLevels;
+	}
+
 	/**
 	 * Add an action to the turn log
 	 *
@@ -1266,7 +1297,7 @@ public class Player {
 	 * @param action
 	 *            string resource playerNumber for action
 	 */
-	private void appendAction(int action) {
+	public void appendAction(int action) {
 		Context context = CatAndroidApp.getInstance().getContext();
 		appendAction(context.getString(action));
 	}
@@ -1280,7 +1311,7 @@ public class Player {
 	 * @param additional
 	 *            string to substitute into %s in action
 	 */
-	private void appendAction(int action, String additional) {
+	public void appendAction(int action, String additional) {
 		Context context = CatAndroidApp.getInstance().getContext();
 		appendAction(String.format(context.getString(action), additional));
 	}
@@ -1294,7 +1325,7 @@ public class Player {
 	 * @param additional
 	 *            string resource to substitute into %s in action
 	 */
-	private void appendAction(int action, int additional) {
+	public void appendAction(int action, int additional) {
 		Context context = CatAndroidApp.getInstance().getContext();
 		appendAction(String.format(context.getString(action), context
 				.getString(additional)));
