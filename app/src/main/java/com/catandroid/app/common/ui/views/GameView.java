@@ -231,7 +231,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 
 			// set position
 			ButtonType buttonType = button.getButtonType();
-			if (buttonType == ButtonType.CANCEL || buttonType == UIButton.ButtonType.DICE_ROLL
+			if (buttonType == ButtonType.CANCEL_ACTION || buttonType == UIButton.ButtonType.DICE_ROLL
 					|| buttonType == ButtonType.END_TURN) {
 				// set position to far right/bottom
 				if (width < height)

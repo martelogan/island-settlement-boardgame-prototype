@@ -1,6 +1,7 @@
 package com.catandroid.app.common.ui.fragments.static_fragments;
 
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.ui.graphics_controllers.TextureManager;
 import com.catandroid.app.R;
@@ -100,6 +101,8 @@ public class PlayerStatsFragment extends Fragment {
 					+ player.getNumRoads() + " / " + Player.MAX_ROADS + "\n";
 			message += getString(R.string.status_ships) + ": "
 					+ player.getNumShips() + " / " + Player.MAX_SHIPS+ "\n";
+			message += getString(R.string.reference_city_wall) + ": "
+					+ player.getNumWalls() + " / " + Player.MAX_CITY_WALLS + "\n";
 
 			message += "\n";
 
@@ -115,13 +118,23 @@ public class PlayerStatsFragment extends Fragment {
 //			if (showAll) {
 //			}
 
+			//show city improvement status
+			int[] playerCityImprovementLevels = player.getCityImprovementLevels();
+			int playerTradeLevel = playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)];
+			int playerScienceLevel = playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)];
+			int playerPoliticsLevel = playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)];
+
+			message += "Trade Improvement Level: " + playerTradeLevel + "\n";
+			message += "Science Improvement Level: " + playerScienceLevel + "\n";
+			message += "Politics Improvement Level: " + playerPoliticsLevel + "\n\n";
+
 			boolean hasHarbor = false;
 			if (player.hasHarbor(null)) {
 				message += "3:1 " + getString(R.string.status_harbor) + "\n";
 				hasHarbor = true;
 			}
 
-			for (int j = 0; j < Resource.sizeResources; j++) {
+			for (int j = 0; j < Resource.RESOURCE_TYPES.length; j++) {
 				if (player.hasHarbor(Resource.RESOURCE_TYPES[j])
 						&& Resource.RESOURCE_TYPES[j] != Resource.ResourceType.GOLD) {
 					message += getString(Resource

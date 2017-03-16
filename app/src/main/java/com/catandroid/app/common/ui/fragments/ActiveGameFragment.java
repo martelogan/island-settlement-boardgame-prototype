@@ -1,7 +1,9 @@
 package com.catandroid.app.common.ui.fragments;
 
 import com.catandroid.app.common.components.TradeProposal;
+import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
 import com.catandroid.app.R;;
 import com.catandroid.app.common.components.Board;
@@ -48,6 +50,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
 
@@ -523,23 +527,25 @@ public class ActiveGameFragment extends Fragment {
 				int roll1 = (int) (Math.random() * 6) + 1;
 				int roll2 = (int) (Math.random() * 6) + 1;
 				int event = (int) (Math.random() * 6) + 1;
-				//TODO: remove debugging
-				int roll = 7;
-//				int roll = roll1 + roll2;
+				int roll = roll1 + roll2;
 				board.getCurrentPlayer().rollDice(roll1, roll2 , event);
-				//TODO: what is this
-//				showState(true);
-				mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+				if(!board.isMyPseudoTurn()){
+					mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+				}
 
 				if (roll == 7) {
-					toast(getString(R.string.game_rolled_str) + " 7 " + ROLL_STRINGS[roll1]
-							+ ROLL_STRINGS[roll2] + " "
-							+ getString(R.string.game_chooseRobberPirate_title));
-					showState(true);
-					break;
+					if(!board.isMyPseudoTurn()){
+						toast(getString(R.string.game_rolled_str) + " 7 " + ROLL_STRINGS[roll1]
+								+ ROLL_STRINGS[roll2] + " "
+								+ getString(R.string.game_chooseRobberPirate_title));
+						showState(true);
+						break;
+					} else{
+						getActivity().setTitle("Pending Players to Discard");
+					}
 				} else {
 					toast(getString(R.string.game_rolled_str) + " " + roll + " "
-							+ ROLL_STRINGS[roll1] + ROLL_STRINGS[roll2] + EVENT_ROLL_STRINGS[event]);
+							+ ROLL_STRINGS[roll1] + " " + ROLL_STRINGS[roll2] + " " + EVENT_ROLL_STRINGS[event]);
 				}
 
 				showState(false);
@@ -670,7 +676,8 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case PROGRESS_CARD:
-	//			development();
+				progressCardDialog();
+
 				break;
 
 			case BUILD_WALL:
@@ -696,12 +703,21 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_build_wall));
 				break;
 
-			case KNIGHT:
+			case PLAY_KNIGHT:
 				toast("Hire knight/Active Knight");
 				break;
 
-			case PURCHASE_PROGRESS:
-				toast("Purchase City Improvement");
+			case PURCHASE_CITY_IMPROVEMENT:
+                FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
+                CityImprovementFragment cityImprovementFragment = new CityImprovementFragment();
+                cityImprovementFragment.setBoard(board);
+                cityImprovementFragment.setActiveGameFragment(this);
+
+                FragmentTransaction cityImprovementFragmentTransaction =  cityImprovementFragmentManager.beginTransaction();
+                cityImprovementFragmentTransaction.replace(R.id.fragment_container, cityImprovementFragment,cityImprovementFragment.getClass().getSimpleName());
+                cityImprovementFragmentTransaction.addToBackStack(cityImprovementFragment.getClass().getSimpleName());
+                cityImprovementFragmentTransaction.commit();
+
 				break;
 
 			case TRADE:
@@ -719,13 +735,44 @@ public class ActiveGameFragment extends Fragment {
 				showState(false);
 
 				break;
+			case VIEW_BARBARIANS:
+				AlertDialog.Builder alertadd = new AlertDialog.Builder(getActivity());
+				LayoutInflater factory = LayoutInflater.from(getActivity());
+				final View view = factory.inflate(R.layout.barbarian_map, null);
+				switch(board.getBarbarianPosition()){
+					case 0:
+						view.findViewById(R.id.barbarian0).setVisibility(View.VISIBLE);
+						break;
+					case 1:
+						view.findViewById(R.id.barbarian1).setVisibility(View.VISIBLE);
+						break;
+					case 2:
+						view.findViewById(R.id.barbarian2).setVisibility(View.VISIBLE);
+						break;
+					case 3:
+						view.findViewById(R.id.barbarian3).setVisibility(View.VISIBLE);
+						break;
+					case 4:
+						view.findViewById(R.id.barbarian4).setVisibility(View.VISIBLE);
+						break;
+					case 5:
+						view.findViewById(R.id.barbarian5).setVisibility(View.VISIBLE);
+						break;
+					case 6:
+						view.findViewById(R.id.barbarian6).setVisibility(View.VISIBLE);
+						break;
+				}
+				alertadd.setView(view);
+
+				alertadd.show();
+				break;
 
 			case END_TURN:
 				board.nextPhase();
 				showState(true);
 				break;
 
-			case CANCEL:
+			case CANCEL_ACTION:
 				// return false if there is nothing to cancel
 				boolean result = renderer.cancel();
 
@@ -901,6 +948,7 @@ public class ActiveGameFragment extends Fragment {
 		view.removeButtons();
 
 		view.addButton(ButtonType.PLAYER_STATUS);
+		view.addButton(ButtonType.VIEW_BARBARIANS);
 
 		Player player = board.getCurrentPlayer();
 		Player winner = board.getWinner();
@@ -916,7 +964,7 @@ public class ActiveGameFragment extends Fragment {
 			// do nothing
 		} else if (action != Action.NONE) {
 			// cancel the action
-			view.addButton(ButtonType.CANCEL);
+			view.addButton(ButtonType.CANCEL_ACTION);
 		} else if (board.isProduction()) {
 			view.addButton(ButtonType.DICE_ROLL);
             //TODO: add button to play progress cards
@@ -928,11 +976,10 @@ public class ActiveGameFragment extends Fragment {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
 
-            //TODO: add button to play progress cards
-//			if (player.affordCard() || player.canUseCard())
-//            {
-//                view.addButton(UIButton.ButtonType.PROGRESS_CARD);
-//            }
+            if (!player.getHand().isEmpty())
+            {
+                view.addButton(UIButton.ButtonType.PROGRESS_CARD);
+            }
 
 			if (player.affordRoad())
             {
@@ -962,13 +1009,13 @@ public class ActiveGameFragment extends Fragment {
 				view.addButton(ButtonType.BUILD_WALL);
 			}
 			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
-//			view.addButton(ButtonType.PURCHASE_PROGRESS);
-//			view.addButton(ButtonType.KNIGHT);
+			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
+//			view.addButton(ButtonType.PLAY_KNIGHT);
 		}
 	}
 
 	private void toast(String message) {
-		Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_SHORT)
+		Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG)
 				.show();
 	}
 
@@ -1505,122 +1552,81 @@ public class ActiveGameFragment extends Fragment {
 		showState(false);
 	}
 
-	//TODO: see how we can use this similar code for progress cards
+	private void progressCardDialog() {
+		final Player me = board.getPlayerFromParticipantId(myParticipantId);
+		final Vector<ProgressCard.ProgressCardType> cards = me.getHand();
 
-//	private void development() {
-//		Player player = board.getCurrentPlayer();
-//		int[] cards = player.getCards();
-//
-//		CharSequence[] list = new CharSequence[Board.ProgressCardType.values().length + 2];
-//		int index = 0;
-//
-//		if (player.affordCard() && board.isBuildPhase())
-//			list[index++] = getString(R.string.to_remove_str);
-//
-//		for (int i = 0; i < Board.ProgressCardType.values().length; i++) {
-//			Board.ProgressCardType type = Board.ProgressCardType.values()[i];
-//			if (!player.hasCard(type))
-//				continue;
-//
-//			String quantity = (cards[i] > 1 ? " (" + cards[i] + ")" : "");
-//
-//			if (type == ProgressCardType.SOLDIER)
-//				list[index++] = getString(R.string.to_remove_str) + quantity;
-//			else if (type == ProgressCardType.PROGRESS)
-//				list[index++] = getString(R.string.to_remove_str)
-//						+ quantity;
-//			else if (type == ProgressCardType.HARVEST)
-//				list[index++] = getString(R.string.to_remove_str) + quantity;
-//			else if (type == ProgressCardType.MONOPOLY)
-//				list[index++] = getString(R.string.to_remove_str)
-//						+ quantity;
-//		}
-//
-//		list[index++] = getString(R.string.game_cancel_str);
-//
-//		CharSequence[] items = new CharSequence[index];
-//		for (int i = 0; i < index; i++)
-//			items[i] = list[i];
-//
-//		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//		builder.setTitle(getString(R.string.to_remove_str));
-//		builder.setItems(items, new DialogInterface.OnClickListener() {
-//			public void onClick(DialogInterface dialog, int item) {
-//				Player player = board.getCurrentPlayer();
-//
-//				if (player.affordCard() && board.isBuildPhase()) {
-//					// buy a card
-//					if (item == 0) {
-//						Board.ProgressCardType card = player.buyCard();
-//						if (card != null)
-//							toast(getString(R.string.game_purchased_str)
-//									+ " "
-//									+ getActivity().getString(Board
-//											.getCardStringResource(card)) + " "
-//									+ getString(R.string.to_remove_str));
-//						else
-//							toast(getString(R.string.to_remove_str));
-//
-//						showState(false);
-//						return;
-//					}
-//
-//					item--;
-//				}
-//
-//
-//				// try to use a card
-//				for (int i = 0; i < Board.ProgressCardType.values().length; i++) {
-//					Board.ProgressCardType type = Board.ProgressCardType.values()[i];
-//					if (item > 0 && player.hasCard(type)) {
-//						item--;
-//					} else if (item == 0 && player.hasCard(type)) {
-//						switch (type) {
-//						case HARVEST:
-////							harvest();
-//							return;
-//
-//						case MONOPOLY:
-////							monopoly();
-//							return;
-//
-//						case SOLDIER:
-//							if (player.useCard(type)) {
-//								toast(getString(R.string.to_remove_str));
-//								showState(true);
-//								return;
-//							}
-//							break;
-//
-//						case PROGRESS:
-//							boolean canBuild = false;
-//							for (Edge edge : board.getEdges()) {
-//								if (edge.canBuild(player))
-//									canBuild = true;
-//							}
-//
-//							if (!canBuild) {
-//								cantAct(Action.BUILD_EDGE_UNIT);
-//								return;
-//							} else if (player.useCard(type)) {
-//								toast(getString(R.string.to_remove_str));
-//								showState(false);
-//								return;
-//							}
-//							break;
-//
-//						case VICTORY:
-//							break;
-//						}
-//
-//						toast(getString(R.string.to_remove_str));
-//					}
-//				}
-//			}
-//		});
-//
-//		builder.create().show();
-//	}
+		CharSequence[] list = new CharSequence[cards.size()+1];
+		int index = 0;
+
+		for (int i = 0; i < cards.size(); i++) {
+			ProgressCard.ProgressCardType type = cards.get(i);
+
+			list[index++] = getString(ProgressCard.getCardStringResource(type));
+		}
+
+		list[index++] = getString(R.string.game_cancel_str);
+
+		CharSequence[] items = new CharSequence[index];
+		for (int i = 0; i < index; i++)
+			items[i] = list[i];
+
+		final int cancel = index-1;
+
+		//create the popup asking which card to use
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.status_progress_cards));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+				if (item == cancel) {
+					dialog.dismiss();
+				} else {
+					dialog.dismiss();
+					final ProgressCard.ProgressCardType card = cards.get(item);
+					//open confirmation popup
+					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+					alertDialogBuilder.setMessage("Confirm using card");
+
+					alertDialogBuilder
+							.setCancelable(true)
+							.setPositiveButton("Use",
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int id) {
+											//remove that card from the player & return to bottom of deck
+											cards.remove(card);
+											board.returnProgressCard(card);
+											//play the card
+											switch (card) {
+												case MERCHANT:
+													playMerchant();
+													break;
+												default:
+													break;
+											}
+										}
+									})
+							.setNegativeButton("Close",
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int id) {
+											dialog.cancel();
+										}
+									});
+					alertDialogBuilder.create().show();
+				}
+			}
+		});
+
+		builder.create().show();
+	}
+
+	private void playMerchant(){
+		//@TODO
+		//add merchant placement logic
+		toast("Played the merchant");
+	}
 
 //	private void monopoly() {
 //		CharSequence[] items = new CharSequence[Resource.RESOURCE_TYPES.length];

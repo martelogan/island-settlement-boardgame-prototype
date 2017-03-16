@@ -340,6 +340,162 @@
                 android:text="@string/trade_plus"
                 android:width="48dip" />
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/gold"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="32dip" />
+
+            <Button
+                android:id="@+id/trade_minus7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="48dip" />
+
+            <TextView
+                android:id="@+id/trade_offer7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textSize="24sp"
+                android:width="48dip" />
+
+
+            <Button
+                android:id="@+id/trade_plus7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/gold"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="32dip" />
+
+            <Button
+                android:id="@+id/trade_minus8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="48dip" />
+
+            <TextView
+                android:id="@+id/trade_offer8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textSize="24sp"
+                android:width="48dip" />
+
+
+            <Button
+                android:id="@+id/trade_plus8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/trade_img9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/gold"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+
+            <TextView
+                android:id="@+id/trade_res9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/trade_zero"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:width="32dip" />
+
+            <Button
+                android:id="@+id/trade_minus9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:text="@string/trade_minus"
+                android:width="48dip" />
+
+            <TextView
+                android:id="@+id/trade_offer9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="12dip"
+                android:text="@string/trade_zero"
+                android:textSize="24sp"
+                android:width="48dip" />
+
+
+            <Button
+                android:id="@+id/trade_plus9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/trade_plus"
+                android:width="48dip" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/discard_button"

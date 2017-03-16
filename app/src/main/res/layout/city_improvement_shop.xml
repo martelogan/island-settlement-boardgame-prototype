@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dip" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_tradeImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:id="@+id/trade_level0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip" 
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyTrade1"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 1"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/trade_level1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyTrade2"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 2"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/trade_level2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyTrade3"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 3"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/trade_level3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyTrade4"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 4"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/trade_level4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_cloth_medium" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyTrade5"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 5"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/trade_level5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You own all trade improvements!" >
+            </TextView>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_scienceImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:id="@+id/science_level0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyScience1"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 1"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/science_level1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyScience2"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 2"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/science_level2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyScience3"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 3"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/science_level3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyScience4"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 4"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/science_level4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_paper_medium" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyScience5"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 5"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/science_level5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You own all science improvements!" >
+            </TextView>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_politicsImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:id="@+id/politics_level0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyPolitics1"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 1"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/politics_level1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyPolitics2"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 2"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/politics_level2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyPolitics3"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 3"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/politics_level3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyPolitics4"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 4"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/politics_level4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_medium" >
+            </ImageView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_coin_medium" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyPolitics5"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Buy Level 5"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/politics_level5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="24dip"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You own all politics improvements!" >
+            </TextView>
+        </LinearLayout>
+        
+    </LinearLayout>
+
+</ScrollView>

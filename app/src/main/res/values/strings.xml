@@ -45,6 +45,14 @@
 	<string name="turn_counter">Turn counter</string>
 	<string name="signin_other_error">There was an issue with sign in.  Please try again later.</string>
 
+	<!-- CityImprovement cityImprovementTypes -->
+	<string name="tradeImprovement">trade</string>
+	<string name="politicsImprovement">politics</string>
+	<string name="scienceImprovement">science</string>
+	<string name="current_improvements">Your Current Improvements</string>
+	<string name="shop_improvements">Purchase City Improvements</string>
+	<string name="city_improvements">City Improvements</string>
+
 	<!-- Resource resourceTypes -->
 	<string name="desert">desert</string>
 	<string name="lumber">lumber</string>
@@ -116,6 +124,9 @@
     <string name="player_discarded">Discarded %s</string>
     <string name="player_traded_with">Traded with %s</string>
     <string name="player_traded_for">Traded for %s</string>
+	<string name="player_tradeImp">Purchased Trade Improvement Level: %s</string>
+	<string name="player_scienceImp">Purchased Science Improvement Level: %s</string>
+	<string name="player_politicsImp">Purchased Politics Improvement Level: %s</string>
 
 	<!-- PlayerStatsFragment screen -->
 	<string name="status">Status</string>
@@ -141,6 +152,10 @@
 	<string name="reference_road">Road</string>
 	<string name="reference_settlement">Settlement</string>
 	<string name="reference_city">City</string>
+	<string name="reference_city_wall">City Wall</string>
+	<string name="reference_tradeImprovement">Trade</string>
+	<string name="reference_scienceImprovement">Science</string>
+	<string name="reference_politicsImprovement">Politics</string>
 	<string name="reference_costs">Road:\n1 lumber, 1 brick\n
 		\nSettlement:\n1 lumber, 1
 		wool, 1 grain, 1 brick\n
@@ -226,6 +241,12 @@
 	<string name="game_nothing_available_ship_build">No buildable ship locations</string>
 	<string name="game_nothing_available_ship_move">Ship movement would not be possible right now</string>
 	<string name="game_won">won</string>
+
+	<!-- Progress Cards -->
+	<string name="merchant">Merchant</string>
+
+	<!-- Progress Card Description -->
+	<string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
 
 
 </resources>

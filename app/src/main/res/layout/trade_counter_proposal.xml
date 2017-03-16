@@ -44,7 +44,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus1"
@@ -98,7 +99,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus2"
@@ -152,7 +154,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus3"
@@ -205,7 +208,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus4"
@@ -255,10 +259,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:width="28dip"
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus5"
@@ -310,7 +315,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus6"
@@ -360,10 +366,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:width="28dip"
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus7"
@@ -416,7 +423,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus8"
@@ -469,7 +477,8 @@
                 android:text="@string/trade_zero"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
-                android:width="28dip" />
+                android:width="28dip"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/trade_minus9"

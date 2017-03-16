@@ -4,8 +4,6 @@ import java.util.Hashtable;
 
 import javax.microedition.khronos.opengles.GL10;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -181,14 +179,16 @@ public class TextureManager {
 				R.drawable.button_init_trade, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.END_TURN.ordinal(),
 				R.drawable.button_end_turn, res);
-		add(TextureType.BUTTON, UIButton.ButtonType.CANCEL.ordinal(),
+		add(TextureType.BUTTON, UIButton.ButtonType.CANCEL_ACTION.ordinal(),
 				R.drawable.button_cancel_action, res);
         add(TextureType.BUTTON, UIButton.ButtonType.BUILD_WALL.ordinal(),
                 R.drawable.button_cancel_action, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_PROGRESS.ordinal(),
+        add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_CITY_IMPROVEMENT.ordinal(),
+                R.drawable.button_city_improvement, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.PLAY_KNIGHT.ordinal(),
                 R.drawable.button_cancel_action, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.KNIGHT.ordinal(),
-                R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
+                R.drawable.button_barbarian_progress, res);
 	}
 
     public void drawButton(UIButton button, GL10 gl) {

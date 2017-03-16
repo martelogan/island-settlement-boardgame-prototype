@@ -9,6 +9,11 @@
         android:orientation="vertical"
         android:padding="10dip" >
 
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/trade_requesting" />
+
         <Spinner
             android:id="@+id/trade_type"
             android:layout_width="fill_parent"
