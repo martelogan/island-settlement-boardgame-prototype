@@ -39,7 +39,7 @@ public class Player {
 	protected Vector<Integer> settlementIds, reachingVertexIds;
 	protected Vector<Integer> roadIds, shipIds;
 	private int playerType, privateVictoryPointsCount,
-			tradeValue, roadLength, lastVertexPieceId;
+			tradeValue, myLongestTradeRouteLength, lastVertexPieceId;
 	private int[] countPerResource, countPerProgressCard;
 	private int[] cityImprovementLevels = {0, 0, 0};
 	private boolean[] harbors;
@@ -83,7 +83,7 @@ public class Player {
 		numOwnedCityWalls = 0;
 		hand = new Vector<>();
 		knightsCount = 0;
-		roadLength = 0;
+		myLongestTradeRouteLength = 0;
 		privateVictoryPointsCount = 0;
 		tradeValue = 4;
 		usedCardThisTurn = false;
@@ -218,10 +218,10 @@ public class Player {
 
 		appendAction(R.string.player_road);
 
-		boolean hadLongest = (board.getLongestRoadOwner() == this);
-		board.checkLongestRoad();
+		boolean hadLongest = (board.getLongestTradeRouteOwner() == this);
+		board.updateLongestTradeRoute();
 
-		if (!hadLongest && board.getLongestRoadOwner() == this)
+		if (!hadLongest && board.getLongestTradeRouteOwner() == this)
 		{
 			appendAction(R.string.player_longest_road);
 		}
@@ -277,10 +277,10 @@ public class Player {
 		//TODO: longest trade route (extend with road)
 //		appendAction(R.string.player_ship);
 //
-//		boolean hadLongest = (board.getLongestRoadOwner() == this);
-//		board.checkLongestRoad();
+//		boolean hadLongest = (board.getLongestTradeRouteOwner() == this);
+//		board.updateLongestTradeRoute();
 //
-//		if (!hadLongest && board.getLongestRoadOwner() == this)
+//		if (!hadLongest && board.getLongestTradeRouteOwner() == this)
 //		{
 //			appendAction(R.string.player_longest_road);
 //		}
@@ -365,10 +365,10 @@ public class Player {
 		//TODO: longest trade route (extend with road)
 //		appendAction(R.string.player_ship);
 //
-//		boolean hadLongest = (board.getLongestRoadOwner() == this);
-//		board.checkLongestRoad();
+//		boolean hadLongest = (board.getLongestTradeRouteOwner() == this);
+//		board.updateLongestTradeRoute();
 //
-//		if (!hadLongest && board.getLongestRoadOwner() == this)
+//		if (!hadLongest && board.getLongestTradeRouteOwner() == this)
 //		{
 //			appendAction(R.string.player_longest_road);
 //		}
@@ -412,10 +412,10 @@ public class Player {
 		//TODO: longest trade route (extend with road)
 //		appendAction(R.string.player_ship);
 //
-//		boolean hadLongest = (board.getLongestRoadOwner() == this);
-//		board.checkLongestRoad();
+//		boolean hadLongest = (board.getLongestTradeRouteOwner() == this);
+//		board.updateLongestTradeRoute();
 //
-//		if (!hadLongest && board.getLongestRoadOwner() == this)
+//		if (!hadLongest && board.getLongestTradeRouteOwner() == this)
 //		{
 //			appendAction(R.string.player_longest_road);
 //		}
@@ -480,7 +480,7 @@ public class Player {
 			}
 			numOwnedSettlements += 1;
 			settlementIds.add(vertex.getId());
-			board.checkLongestRoad();
+			board.updateLongestTradeRoute();
 		} else if(vertex.getCurUnitType() == Vertex.CITY){ // city
 			if (!setup) {
 				useResources(Resource.ResourceType.GRAIN, 2);
@@ -1035,7 +1035,7 @@ public class Player {
 		int points = numOwnedSettlements + 2 * numOwnedCities;
 
 		//TODO: add other public vps
-		if (board.hasLongestRoad(this))
+		if (board.hasLongestTradeRoute(this))
 		{
 			points += 2;
 		}
@@ -1477,31 +1477,33 @@ public class Player {
 	}
 
 	/**
-	 * Notify the player the the road length is being recalculated
+	 * Notify the player that longest trade route lengths are being recalculated
 	 */
-	public void cancelRoadLength() {
-		roadLength = 0;
+	public void cancelMyLongestTradeRouteLength() {
+		myLongestTradeRouteLength = 0;
 	}
 
 	/**
-	 * Notify the player of a road length and update its longest road length if
-	 * greater
+	 * Notify the player of one of their trade route lengths and update
+	 * their longestTradeRoute length if needed
 	 *
-	 * @param roadLength
-	 *            the length of a road
+	 * @param tradeRouteLength
+	 *            the length of a trade route
 	 */
-	public void setRoadLength(int roadLength) {
-		if (roadLength > this.roadLength)
-			this.roadLength = roadLength;
+	public void notifyTradeRouteLength(int tradeRouteLength) {
+		if (tradeRouteLength > this.myLongestTradeRouteLength)
+		{
+			this.myLongestTradeRouteLength = tradeRouteLength;
+		}
 	}
 
 	/**
-	 * Get the length of the player's longest road
+	 * Get the length of the player's longest trade route
 	 *
-	 * @return the longest road length
+	 * @return the player's longest trade route length
 	 */
-	public int getRoadLength() {
-		return roadLength;
+	public int getMyLongestTradeRouteLength() {
+		return myLongestTradeRouteLength;
 	}
 
 	/**

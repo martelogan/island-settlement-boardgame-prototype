@@ -107,8 +107,8 @@ public class PlayerStatsFragment extends Fragment {
 			message += "\n";
 
 			message += getString(R.string.status_best_road_length) + ": "
-					+ player.getRoadLength() + "\n";
-			if (player == board.getLongestRoadOwner())
+					+ player.getMyLongestTradeRouteLength() + "\n";
+			if (player == board.getLongestTradeRouteOwner())
 				message += getString(R.string.status_has_longest_road) + ": "
 						+ "2 " + getString(R.string.status_points_str) + "\n";
 

@@ -421,40 +421,48 @@ public class Vertex {
 	}
 
 	/**
-	 * Find the longest road passing through this vertex for the given player
+	 * Find the longest trade route passing through this vertex for the given player
 	 * 
 	 * @param player
-	 *            the player
-	 * @param omit
-	 *            omit an edgeIds already considered
-	 * @return the road length
+	 *            the player of interest
+	 * @param toIgnore
+	 *            ignore previously considered edge
+	 * @param numberOfLongestTradeRouteUpdatesSoFar
+	 *            number of times the longest trade route was recalculated through here
+	 * @return the longest trade route length passing through this vertex for the given player
 	 */
-	public int getRoadLength(Player player, Edge omit, int countId) {
-		int longest = 0;
+	public int getLongestTradeRouteLengthFromHere(Player player, Edge toIgnore,
+												  int numberOfLongestTradeRouteUpdatesSoFar) {
+		int longestTradeRouteLengthSoFar = 0;
 
-		// FIXME: if two road paths diverge and re-converge, the result may be
-		// calculated with whichever happens to be picked first
+		// FIXME: if two road paths diverge and re-converge, the result would be calculated with whichever happens to be picked first
 
 		// another player's road breaks the road chain
-		if (board.getPlayerById(ownerPlayerNumber) != null && board.getPlayerById(ownerPlayerNumber) != player)
+		Player ourOwner = board.getPlayerById(ownerPlayerNumber);
+		if (ourOwner != null && ourOwner != player)
 		{
 			return 0;
 		}
 
-		// find the longest road aside from one passing through the given edgeIds
-		for (int i = 0; i < 3; i++) {
-			if (edgeIds[i] == -1 || edgeIds[i] == omit.getId())
+		// find the longest road (ignoring previously included edge)
+		Edge curEdge = null;
+		int i= 0, longestRoadLengthFromCurAdjacentEdge = 0;
+		for (i = 0; i < 3; i++) {
+			curEdge = board.getEdgeById(edgeIds[i]);
+			if (curEdge == null || curEdge == toIgnore)
 			{
 				continue;
 			}
 
-			int length = board.getEdgeById(edgeIds[i]).getRoadLength(player, this, countId);
-			if (length > longest)
+			longestRoadLengthFromCurAdjacentEdge = curEdge.getLongestTradeRouteLengthFromHere(player,
+					this, numberOfLongestTradeRouteUpdatesSoFar);
+
+			if (longestRoadLengthFromCurAdjacentEdge > longestTradeRouteLengthSoFar)
 			{
-				longest = length;
+				longestTradeRouteLengthSoFar = longestRoadLengthFromCurAdjacentEdge;
 			}
 		}
 
-		return longest;
+		return longestTradeRouteLengthSoFar;
 	}
 }

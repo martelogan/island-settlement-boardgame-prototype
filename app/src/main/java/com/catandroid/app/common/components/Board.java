@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
-import java.util.Vector;
 
 public class Board {
 
@@ -113,9 +112,9 @@ public class Board {
 
 	private Integer curRobberHexId = null, prevRobberHexId = null,
 			curPirateHexId = null, prevPirateHexId = null;
-	private int curPlayerNumber, gameTurnNumber, gameRoundNumber, roadCountId, longestRoad,
-			maxPoints, lastDiceRollNumber;
-	private Integer longestRoadOwnerId = null, winnerId = null;
+	private int curPlayerNumber, gameTurnNumber, gameRoundNumber, numberOfLongestTradeRouteUpdates,
+			longestTradeRouteLength, maxPoints, lastDiceRollNumber;
+	private Integer longestTradeRouteOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
     private int tempEdgeIdMemory = -1;
 
@@ -166,9 +165,9 @@ public class Board {
 		gameRoundNumber = 1;
 		gameTurnNumber = 1;
 		phase = Phase.SETUP_SETTLEMENT;
-		roadCountId = 0;
-		longestRoad = 4;
-		longestRoadOwnerId = null;
+		numberOfLongestTradeRouteUpdates = 0;
+		longestTradeRouteLength = 4;
+		longestTradeRouteOwnerId = null;
 		hexagons = null;
 		winnerId = null;
 
@@ -959,53 +958,61 @@ public class Board {
 		return barbarianPosition;
 	}
 
+
+	//TODO: adapt to fit ship requirements
 	/**
-	 * Update the longest road owner and length
+	 * Update the longest trade route length and owner
 	 */
-	public void checkLongestRoad() {
-		Player previousOwner = longestRoadOwnerId != null ? players[longestRoadOwnerId] : null;
+	public void updateLongestTradeRoute() {
+		Player previousOwner = longestTradeRouteOwnerId != null ? players[longestTradeRouteOwnerId] : null;
 
-		// reset road length in case a road was split
-		longestRoad = 4;
-		longestRoadOwnerId = null;
+		// reset trade route length in case a path was broken
+		longestTradeRouteLength = 4;
+		longestTradeRouteOwnerId = null;
 
-		// reset players' road lengths to 0
+		// temporarily reset players' trade route lengths to 0
 		for (int i = 0; i < numPlayers; i++)
 		{
-			players[i].cancelRoadLength();
+			players[i].cancelMyLongestTradeRouteLength();
 		}
 
-		// find longest road
-		for (int i = 0; i < edges.length; i++) {
-			if (edges[i].hasEdgeUnit()) {
-				int length = edges[i].getRoadLength(++roadCountId);
+		// find longest trade route
+		int i, longestTradeRouteFromCurEdge;
+		Edge curEdge = null;
+		Player curEdgeOwner;
+		for (i = 0; i < edges.length; i++) {
+			curEdge = edges[i];
+			if (curEdge.hasEdgeUnit()) {
+				longestTradeRouteFromCurEdge = curEdge.getLongestTradeRouteLengthFromHere(
+						++numberOfLongestTradeRouteUpdates);
 
-				Player owner = edges[i].getOwnerPlayer();
-				owner.setRoadLength(length);
-				if (length > longestRoad) {
-					longestRoad = length;
-					longestRoadOwnerId = owner.getPlayerNumber();
+				curEdgeOwner = curEdge.getOwnerPlayer();
+				curEdgeOwner.notifyTradeRouteLength(longestTradeRouteFromCurEdge);
+				if (longestTradeRouteFromCurEdge > longestTradeRouteLength) {
+					longestTradeRouteLength = longestTradeRouteFromCurEdge;
+					longestTradeRouteOwnerId = curEdgeOwner.getPlayerNumber();
 				}
 			}
 		}
 
-		// the same players keeps the longest road if length doesn't change
+		// barring a change, the previous title holder retains the achievement
 		if (previousOwner != null
-				&& previousOwner.getRoadLength() == longestRoad)
+				&& previousOwner.getMyLongestTradeRouteLength() == longestTradeRouteLength)
 		{
-			longestRoadOwnerId = previousOwner.getPlayerNumber();
+			longestTradeRouteOwnerId = previousOwner.getPlayerNumber();
 		}
 	}
 
 	/**
-	 * Determine if players has the longest road
+	 * Determine if a player currently has the longest trade route
 	 * 
 	 * @param player
-	 *            the players
-	 * @return true if players had the longest road
+	 *            the player
+	 * @return true iff player currently has the longest trade route
 	 */
-	public boolean hasLongestRoad(Player player) {
-		return (longestRoadOwnerId != null && player.getPlayerNumber() == longestRoadOwnerId);
+	public boolean hasLongestTradeRoute(Player player) {
+		return (longestTradeRouteOwnerId != null
+				&& player.getPlayerNumber() == longestTradeRouteOwnerId);
 	}
 
 	/**
@@ -1013,17 +1020,17 @@ public class Board {
 	 * 
 	 * @return the length of the longest road
 	 */
-	public int getLongestRoad() {
-		return longestRoad;
+	public int getLongestTradeRouteLength() {
+		return longestTradeRouteLength;
 	}
 
 	/**
-	 * Get the owner of the longest road
+	 * Get the current owner of the longest trade route
 	 * 
-	 * @return the players with the longest road
+	 * @return the current owner of the longest trade route
 	 */
-	public Player getLongestRoadOwner() {
-		return longestRoadOwnerId != null ? players[longestRoadOwnerId] : null;
+	public Player getLongestTradeRouteOwner() {
+		return longestTradeRouteOwnerId != null ? players[longestTradeRouteOwnerId] : null;
 	}
 
 	/**

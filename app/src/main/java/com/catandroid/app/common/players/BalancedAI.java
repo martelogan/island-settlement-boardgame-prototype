@@ -23,9 +23,9 @@ public class BalancedAI extends Player implements AutomatedPlayer {
         while (!done) {
             done = true;
 
-            boolean hasLongest = board.getLongestRoadOwner() == this;
+            boolean hasLongest = board.getLongestTradeRouteOwner() == this;
             boolean settlementPriority = numOwnedSettlements + numOwnedCities < 4;
-            boolean roadContender = board.getLongestRoad() - getRoadLength() <= 3;
+            boolean roadContender = board.getLongestTradeRouteLength() - getMyLongestTradeRouteLength() <= 3;
 
             boolean canSettle = false;
             boolean canCity = false;
