@@ -1,5 +1,6 @@
-package com.catandroid.app.common.components;
+package com.catandroid.app.common.logistics.multiplayer;
 
+import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.players.Player;
 
@@ -21,7 +22,10 @@ public class TradeProposal {
     private ArrayList<Integer> pendingPlayers;
     private boolean tradeReplied = false;
 
-    public TradeProposal(Resource.ResourceType tradeResource, int tradeCreatorPlayerId, int currentPlayerToProposeId, int[] originalOffer, ArrayList<Integer> pendingPlayers) {
+    public TradeProposal(Resource.ResourceType tradeResource, int tradeCreatorPlayerId,
+                         int currentPlayerToProposeId, int[] originalOffer,
+                         ArrayList<Integer> pendingPlayers) {
+
         this.tradeResource = tradeResource;
         this.originalOffer = originalOffer;
         this.pendingPlayers = pendingPlayers;

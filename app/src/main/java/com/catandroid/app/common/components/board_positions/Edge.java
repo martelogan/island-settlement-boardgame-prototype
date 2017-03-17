@@ -141,8 +141,8 @@ public class Edge {
 			// the player has an edgeUnit to an unoccupied vertex
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).connectedToEdgeUnitOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
+					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
 			}
 		}
@@ -167,8 +167,8 @@ public class Edge {
 			// the player has a road to an unoccupied vertex
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).connectedToRoadOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
+					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
 			}
 		}
@@ -193,8 +193,8 @@ public class Edge {
 			// the player has a ship to an unoccupied vertex
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).connectedToShipOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
+					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
 			}
 		}
@@ -580,4 +580,7 @@ public class Edge {
 				ownerPlayer, this, numberOfLongestTradeRouteUpdatesSoFar);
 		return longestTradeRouteLengthFromV0Clockwise + longestTradeRouteLengthFromV1Clockwise + 1;
 	}
+
+
+
 }

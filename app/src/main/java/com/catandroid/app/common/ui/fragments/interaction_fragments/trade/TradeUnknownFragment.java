@@ -14,13 +14,10 @@ import android.widget.Toast;
 
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.R;
-import com.catandroid.app.common.components.TradeProposal;
+import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class TradeUnknownFragment extends Fragment {
 

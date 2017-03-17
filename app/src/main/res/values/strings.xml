@@ -65,6 +65,11 @@
 	<string name="coin">coin</string>
 	<string name="cloth">cloth</string>
 
+    <!-- Knight knightRanks -->
+    <string name="knight_basic">basic knight</string>
+    <string name="knight_strong">strong knight</string>
+    <string name="knight_mighty">mighty knight</string>
+
 	<!-- Trade screen -->
 	<string name="trade">Trade</string>
 	<string name="bankratio"><u>Bank Trade Ratio</u></string>
@@ -112,7 +117,8 @@
 	<string name="player_ship">Built a ship</string>
     <string name="player_settlement">Built a settlement</string>
     <string name="player_city">Built a city</string>
-	<string name="player_wall">Built a wall</string>
+	<string name="player_city_wall">Built a city wall</string>
+    <string name="player_place_knight">Dispatched a knight</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
 	<string name="player_received_card">Received a card</string>
@@ -179,7 +185,7 @@
     <string name="phase_first_city">Place a city</string>
     <string name="phase_second_edge_unit">Place 2nd road/ship</string>
     <string name="phase_your_turn">Your turn</string>
-    <string name="phase_build">Build</string>
+    <string name="phase_player_turn">Make your moves</string>
 	<string name="phase_move_ship">Move the ship</string>
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
@@ -220,7 +226,9 @@
 	<string name="game_build_settlement">Build a settlement</string>
 	<string name="game_build_city">Build a city</string>
 	<string name="game_build_wall">Build a wall</string>
+	<string name="game_hire_knight">Dispatch knight</string>
 	<string name="game_cant_build_str">Can\'t build</string>
+	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
@@ -233,13 +241,16 @@
 	<string name="game_build_edge_unit_max">Reached the maximum number of edge units.</string>
 	<string name="game_build_road_max">Reached the maximum number of roads.</string>
 	<string name="game_build_ship_max">Reached the maximum number of ships.</string>
-	<string name="game_nothing_available_settlement">No buildable settlement locations.</string>
-	<string name="game_nothing_available_city">No buildable city locations.</string>
-	<string name="game_nothing_available_city_wall">No buildable wall locations.</string>
-	<string name="game_nothing_available_edge_unit">No buildable road/ship locations</string>
-	<string name="game_nothing_available_road">No buildable road locations</string>
-	<string name="game_nothing_available_ship_build">No buildable ship locations</string>
-	<string name="game_nothing_available_ship_move">Ship movement would not be possible right now</string>
+	<string name="game_basic_knight_max">No basic knights available to hire.</string>
+    <string name="game_total_knights_max">No remaining knights to play.</string>
+	<string name="game_nowhere_available_settlement">No buildable settlement locations.</string>
+	<string name="game_nowhere_available_city">No buildable city locations.</string>
+	<string name="game_nowhere_available_city_wall">No buildable wall locations.</string>
+	<string name="game_nowhere_available_edge_unit_build">No buildable road/ship locations</string>
+	<string name="game_nowhere_available_road_build">No buildable road locations</string>
+	<string name="game_nowhere_available_ship_build">No buildable ship locations</string>
+	<string name="game_nowhere_available_ship_move">Ship movement would not be possible right now</string>
+    <string name="game_nowhere_available_hire_knight">No locations available to dispatch a knight</string>
 	<string name="game_won">won</string>
 
 	<!-- Progress Cards -->

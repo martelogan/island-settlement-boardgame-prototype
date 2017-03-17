@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
+import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard.ProgressCardType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
@@ -26,6 +27,10 @@ public class Player {
 	public static final int MAX_CITY_WALLS = 3;
 	public static final int MAX_ROADS = 15;
 	public static final int MAX_SHIPS = 15;
+	public static final int MAX_BASIC_KNIGHTS = 2;
+	public static final int MAX_STRONG_KNIGHTS = 2;
+	public static final int MAX_MIGHTY_KNIGHTS = 2;
+	public static final int MAX_TOTAL_KNIGHTS = 6;
 
 	public static final int[] ROAD_COST = { 1, 0, 0, 1, 0, 0 };
 	public static final int[] SETTLEMENT_COST = { 1, 1, 1, 1, 0, 0 };
@@ -35,11 +40,17 @@ public class Player {
 	private int playerNumber;
 	private Color color;
 	private String playerName;
-	protected int numOwnedSettlements, numOwnedCities, numOwnedCityWalls, knightsCount;
-	protected Vector<Integer> settlementIds, reachingVertexIds;
+	protected int numOwnedSettlements;
+	protected int numOwnedCities;
+	protected int numOwnedCityWalls;
+	protected int numTotalOwnedKnights;
+	protected int numOwnedBasicKnights;
+	protected int numOwnedStrongKnights;
+	protected int numOwnedMightyKnights;
+	protected Vector<Integer> ownedCommunityIds, reachingVertexIds;
 	protected Vector<Integer> roadIds, shipIds;
 	private int playerType, privateVictoryPointsCount,
-			tradeValue, myLongestTradeRouteLength, lastVertexPieceId;
+			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
 	private int[] cityImprovementLevels = {0, 0, 0};
 	private boolean[] harbors;
@@ -82,18 +93,21 @@ public class Player {
 		numOwnedCities = 0;
 		numOwnedCityWalls = 0;
 		hand = new Vector<>();
-		knightsCount = 0;
+		numTotalOwnedKnights = 0;
+		numOwnedBasicKnights = 0;
+		numOwnedStrongKnights = 0;
+		numOwnedMightyKnights = 0;
 		myLongestTradeRouteLength = 0;
 		privateVictoryPointsCount = 0;
 		tradeValue = 4;
 		usedCardThisTurn = false;
 		shipWasMovedThisTurn = false;
 		actionLog = "";
-		lastVertexPieceId = -1;
+		latestBuiltCommunityId = -1;
 
 		hand = new Vector<ProgressCardType>();
 
-		settlementIds = new Vector<Integer>();
+		ownedCommunityIds = new Vector<Integer>();
 		reachingVertexIds = new Vector<Integer>();
 		roadIds = new Vector<Integer>();
 		shipIds = new Vector<Integer>();
@@ -201,7 +215,7 @@ public class Player {
 		// check resources
 		//TODO: progress card effect?
 		boolean free = board.isSetupPhase();
-		if (!free && !affordRoad())
+		if (!free && !canAffordToBuildRoad())
 		{
 			return false;
 		}
@@ -259,7 +273,7 @@ public class Player {
 		// check resources
 		//TODO: progress card effect?
 		boolean free = board.isSetupPhase();
-		if (!free && !affordShip())
+		if (!free && !canAffordToBuildShip())
 		{
 			return false;
 		}
@@ -446,17 +460,17 @@ public class Player {
 
 		// check resources based on type we want to build
 		if (unitType == Vertex.SETTLEMENT) {
-			if (!setup && !affordSettlement())
+			if (!setup && !canAffordToBuildSettlement())
 			{
 				return false;
 			}
 		} else if (unitType == Vertex.CITY) {
-			if (!setup && !affordCity())
+			if (!setup && !canAffordToBuildCity())
 			{
 				return false;
 			}
-		} else if (unitType == Vertex.WALL) {
-			if (!setup && !affordWall())
+		} else if (unitType == Vertex.CITY_WALL) {
+			if (!setup && !canAffordToBuildCityWall())
 			{
 				return false;
 			}
@@ -479,7 +493,7 @@ public class Player {
 				useResources(Resource.ResourceType.WOOL, 1);
 			}
 			numOwnedSettlements += 1;
-			settlementIds.add(vertex.getId());
+			ownedCommunityIds.add(vertex.getId());
 			board.updateLongestTradeRoute();
 		} else if(vertex.getCurUnitType() == Vertex.CITY){ // city
 			if (!setup) {
@@ -488,10 +502,10 @@ public class Player {
 				numOwnedSettlements -= 1;
 			}
 			else {
-				settlementIds.add(vertex.getId());
+				ownedCommunityIds.add(vertex.getId());
 			}
 			numOwnedCities += 1;
-		} else if(vertex.getCurUnitType() == Vertex.WALL){
+		} else if(vertex.getCurUnitType() == Vertex.CITY_WALL){
 			if (!setup) {
 				useResources(Resource.ResourceType.BRICK, 2);
 			}
@@ -506,8 +520,8 @@ public class Player {
 			case Vertex.CITY:
 				appendAction(R.string.player_city);
 				break;
-			case Vertex.WALL:
-				appendAction(R.string.player_wall);
+			case Vertex.CITY_WALL:
+				appendAction(R.string.player_city_wall);
 				break;
 			default:
 				break;
@@ -543,7 +557,46 @@ public class Player {
 			}
 		}
 
-		lastVertexPieceId = vertex.getId();
+		latestBuiltCommunityId = vertex.getId();
+
+		return true;
+	}
+
+	/**
+	 * Attempt to hire a knight to the vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex to dispatch knight
+	 * @return
+	 */
+	public boolean hireKnightTo(Vertex vertex) {
+		if (vertex == null || !canHireKnightTo(vertex))
+		{
+			return false;
+		}
+
+		if (!canAffordToHireKnight()) {
+			return false;
+		}
+
+		Knight hiredKnight = board.getNextAvailableBasicKnight();
+
+		if (!vertex.placeKnight(this, hiredKnight))
+		{
+			return false;
+		}
+
+		// pay for the knight
+		useResources(ResourceType.WOOL, 1);
+		useResources(ResourceType.ORE, 1);
+		// update our knight counts
+		numOwnedBasicKnights += 1;
+		numTotalOwnedKnights += 1;
+		// knight may have blocked a trade route
+		board.updateLongestTradeRoute();
+
+		// append to the turn log
+		appendAction(R.string.player_place_knight);
 
 		return true;
 	}
@@ -563,11 +616,11 @@ public class Player {
 
 		if (board.isSetupPhase()) {
 			Vertex v;
-			if (lastVertexPieceId == -1) {
+			if (latestBuiltCommunityId == -1) {
 				v = null;
 			}
 			else {
-				v = board.getVertexById(lastVertexPieceId);
+				v = board.getVertexById(latestBuiltCommunityId);
 			}
 			// check if the edge is adjacent to the last settlement built
 			if (v != edge.getV0Clockwise() &&
@@ -594,11 +647,11 @@ public class Player {
 
 		if (board.isSetupPhase()) {
 			Vertex v;
-			if (lastVertexPieceId == -1) {
+			if (latestBuiltCommunityId == -1) {
 				v = null;
 			}
 			else {
-				v = board.getVertexById(lastVertexPieceId);
+				v = board.getVertexById(latestBuiltCommunityId);
 			}
 			// check if the edge is adjacent to the last settlement built
 			if (v != edge.getV0Clockwise() &&
@@ -625,11 +678,11 @@ public class Player {
 
 		if (board.isSetupPhase()) {
 			Vertex v;
-			if (lastVertexPieceId == -1) {
+			if (latestBuiltCommunityId == -1) {
 				v = null;
 			}
 			else {
-				v = board.getVertexById(lastVertexPieceId);
+				v = board.getVertexById(latestBuiltCommunityId);
 			}
 			// check if the edge is adjacent to the last settlement built
 			if (v != edge.getV0Clockwise() &&
@@ -660,12 +713,29 @@ public class Player {
 		{
 			return false;
 		}
-		else if (unitType == Vertex.WALL && numOwnedCityWalls >= MAX_CITY_WALLS)
+		else if (unitType == Vertex.CITY_WALL && numOwnedCityWalls >= MAX_CITY_WALLS)
 		{
 			return false;
 		}
 
 		return vertex.canBuild(this, unitType, board.isSetupPhase());
+	}
+
+	/**
+	 * Can you hire knight to this vertex?
+	 *
+	 * @param vertex
+	 *            vertex to build on
+	 * @return
+	 */
+	public boolean canHireKnightTo(Vertex vertex) {
+		if (numOwnedBasicKnights >= MAX_BASIC_KNIGHTS
+				|| numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS)
+		{
+			return false;
+		}
+
+		return vertex.canPlaceKnightHere(this);
 	}
 
 	/**
@@ -960,11 +1030,11 @@ public class Player {
 	}
 
 	/**
-	 * Determine if the player can build an edge unit
+	 * Determine if the player can afford to build an edge unit
 	 *
-	 * @return true if the player can build a unit
+	 * @return true if the player can afford to build a unit
 	 */
-	public boolean affordEdgeUnit() {
+	public boolean canAffordToBuildSomeEdgeUnit() {
 		return (FREE_BUILD || (roadIds.size() + shipIds.size())< MAX_ROADS + MAX_SHIPS
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& (getResources(Resource.ResourceType.BRICK) >= 1
@@ -972,33 +1042,33 @@ public class Player {
 	}
 
 	/**
-	 * Determine if the player can build a road
+	 * Determine if the player can afford to build a road
 	 *
-	 * @return true if the player can build a road
+	 * @return true if the player can afford to build a road
 	 */
-	public boolean affordRoad() {
+	public boolean canAffordToBuildRoad() {
 		return (FREE_BUILD || roadIds.size() < MAX_ROADS
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& getResources(Resource.ResourceType.BRICK) >= 1);
 	}
 
 	/**
-	 * Determine if the player can build a ship
+	 * Determine if the player can afford to build a ship
 	 *
-	 * @return true if the player can build a ship
+	 * @return true if the player can afford to build a ship
 	 */
-	public boolean affordShip() {
+	public boolean canAffordToBuildShip() {
 		return (FREE_BUILD || shipIds.size() < MAX_SHIPS
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
 				&& getResources(Resource.ResourceType.WOOL) >= 1);
 	}
 
 	/**
-	 * Determine if a player can build a settlement
+	 * Determine if a player can afford to build a settlement
 	 *
-	 * @return true if the player can build a settlement
+	 * @return true if the player can afford to build a settlement
 	 */
-	public boolean affordSettlement() {
+	public boolean canAffordToBuildSettlement() {
 		return (FREE_BUILD || numOwnedSettlements < MAX_SETTLEMENTS
 				&& getResources(Resource.ResourceType.BRICK) >= 1
 				&& getResources(Resource.ResourceType.LUMBER) >= 1
@@ -1007,23 +1077,35 @@ public class Player {
 	}
 
 	/**
-	 * Determine if the player can build a city
+	 * Determine if the player can afford to build a city
 	 *
-	 * @return true if the player can build a city
+	 * @return true if the player can afford to build a city
 	 */
-	public boolean affordCity() {
+	public boolean canAffordToBuildCity() {
 		return (FREE_BUILD || numOwnedCities < MAX_CITIES
 				&& getResources(Resource.ResourceType.GRAIN) >= 2 && getResources(Resource.ResourceType.ORE) >= 3);
 	}
 
 	/**
-	 * Determine if the player can build a wall
+	 * Determine if the player can afford to build a city wall
 	 *
-	 * @return true if the player can build a wall
+	 * @return true if the player can afford to build a city wall
 	 */
-	public boolean affordWall() {
+	public boolean canAffordToBuildCityWall() {
 		return (FREE_BUILD || numOwnedCityWalls < MAX_CITY_WALLS
 				&& getResources(Resource.ResourceType.BRICK) >= 2);
+	}
+
+	/**
+	 * Determine if the player can afford to hire a knight
+	 *
+	 * @return true if the player can afford to hire a knight
+	 */
+	public boolean canAffordToHireKnight() {
+		return (FREE_BUILD || (numOwnedBasicKnights < MAX_BASIC_KNIGHTS
+				&& numTotalOwnedKnights < MAX_TOTAL_KNIGHTS
+				&& getResources(Resource.ResourceType.WOOL) >= 1
+				&& getResources(Resource.ResourceType.ORE) >= 1));
 	}
 
 	/**
@@ -1511,39 +1593,77 @@ public class Player {
 	 *
 	 * @return the number of settlements owned by the player
 	 */
-	public int getNumSettlements() {
+	public int getNumOwnedSettlements() {
 		return numOwnedSettlements;
 	}
 
 	/**
-	 * Get the number of resource cards the player has
+	 * Get the player's resources count
 	 *
-	 * @return the number of resource cards the player has
+	 * @return the number of resources owned by the player
 	 */
-	public int getNumResources() {
+	public int getTotalNumOwnedResources() {
 		int count = 0;
 		for (int i = 0; i < countPerResource.length; i++)
+		{
 			count += countPerResource[i];
+		}
 
 		return count;
 	}
 
 	/**
-	 * Get the number of cities
+	 * Get the number of cities owned by the player
 	 *
-	 * @return the number of cities the player has
+	 * @return the number of city owned by the player
 	 */
-	public int getNumCities() {
+	public int getNumOwnedCities() {
 		return numOwnedCities;
 	}
 
 	/**
-	 * Get the number of walls
+	 * Get the number of city walls owned by the player
 	 *
-	 * @return the number of walls the player has
+	 * @return the number of city walls owned by the player
 	 */
-	public int getNumWalls() {
+	public int getNumOwnedCityWalls() {
 		return numOwnedCityWalls;
+	}
+
+	/**
+	 * Get the total number of knights owned by the player
+	 *
+	 * @return the total number of knights the player has
+	 */
+	public int getTotalNumOwnedKnights() {
+		return numTotalOwnedKnights;
+	}
+
+	/**
+	 * Get the number of basic knights owned by the player
+	 *
+	 * @return the number of basic knights the player has
+	 */
+	public int getNumOwnedBasicKnights() {
+		return numOwnedBasicKnights;
+	}
+
+	/**
+	 * Get the number of strong knights owned by the player
+	 *
+	 * @return the number of strong knights the player has
+	 */
+	public int getNumOwnedStrongKnights() {
+		return numOwnedStrongKnights;
+	}
+
+	/**
+	 * Get the number of mighty knights owned by the player
+	 *
+	 * @return the number of mighty knights the player has
+	 */
+	public int getNumOwnedMightyKnights() {
+		return numOwnedMightyKnights;
 	}
 
 	/**

@@ -308,6 +308,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			case BUILD_SETTLEMENT:
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
+			case HIRE_KNIGHT:
 				// select a vertex
 				select = boardGeometry.getNearestVertex(x, y);
 				break;

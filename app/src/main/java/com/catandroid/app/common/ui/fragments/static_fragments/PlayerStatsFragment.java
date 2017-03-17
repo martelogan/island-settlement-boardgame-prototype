@@ -66,7 +66,7 @@ public class PlayerStatsFragment extends Fragment {
 			String message = "\n";
 
 			message += getString(R.string.status_resources) + ": "
-					+ player.getNumResources() + "\n";
+					+ player.getTotalNumOwnedResources() + "\n";
 			if(showAll) {
 				message += "\t\t" + getString(R.string.wool) + ": "
 						+ player.getResources(Resource.ResourceType.WOOL) + "\n";
@@ -94,15 +94,15 @@ public class PlayerStatsFragment extends Fragment {
 			message += "\n";
 
 			message += getString(R.string.status_settlements) + ": "
-					+ player.getNumSettlements() + " / " + Player.MAX_SETTLEMENTS + "\n";
+					+ player.getNumOwnedSettlements() + " / " + Player.MAX_SETTLEMENTS + "\n";
 			message += getString(R.string.status_cities) + ": "
-					+ player.getNumCities() + " / " + Player.MAX_CITIES + "\n";
+					+ player.getNumOwnedCities() + " / " + Player.MAX_CITIES + "\n";
 			message += getString(R.string.status_roads) + ": "
 					+ player.getNumRoads() + " / " + Player.MAX_ROADS + "\n";
 			message += getString(R.string.status_ships) + ": "
 					+ player.getNumShips() + " / " + Player.MAX_SHIPS+ "\n";
 			message += getString(R.string.reference_city_wall) + ": "
-					+ player.getNumWalls() + " / " + Player.MAX_CITY_WALLS + "\n";
+					+ player.getNumOwnedCityWalls() + " / " + Player.MAX_CITY_WALLS + "\n";
 
 			message += "\n";
 

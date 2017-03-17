@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.BoardGeometry;
+import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
@@ -19,7 +20,8 @@ public class GameRenderer implements Renderer {
 
 	public enum Action {
 		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_EDGE_UNIT, BUILD_ROAD,
-		BUILD_SHIP,	MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
+		BUILD_SHIP, HIRE_KNIGHT, MOVE_SHIP_1, MOVE_SHIP_2,
+		CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
 
 	private TextureManager texture;
@@ -84,7 +86,7 @@ public class GameRenderer implements Renderer {
 
 	public boolean cancel() {
 		// TODO: cancel intermediate interactions
-		return ((board.isProduction() || board.isBuildPhase()) && action != Action.NONE);
+		return ((board.isProduction() || board.isPlayerTurnPhase()) && action != Action.NONE);
 	}
 
 	@Override
@@ -220,10 +222,25 @@ public class GameRenderer implements Renderer {
                         && player.canBuildVertexUnit(vertex, Vertex.SETTLEMENT);
                 boolean city = player != null && action == Action.BUILD_CITY
                         && player.canBuildVertexUnit(vertex, Vertex.CITY);
-				boolean wall = player != null && action == Action.BUILD_CITY_WALL
-						&& player.canBuildVertexUnit(vertex, Vertex.WALL);
+				boolean cityWall = player != null && action == Action.BUILD_CITY_WALL
+						&& player.canBuildVertexUnit(vertex, Vertex.CITY_WALL);
 
-                texture.drawVertex(vertex, settlement, city, wall, gl, boardGeometry);
+				// TODO: many cases where we may want to hi-light a knight
+				Knight selectableKnight = null;
+				if(player == null) {
+					selectableKnight = null;
+				}
+				else if(action == Action.HIRE_KNIGHT && player.canHireKnightTo(vertex)) {
+					selectableKnight = new Knight(Knight.KnightRank.BASIC_KNIGHT, false);
+				}
+				if (selectableKnight != null || vertex.getCurUnitType() == Vertex.KNIGHT)
+				{
+					texture.drawKnight(vertex, selectableKnight, gl, boardGeometry);
+				}
+
+				// try to render any buildable units on the vertex
+                texture.drawBuildableVertexUnit(vertex, settlement,
+                        city, cityWall, gl, boardGeometry);
             }
 
 			gl.glMatrixMode(GL10.GL_PROJECTION);

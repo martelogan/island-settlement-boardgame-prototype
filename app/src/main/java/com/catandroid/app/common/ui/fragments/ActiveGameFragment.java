@@ -1,6 +1,6 @@
 package com.catandroid.app.common.ui.fragments;
 
-import com.catandroid.app.common.components.TradeProposal;
+import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
@@ -306,6 +306,7 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_SETTLEMENT:
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
+			case HIRE_KNIGHT:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -356,28 +357,47 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void select(Action action, Vertex vertex) {
-		int type = Vertex.NONE;
+		int vertexUnitType = Vertex.NONE;
 		if (action == Action.BUILD_SETTLEMENT)
 		{
-			type = Vertex.SETTLEMENT;
+			vertexUnitType = Vertex.SETTLEMENT;
 		}
 		else if (action == Action.BUILD_CITY)
 		{
-			type = Vertex.CITY;
+			vertexUnitType = Vertex.CITY;
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			type = Vertex.WALL;
+			vertexUnitType = Vertex.CITY_WALL;
+		}
+		else if (action == Action.HIRE_KNIGHT) {
+			vertexUnitType = Vertex.KNIGHT;
 		}
 
 		Player player = board.getCurrentPlayer();
-		if (player.buildVertexUnit(vertex, type)) {
-			if (board.isSetupSettlement() || board.isSetupCity())
-			{
-				board.nextPhase();
-			}
+		switch(vertexUnitType) {
+			case Vertex.SETTLEMENT:
+			case Vertex.CITY:
+			case Vertex.CITY_WALL: // selecting buildable vertex unit
+				if (player.buildVertexUnit(vertex, vertexUnitType)) {
+					if (board.isSetupSettlement() || board.isSetupCity())
+					{
+						board.nextPhase();
+					}
 
-			showState(false);
+					showState(false);
+				}
+				break;
+
+			case Vertex.KNIGHT: // selecting knight unit
+				switch(action) {
+					case HIRE_KNIGHT:
+						//TODO: hire knight (look at ship logic for inspiration)
+						if (player.hireKnightTo(vertex)) {
+							showState(false);
+						}
+						break;
+				}
 		}
 	}
 
@@ -640,7 +660,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumSettlements() >= Player.MAX_SETTLEMENTS) {
+				if (board.getCurrentPlayer().getNumOwnedSettlements() >= Player.MAX_SETTLEMENTS) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_settlements_max));
 					break;
@@ -663,7 +683,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumCities() >= Player.MAX_CITIES) {
+				if (board.getCurrentPlayer().getNumOwnedCities() >= Player.MAX_CITIES) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_city_max));
 					break;
@@ -675,15 +695,17 @@ public class ActiveGameFragment extends Fragment {
 						 + getActivity().getString(R.string.game_build_city));
 				break;
 
-			case PROGRESS_CARD:
+			case PLAY_PROGRESS_CARD:
 				progressCardDialog();
 
 				break;
 
-			case BUILD_WALL:
+			case BUILD_CITY_WALL:
 				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canBuild(player, Vertex.WALL, false))
+					if (vertex.canBuild(player, Vertex.CITY_WALL, false))
+					{
 						canAct = true;
+					}
 				}
 
 				if (!canAct) {
@@ -691,7 +713,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumWalls() >= Player.MAX_CITY_WALLS) {
+				if (board.getCurrentPlayer().getNumOwnedCityWalls() >= Player.MAX_CITY_WALLS) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_wall_max));
 					break;
@@ -703,8 +725,29 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_build_wall));
 				break;
 
-			case PLAY_KNIGHT:
-				toast("Hire knight/Active Knight");
+			case HIRE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canPlaceKnightHere(player)) {
+						canAct = true;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.HIRE_KNIGHT);
+					break;
+				}
+
+				if (player.getNumOwnedBasicKnights() >= Player.MAX_BASIC_KNIGHTS
+						|| player.getTotalNumOwnedKnights() >= Player.MAX_TOTAL_KNIGHTS) {
+					popup(getString(R.string.game_cant_hire_knight_str),
+							getString(R.string.game_basic_knight_max));
+					break;
+				}
+
+				renderer.setAction(Action.HIRE_KNIGHT);
+				setButtons(Action.HIRE_KNIGHT);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_hire_knight));
 				break;
 
 			case PURCHASE_CITY_IMPROVEMENT:
@@ -790,7 +833,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	public boolean clickResource(int index) {
-		if (!board.getCurrentPlayer().isHuman() || !board.isBuildPhase())
+		if (!board.getCurrentPlayer().isHuman() || !board.isPlayerTurnPhase())
 			return false;
 
 
@@ -970,23 +1013,23 @@ public class ActiveGameFragment extends Fragment {
             //TODO: add button to play progress cards
 //			if (player.canUseCard())
 //            {
-//                view.addButton(ButtonType.PROGRESS_CARD);
+//                view.addButton(ButtonType.PLAY_PROGRESS_CARD);
 //            }
-		} else if (board.isBuildPhase()) {
+		} else if (board.isPlayerTurnPhase()) {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
 
             if (!player.getHand().isEmpty())
             {
-                view.addButton(UIButton.ButtonType.PROGRESS_CARD);
+                view.addButton(UIButton.ButtonType.PLAY_PROGRESS_CARD);
             }
 
-			if (player.affordRoad())
+			if (player.canAffordToBuildRoad())
             {
                 view.addButton(UIButton.ButtonType.BUILD_ROAD);
             }
 
-            if (player.affordShip())
+            if (player.canAffordToBuildShip())
             {
 				view.addButton(UIButton.ButtonType.BUILD_SHIP);
 			}
@@ -995,22 +1038,24 @@ public class ActiveGameFragment extends Fragment {
 				view.addButton(UIButton.ButtonType.MOVE_SHIP);
 			}
 
-			if (player.affordSettlement())
+			if (player.canAffordToBuildSettlement())
             {
                 view.addButton(UIButton.ButtonType.BUILD_SETTLEMENT);
             }
 
-			if (player.affordCity())
+			if (player.canAffordToBuildCity())
             {
                 view.addButton(UIButton.ButtonType.BUILD_CITY);
             }
-            if (player.affordWall())
+            if (player.canAffordToBuildCityWall())
             {
-				view.addButton(ButtonType.BUILD_WALL);
+				view.addButton(ButtonType.BUILD_CITY_WALL);
+			}
+			if(player.canAffordToHireKnight()) {
+				view.addButton(ButtonType.HIRE_KNIGHT);
 			}
 			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
-//			view.addButton(ButtonType.PLAY_KNIGHT);
 		}
 	}
 
@@ -1466,7 +1511,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_nothing_available_edge_unit);
+					message = getString(R.string.game_nowhere_available_edge_unit_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1484,7 +1529,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_nothing_available_road);
+					message = getString(R.string.game_nowhere_available_road_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1502,7 +1547,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_nothing_available_ship_build);
+					message = getString(R.string.game_nowhere_available_ship_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1516,31 +1561,53 @@ public class ActiveGameFragment extends Fragment {
 			case MOVE_SHIP_1:
 			case MOVE_SHIP_2:
 
-				message = getString(R.string.game_nothing_available_ship_move);
+				message = getString(R.string.game_nowhere_available_ship_move);
 
 				break;
 
 			case BUILD_SETTLEMENT:
-				if (player.getNumSettlements() == Player.MAX_SETTLEMENTS)
+				if (player.getNumOwnedSettlements() == Player.MAX_SETTLEMENTS)
+				{
 					message = getString(R.string.game_build_settlements_max);
+				}
 				else
-					message = getString(R.string.game_nothing_available_settlement);
+				{
+					message = getString(R.string.game_nowhere_available_settlement);
+				}
 
 				break;
 
 			case BUILD_CITY:
-				if (player.getNumCities() == Player.MAX_CITIES)
+				if (player.getNumOwnedCities() == Player.MAX_CITIES)
 					message = getString(R.string.game_build_city_max);
 				else
-					message = getString(R.string.game_nothing_available_city);
+					message = getString(R.string.game_nowhere_available_city);
 
 				break;
 
 			case BUILD_CITY_WALL:
-				if (player.getNumWalls() == Player.MAX_CITY_WALLS)
+				if (player.getNumOwnedCityWalls() == Player.MAX_CITY_WALLS)
+				{
 					message = getString(R.string.game_build_wall_max);
+				}
 				else
-					message = getString(R.string.game_nothing_available_city_wall);
+				{
+					message = getString(R.string.game_nowhere_available_city_wall);
+				}
+				break;
+
+			case HIRE_KNIGHT:
+				if (player.getNumOwnedBasicKnights() == Player.MAX_BASIC_KNIGHTS)
+				{
+					message = getString(R.string.game_basic_knight_max);
+					if (player.getTotalNumOwnedKnights() == Player.MAX_TOTAL_KNIGHTS) {
+						message += "\n" + getString(R.string.game_total_knights_max);
+					}
+				}
+				else
+				{
+					message = getString(R.string.game_nowhere_available_hire_knight);
+				}
 				break;
 
 			default:

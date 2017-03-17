@@ -134,7 +134,7 @@ public class CityImprovementFragment extends Fragment {
 
 	private boolean canPurchaseCityImprovement(CityImprovement.CityImprovementType cityImprovementType, int levelDesired){
 		//check has at least one city
-		boolean hasCity = currentPlayer.getNumCities() > 0;
+		boolean hasCity = currentPlayer.getNumOwnedCities() > 0;
 
 		//check if have enough resources
 		int clothCount = currentPlayer.getResources(Resource.ResourceType.CLOTH);

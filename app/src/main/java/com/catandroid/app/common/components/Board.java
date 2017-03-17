@@ -4,6 +4,7 @@ import android.widget.Toast;
 
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
+import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
@@ -11,6 +12,7 @@ import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.components.utilities.BoardUtils;
+import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
 import com.catandroid.app.common.players.AutomatedPlayer;
 import com.catandroid.app.common.players.BalancedAI;
 import com.catandroid.app.common.players.Player;
@@ -64,8 +66,8 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, BUILD, MOVING_SHIP, PROGRESS_CARD_1, PROGRESS_CARD_2,
-		CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,
+		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -90,7 +92,11 @@ public class Board {
 	private Vertex[] vertices;
 	private Edge[] edges;
 	private Player[] players;
+	private int nextAvailableBasicKnightId = -1, nextAvailableStrongKnightId = -1,
+			nextAvailableMightyKnightId = -1;
+	private Knight[] basicKnights, strongKnights, mightyKnights;
 	private int numPlayers;
+	private int numTotalPlayableKnights;
 	private Harbor[] harbors;
 	private Stack<Integer> playerIdsYetToDiscard;
 	private BoardGeometry boardGeometry;
@@ -136,9 +142,8 @@ public class Board {
 		this.gameParticipantIds = gameParticipantIds;
 		this.activeGameFragment = activeGameFragment;
 		this.numPlayers = gameParticipantIds.size();
-		commonInit();
-
-		this.autoDiscard = autoDiscard;
+		this.numTotalPlayableKnights = numPlayers * 6;
+		nextAvailableBasicKnightId = nextAvailableStrongKnightId = nextAvailableMightyKnightId = 0;
 
 		// initialize players
 		players = new Player[numPlayers];
@@ -154,6 +159,10 @@ public class Board {
 			}
 
 		}
+
+		commonInit();
+
+		this.autoDiscard = autoDiscard;
 	}
 
 	public void setActiveGameFragment(ActiveGameFragment activeGameFragment){
@@ -172,9 +181,27 @@ public class Board {
 		winnerId = null;
 
 		playerIdsYetToDiscard = new Stack<Integer>();
+
+		//TODO: move to boardUtils
+		// initialize knights
+		basicKnights = new Knight[numPlayers * 2];
+		strongKnights = new Knight[numPlayers * 2];
+		mightyKnights = new Knight[numPlayers * 2];
+		for (int i = 0, j = 0; i < numPlayers; i++) {
+			// initialize 2 of each type per player
+			basicKnights[j] = new Knight(j);
+			basicKnights[j + 1] = new Knight(j + 1);
+			strongKnights[j] = new Knight(j, Knight.KnightRank.STRONG_KNIGHT, false);
+			strongKnights[j + 1] = new Knight(j + 1, Knight.KnightRank.STRONG_KNIGHT, false);
+			mightyKnights[j] = new Knight(j, Knight.KnightRank.STRONG_KNIGHT, false);
+			mightyKnights[j + 1] = new Knight(j + 1, Knight.KnightRank.STRONG_KNIGHT, false);
+			j += 2;
+		}
+
+
 		hexIdMap = new HashMap<Long, Integer>();
 
-		// randomly initialize hexagons
+		// randomly initialize board positions
 		vertices = BoardUtils.generateVertices(this, boardGeometry.getVertexCount());
 		edges = BoardUtils.generateEdges(this, boardGeometry.getEdgeCount());
 		hexagons = BoardUtils.initRandomHexes(this);
@@ -285,7 +312,7 @@ public class Board {
 			// reduce each players to 7 cards
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
-				int walls = getPlayerById(i).getNumWalls();
+				int walls = getPlayerById(i).getNumOwnedCityWalls();
 				int extra = cards > (7+walls*2) ? cards / 2 : 0;
 
 				if (extra == 0)
@@ -396,7 +423,7 @@ public class Board {
 					players[curPlayerNumber].rollDice();
 					break;
 
-				case BUILD:
+				case PLAYER_TURN:
 					current.buildPhase();
 					break;
 
@@ -404,16 +431,16 @@ public class Board {
                     //TODO: automate
                     break;
 
-				case PROGRESS_CARD_1:
+				case PROGRESS_CARD_STEP_1:
 					current.progressRoad(edges);
-				case PROGRESS_CARD_2:
+				case PROGRESS_CARD_STEP_2:
 					current.progressRoad(edges);
 					phase = returnPhase;
 					return;
 
 				case CHOOSE_ROBBER_PIRATE:
-				case ROBBER:
-				case PIRATE:
+				case MOVING_ROBBER:
+				case MOVING_PIRATE:
 					startAIRobberPhase(current);
 					return;
 
@@ -466,9 +493,9 @@ public class Board {
 				}
 				break;
 			case PRODUCTION:
-				phase = Phase.BUILD;
+				phase = Phase.PLAYER_TURN;
 				break;
-			case BUILD:
+			case PLAYER_TURN:
 				if (curPlayerNumber == numPlayers - 1)
 				{
 					gameRoundNumber += 1;
@@ -489,16 +516,16 @@ public class Board {
                 phase = returnPhase;
 				tempEdgeIdMemory = -1;
 				break;
-			case PROGRESS_CARD_1:
-				phase = Phase.PROGRESS_CARD_2;
+			case PROGRESS_CARD_STEP_1:
+				phase = Phase.PROGRESS_CARD_STEP_2;
 				break;
-			case PROGRESS_CARD_2:
+			case PROGRESS_CARD_STEP_2:
 				phase = returnPhase;
 				break;
-			case ROBBER:
+			case MOVING_ROBBER:
 				phase = returnPhase;
 				break;
-			case PIRATE:
+			case MOVING_PIRATE:
 				phase = returnPhase;
 				break;
 			case TRADE_PROPOSED:
@@ -522,7 +549,7 @@ public class Board {
 			case TRADE_RESPONDED:
 				//reset the board to state before trade
 				setTradeProposal(null);
-				phase = Phase.BUILD;
+				phase = Phase.PLAYER_TURN;
 				break;
 			case DONE:
 				return false;
@@ -562,7 +589,7 @@ public class Board {
 	 */
 	public void startProgressPhase1() {
 		returnPhase = phase;
-		phase = Phase.PROGRESS_CARD_1;
+		phase = Phase.PROGRESS_CARD_STEP_1;
 		runAITurn();
 	}
 
@@ -642,19 +669,19 @@ public class Board {
 	}
 
 	public boolean isRobberPhase() {
-		return (phase == Phase.ROBBER);
+		return (phase == Phase.MOVING_ROBBER);
 	}
 
 	public boolean isPiratePhase() {
-		return (phase == Phase.PIRATE);
+		return (phase == Phase.MOVING_PIRATE);
 	}
 
 	public boolean isProduction() {
 		return (phase == Phase.PRODUCTION);
 	}
 
-	public boolean isBuildPhase() {
-		return (phase == Phase.BUILD);
+	public boolean isPlayerTurnPhase() {
+		return (phase == Phase.PLAYER_TURN);
 	}
 
     public boolean isMovingShipPhase() {
@@ -662,15 +689,15 @@ public class Board {
     }
 
 	public boolean isProgressPhase() {
-		return (phase == Phase.PROGRESS_CARD_1 || phase == Phase.PROGRESS_CARD_2);
+		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
 	}
 
 	public boolean isProgressPhase1() {
-		return (phase == Phase.PROGRESS_CARD_1);
+		return (phase == Phase.PROGRESS_CARD_STEP_1);
 	}
 
 	public boolean isProgressPhase2() {
-		return (phase == Phase.PROGRESS_CARD_2);
+		return (phase == Phase.PROGRESS_CARD_STEP_2);
 	}
 
 	public boolean isTradeProposedPhase() { return (phase == Phase.TRADE_PROPOSED);}
@@ -790,6 +817,100 @@ public class Board {
 	}
 
 	/**
+	 * Get the basic knight with the given id
+	 *
+	 * @param basicKnightId
+	 *            the id of the basic knight
+	 * @return the basic knight
+	 */
+	public Knight getBasicKnightById(int basicKnightId) {
+		if (basicKnightId < 0 || basicKnightId >= basicKnights.length)
+		{
+			return null;
+		}
+
+		return basicKnights[basicKnightId];
+	}
+
+	public Knight getNextAvailableBasicKnight() {
+		if (this.nextAvailableBasicKnightId < 0 ||
+				this.nextAvailableBasicKnightId >= basicKnights.length)
+		{
+			return null;
+		}
+		Knight nextAvailableBasicKnight = basicKnights[this.nextAvailableBasicKnightId];
+		this.nextAvailableBasicKnightId += 1;
+		return nextAvailableBasicKnight;
+	}
+
+	public Knight[] getBasicKnights() {
+		return basicKnights;
+	}
+
+	/**
+	 * Get the strong knight with the given id
+	 *
+	 * @param strongKnightId
+	 *            the id of the strong knight
+	 * @return the strong knight
+	 */
+	public Knight getStrongKnightById(int strongKnightId) {
+		if (strongKnightId < 0 || strongKnightId >= strongKnights.length)
+		{
+			return null;
+		}
+
+		return strongKnights[strongKnightId];
+	}
+
+	public Knight getNextAvailableStrongKnight() {
+		if (this.nextAvailableStrongKnightId < 0 ||
+				this.nextAvailableStrongKnightId >= strongKnights.length)
+		{
+			return null;
+		}
+		Knight nextAvailableStrongKnight = strongKnights[this.nextAvailableStrongKnightId];
+		this.nextAvailableStrongKnightId += 1;
+		return nextAvailableStrongKnight;
+	}
+
+
+	public Knight[] getStrongKnights() {
+		return strongKnights;
+	}
+
+	/**
+	 * Get the mighty knight with the given id
+	 *
+	 * @param mightyKnightId
+	 *            the id of the mighty knight
+	 * @return the mighty knight
+	 */
+	public Knight getMightyKnightById(int mightyKnightId) {
+		if (mightyKnightId < 0 || mightyKnightId >= mightyKnights.length)
+		{
+			return null;
+		}
+
+		return mightyKnights[mightyKnightId];
+	}
+
+	public Knight getNextAvailableMightyKnight() {
+		if (this.nextAvailableMightyKnightId < 0 ||
+				this.nextAvailableMightyKnightId >= mightyKnights.length)
+		{
+			return null;
+		}
+		Knight nextAvailableMightyKnight = mightyKnights[this.nextAvailableMightyKnightId];
+		this.nextAvailableMightyKnightId += 1;
+		return nextAvailableMightyKnight;
+	}
+
+	public Knight[] getMightyKnights() {
+		return mightyKnights;
+	}
+
+	/**
 	 * Get a progress card
 	 *
 	 * @return the type of progress card or null if that stack is empty
@@ -825,7 +946,7 @@ public class Board {
 		}
 		this.prevRobberHexId = this.curRobberHexId;
 		this.curRobberHexId = null;
-		phase = Phase.ROBBER;
+		phase = Phase.MOVING_ROBBER;
 		// run AI's turn
 		runAITurn();
 	}
@@ -839,7 +960,7 @@ public class Board {
 		}
 		this.prevPirateHexId = this.curPirateHexId;
 		this.curPirateHexId = null;
-		phase = Phase.PIRATE;
+		phase = Phase.MOVING_PIRATE;
 		// run AI's turn
 		runAITurn();
 	}
@@ -872,7 +993,7 @@ public class Board {
 		int hexCount = this.boardGeometry.getHexCount();
 		int curRobberId = this.curRobberHexId != null ? hexagons[this.curRobberHexId].getId() : -1;
 		int prevRobberId = this.prevRobberHexId != null ? hexagons[this.prevRobberHexId].getId() : -1;
-		if (this.phase == Phase.ROBBER && prevRobberId >= 0 && prevRobberId < hexCount)
+		if (this.phase == Phase.MOVING_ROBBER && prevRobberId >= 0 && prevRobberId < hexCount)
 		{
 			return hexagons[this.prevRobberHexId];
 		}
@@ -896,7 +1017,7 @@ public class Board {
                 hexagons[this.curPirateHexId].getId() : -1;
         int prevPirateHexId = this.prevPirateHexId != null
                 ? hexagons[this.prevPirateHexId].getId() : -1;
-        if (this.phase == Phase.PIRATE && prevPirateHexId >= 0 && prevPirateHexId < hexCount)
+        if (this.phase == Phase.MOVING_PIRATE && prevPirateHexId >= 0 && prevPirateHexId < hexCount)
         {
             return hexagons[this.prevPirateHexId];
         }
@@ -1087,21 +1208,21 @@ public class Board {
 				return R.string.phase_second_edge_unit;
 			case PRODUCTION:
 				return R.string.phase_your_turn;
-			case BUILD:
-                return R.string.phase_build;
+			case PLAYER_TURN:
+                return R.string.phase_player_turn;
             case MOVING_SHIP:
                 return R.string.phase_move_ship;
-			case PROGRESS_CARD_1:
+			case PROGRESS_CARD_STEP_1:
 				// TODO: progress card step 1
 				return 0;
-			case PROGRESS_CARD_2:
+			case PROGRESS_CARD_STEP_2:
 				// TODO: progress card step 2
 				return 0;
 			case CHOOSE_ROBBER_PIRATE:
 				return R.string.phase_make_choice;
-			case ROBBER:
+			case MOVING_ROBBER:
 				return R.string.phase_move_robber;
-			case PIRATE:
+			case MOVING_PIRATE:
 				return R.string.phase_move_pirate;
 			case TRADE_PROPOSED:
 				return R.string.waiting_trade_proposed;
