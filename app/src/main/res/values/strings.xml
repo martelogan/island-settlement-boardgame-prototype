@@ -18,6 +18,7 @@
     <string name="start">Start</string>
     <string name="resume_button">Resume</string>
     <string name="option_victory_points_to_win">Points to win</string>
+	<string name="option_predefined_board">Predefined Board States</string>
     <string name="option_num_players">Number of Players</string>
     <string name="victory_points_to_win">Victory points to win</string>
     <string name="option_auto_discard">Discard automatically when 7 is rolled</string>
@@ -127,6 +128,9 @@
 	<string name="player_tradeImp">Purchased Trade Improvement Level: %s</string>
 	<string name="player_scienceImp">Purchased Science Improvement Level: %s</string>
 	<string name="player_politicsImp">Purchased Politics Improvement Level: %s</string>
+	<string name="player_stole_trade">Stole Trade Metropolis From: %s</string>
+	<string name="player_stole_science">Stole Science Metropolis From: %s</string>
+	<string name="player_stole_politics">Stole Politics Metropolis From: %s</string>
 
 	<!-- PlayerStatsFragment screen -->
 	<string name="status">Status</string>
@@ -153,6 +157,7 @@
 	<string name="reference_settlement">Settlement</string>
 	<string name="reference_city">City</string>
 	<string name="reference_city_wall">City Wall</string>
+	<string name="reference_ship">Ship</string>
 	<string name="reference_tradeImprovement">Trade</string>
 	<string name="reference_scienceImprovement">Science</string>
 	<string name="reference_politicsImprovement">Politics</string>
@@ -193,6 +198,7 @@
 	<string name="waiting_trade_responded">Trade Results</string>
 	<string name="waiting_trade_responded_nobody">Nobody accepted your trade offer!</string>
 	<string name="waiting_trade_responded_somebody"> accepted your trade offer!</string>
+	<string name="game_build_metropolis">Build Metropolis</string>
 	<string name="game_rolled_str">Rolled</string>
 	<string name="game_back_to_board">Back to board</string>
 	<string name="game_return_to_menu">Return to menu</string>

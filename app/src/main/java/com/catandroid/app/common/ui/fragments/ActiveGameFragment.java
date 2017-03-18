@@ -1,6 +1,7 @@
 package com.catandroid.app.common.ui.fragments;
 
 import com.catandroid.app.common.components.TradeProposal;
+import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
@@ -306,6 +307,7 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_SETTLEMENT:
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
+			case BUILD_METROPOLIS:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -367,12 +369,16 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			type = Vertex.WALL;
+			type = Vertex.CITY_WALL;
+		}
+		else if(action == Action.BUILD_METROPOLIS)
+		{
+			type = board.getCurrentPlayer().metropolisTypeToBuild;
 		}
 
 		Player player = board.getCurrentPlayer();
 		if (player.buildVertexUnit(vertex, type)) {
-			if (board.isSetupSettlement() || board.isSetupCity())
+			if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
 			{
 				board.nextPhase();
 			}
@@ -521,6 +527,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case DICE_ROLL:
+
 				// enter build phase
 				board.nextPhase();
 
@@ -531,6 +538,29 @@ public class ActiveGameFragment extends Fragment {
 				board.getCurrentPlayer().rollDice(roll1, roll2 , event);
 				if(!board.isMyPseudoTurn()){
 					mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+				}
+
+				//give free resource if they have AQUEDUCT and didnt get any resources and not 7
+				if(player.getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] >= 3
+						&& player.gotResourcesSinceLastTurn == false && roll != 7){
+
+					CharSequence[] items = new CharSequence[4];
+					items[0] = "Lumber";
+					items[1] = "Wool";
+					items[2] = "Grain";
+					items[3] = "Brick";
+
+					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					builder.setTitle("Aqueduct: Choose your free resource!");
+					builder.setItems(items, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int item) {
+							board.getCurrentPlayer().addResources(Resource.RESOURCE_TYPES[item], 1);
+						}
+					});
+
+					AlertDialog chooseFreeResourceDialog = builder.create();
+					chooseFreeResourceDialog.setCancelable(false);
+					chooseFreeResourceDialog.show();
 				}
 
 				if (roll == 7) {
@@ -682,7 +712,7 @@ public class ActiveGameFragment extends Fragment {
 
 			case BUILD_WALL:
 				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canBuild(player, Vertex.WALL, false))
+					if (vertex.canBuild(player, Vertex.CITY_WALL, false))
 						canAct = true;
 				}
 
@@ -768,6 +798,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case END_TURN:
+				player.gotResourcesSinceLastTurn = false;
 				board.nextPhase();
 				showState(true);
 				break;
@@ -888,6 +919,9 @@ public class ActiveGameFragment extends Fragment {
 		else if (board.isMovingShipPhase()) {
 			action = Action.MOVE_SHIP_2;
 		}
+		else if(board.isBuildMetropolisPhase()){
+			action = Action.BUILD_METROPOLIS;
+		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -962,7 +996,7 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
-		} else if (action != Action.NONE) {
+		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS ) {
 			// cancel the action
 			view.addButton(ButtonType.CANCEL_ACTION);
 		} else if (board.isProduction()) {
@@ -1360,8 +1394,8 @@ public class ActiveGameFragment extends Fragment {
 		if (index == 0) {
 			// nobody to rob from
 			toast(getString(R.string.game_steal_fail_str));
-
 			board.nextPhase();
+			mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
 			showState(false);
 			return;
 		} else if (index == 1) {
@@ -1443,6 +1477,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 
 				board.nextPhase();
+				mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
 				showState(false);
 				return;
 			}
@@ -1553,7 +1588,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void progressCardDialog() {
-		final Player me = board.getPlayerFromParticipantId(myParticipantId);
+		final Player me = board.getCurrentPlayer();
 		final Vector<ProgressCard.ProgressCardType> cards = me.getHand();
 
 		CharSequence[] list = new CharSequence[cards.size()+1];
@@ -1597,6 +1632,7 @@ public class ActiveGameFragment extends Fragment {
 											//remove that card from the player & return to bottom of deck
 											cards.remove(card);
 											board.returnProgressCard(card);
+											showState(false);
 											//play the card
 											switch (card) {
 												case MERCHANT:

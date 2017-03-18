@@ -9,7 +9,13 @@ public class Vertex {
 	public static final int NONE = 0;
 	public static final int SETTLEMENT = 1;
 	public static final int CITY = 2;
-	public static final int WALL = 3;
+	public static final int CITY_WALL = 3;
+	public static final int TRADE_METROPOLIS = 4;
+	public static final int SCIENCE_METROPOLIS = 5;
+	public static final int POLITICS_METROPOLIS = 6;
+	public static final int WALLED_TRADE_METROPOLIS = 7;
+	public static final int WALLED_SCIENCE_METROPOLIS = 8;
+	public static final int WALLED_POLITICS_METROPOLIS = 9;
 
 	private int id;
 	private int curUnitType;
@@ -165,6 +171,16 @@ public class Vertex {
 	}
 
 	/**
+	 * Get the type of building at vertex
+	 *
+	 * @return the type of building at the vertex (equal to the number of
+	 *         points)
+	 */
+	public void setCurUnitType(int unitType) {
+		curUnitType = unitType;
+	}
+
+	/**
 	 * Get the owner of any unit at this vertex
 	 * 
 	 * @return the Player that owns it, or null
@@ -278,8 +294,10 @@ public class Vertex {
 			//Gold gets two times more on distribution (2 for settlement, 4 for city)
 			if(resourceType == Resource.ResourceType.GOLD){
 				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive*2);
+				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
 			} else {
 				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
+				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
 			}
 		}
 	}
@@ -332,6 +350,7 @@ public class Vertex {
 	 * @return true if player can build at vertex
 	 */
 	public boolean canBuild(Player player, int type, boolean setup) {
+
 		if (!couldBuild()) {
 			return false;
 		}
@@ -353,11 +372,21 @@ public class Vertex {
 		}
 		// can build city
 		else if(board.getPlayerById(ownerPlayerNumber) != null && type == CITY){
-			return board.getPlayerById(ownerPlayerNumber) == player && type == CITY && curUnitType == SETTLEMENT;
+			return board.getPlayerById(ownerPlayerNumber) == player && curUnitType == SETTLEMENT;
 		}
 		//can build a wall
-		else if(board.getPlayerById(ownerPlayerNumber) != null && type == WALL){
-			return board.getPlayerById(ownerPlayerNumber) == player && type == WALL && curUnitType == CITY;
+		else if(board.getPlayerById(ownerPlayerNumber) != null && type == CITY_WALL){
+			boolean isCityType = curUnitType == CITY || curUnitType == TRADE_METROPOLIS
+					|| curUnitType == SCIENCE_METROPOLIS || curUnitType == POLITICS_METROPOLIS;
+
+			return board.getPlayerById(ownerPlayerNumber) == player && isCityType;
+		}
+		//can build a metropolis
+		else if(board.getPlayerById(ownerPlayerNumber) != null && (type == TRADE_METROPOLIS
+				|| type == SCIENCE_METROPOLIS || type == POLITICS_METROPOLIS)){
+
+			boolean isCityType = curUnitType == CITY_WALL || curUnitType == CITY;
+			return board.getPlayerById(ownerPlayerNumber) == player && isCityType;
 		}
 		else{
 			return false;
@@ -398,10 +427,31 @@ public class Vertex {
 				curUnitType = CITY;
 				break;
 			case CITY:
-				curUnitType = WALL;
+				curUnitType = board.isBuildMetropolisPhase() ? player.metropolisTypeToBuild : CITY_WALL;
 				break;
-			case WALL:
-				return false;
+			case CITY_WALL:
+				//determine which type of metropolis we build
+				switch(type){
+					case TRADE_METROPOLIS:
+						curUnitType = WALLED_TRADE_METROPOLIS;
+						break;
+					case SCIENCE_METROPOLIS:
+						curUnitType = WALLED_SCIENCE_METROPOLIS;
+						break;
+					case POLITICS_METROPOLIS:
+						curUnitType = WALLED_POLITICS_METROPOLIS;
+						break;
+				}
+				break;
+			case SCIENCE_METROPOLIS:
+				curUnitType = WALLED_SCIENCE_METROPOLIS;
+				break;
+			case TRADE_METROPOLIS:
+				curUnitType = WALLED_TRADE_METROPOLIS;
+				break;
+			case POLITICS_METROPOLIS:
+				curUnitType = WALLED_TRADE_METROPOLIS;
+				break;
 		}
 
 		if (harbors != null)

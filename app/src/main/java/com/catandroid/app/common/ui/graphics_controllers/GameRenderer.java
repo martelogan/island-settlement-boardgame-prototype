@@ -18,7 +18,7 @@ import com.catandroid.app.common.ui.resources.Square;
 public class GameRenderer implements Renderer {
 
 	public enum Action {
-		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_EDGE_UNIT, BUILD_ROAD,
+		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT, BUILD_ROAD,
 		BUILD_SHIP,	MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
 
@@ -221,9 +221,11 @@ public class GameRenderer implements Renderer {
                 boolean city = player != null && action == Action.BUILD_CITY
                         && player.canBuildVertexUnit(vertex, Vertex.CITY);
 				boolean wall = player != null && action == Action.BUILD_CITY_WALL
-						&& player.canBuildVertexUnit(vertex, Vertex.WALL);
+						&& player.canBuildVertexUnit(vertex, Vertex.CITY_WALL);
+				boolean metropolis = player != null && action == Action.BUILD_METROPOLIS
+						&& player.canBuildVertexUnit(vertex, board.getCurrentPlayer().metropolisTypeToBuild);
 
-                texture.drawVertex(vertex, settlement, city, wall, gl, boardGeometry);
+                texture.drawVertex(vertex, settlement, city, wall, metropolis, gl, boardGeometry);
             }
 
 			gl.glMatrixMode(GL10.GL_PROJECTION);
