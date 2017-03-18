@@ -81,7 +81,8 @@ public class Player {
 	 * @param playerType
 	 *            PLAYER_HUMAN, PLAYER_BOT, or PLAYER_ONLINE
 	 */
-	public Player(Board board, int playerNumber, String googlePlayParticipantId, Color color, String playerName, int playerType) {
+	public Player(Board board, int playerNumber, String googlePlayParticipantId,
+				  Color color, String playerName, int playerType) {
 		this.board = board;
 		this.googlePlayParticipantId = googlePlayParticipantId;
 		this.color = color;
@@ -579,7 +580,8 @@ public class Player {
 			return false;
 		}
 
-		Knight hiredKnight = board.getNextAvailableBasicKnight();
+		Knight hiredKnight = board.getNextAvailableKnight();
+		hiredKnight.setOwnerPlayerNumber(playerNumber);
 
 		if (!vertex.placeKnight(this, hiredKnight))
 		{
@@ -597,6 +599,84 @@ public class Player {
 
 		// append to the turn log
 		appendAction(R.string.player_place_knight);
+
+		return true;
+	}
+
+	/**
+	 * Attempt to activate a knight at this vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex of knight to activate
+	 * @return
+	 */
+	public boolean activateKnightAt(Vertex vertex) {
+		if (vertex == null || !canActivateKnightAt(vertex))
+		{
+			return false;
+		}
+
+		if (!canAffordToActivateKnight()) {
+			return false;
+		}
+
+		if (!vertex.activateKnight(this))
+		{
+			return false;
+		}
+
+		// pay for the knight activation
+		useResources(ResourceType.GRAIN, 1);
+
+		// append to the turn log
+		appendAction(R.string.player_activate_knight);
+
+		return true;
+	}
+
+	// TODO: implement promote knight
+	/**
+	 * Attempt to promote a knight at the vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex of knight to promote
+	 * @return
+	 */
+	public boolean promoteKnightAt(Vertex vertex) {
+		if (vertex == null || !canPromoteKnightAt(vertex))
+		{
+			return false;
+		}
+
+		if (!canAffordToPromoteKnight()) {
+			return false;
+		}
+
+		if (!vertex.promoteKnight(this))
+		{
+			return false;
+		}
+
+		// pay for the knight
+		useResources(ResourceType.WOOL, 1);
+		useResources(ResourceType.ORE, 1);
+		// update our knight counts
+		Knight promotedKnight = vertex.getPlacedKnight();
+		switch(promotedKnight.getKnightRank()) {
+			case BASIC_KNIGHT:
+				// FIXME: dirty write transaction...
+				return false;
+			case STRONG_KNIGHT:
+				numOwnedBasicKnights -= 1;
+				numOwnedStrongKnights += 1;
+			case MIGHTY_KNIGHT:
+				numOwnedStrongKnights -= 1;
+				numOwnedMightyKnights += 1;
+		}
+		numTotalOwnedKnights += 1;
+
+		// append to the turn log
+		appendAction(R.string.player_promote_knight);
 
 		return true;
 	}
@@ -736,6 +816,33 @@ public class Player {
 		}
 
 		return vertex.canPlaceKnightHere(this);
+	}
+
+	/**
+	 * Can you activate a knight at this vertex?
+	 *
+	 * @param vertex
+	 *            vertex with knight to activate
+	 * @return
+	 */
+	public boolean canActivateKnightAt(Vertex vertex) {
+		return vertex.canActivateKnightHere(this);
+	}
+
+	/**
+	 * Can you promote a knight at this vertex?
+	 *
+	 * @param vertex
+	 *            vertex with knight to activate
+	 * @return
+	 */
+	public boolean canPromoteKnightAt(Vertex vertex) {
+		if (numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS)
+		{
+			return false;
+		}
+
+		return vertex.canPromoteKnightHere(this);
 	}
 
 	/**
@@ -1109,6 +1216,27 @@ public class Player {
 	}
 
 	/**
+	 * Determine if the player can afford to activate a knight
+	 *
+	 * @return true if the player can afford to activate a knight
+	 */
+	public boolean canAffordToActivateKnight() {
+		return (FREE_BUILD || getResources(ResourceType.GRAIN) >= 1);
+	}
+
+	/**
+	 * Determine if the player can afford to promote a knight
+	 *
+	 * @return true if the player can afford to promote a knight
+	 */
+	public boolean canAffordToPromoteKnight() {
+		return (FREE_BUILD || (numTotalOwnedKnights < MAX_TOTAL_KNIGHTS
+				&& getResources(Resource.ResourceType.WOOL) >= 1
+				&& getResources(Resource.ResourceType.ORE) >= 1));
+	}
+
+
+	/**
 	 * Get the number of privateVictoryPointsCount points that are evident to other players
 	 *
 	 * @return the number of privateVictoryPointsCount points
@@ -1132,6 +1260,36 @@ public class Player {
 	 */
 	public int getVictoryPoints() {
 		return getPublicVictoryPoints() + privateVictoryPointsCount;
+	}
+
+	/**
+	 * Return player's current trade discipline level
+	 *
+	 * @return the player's current trade discipline level
+	 */
+	public int getTradeLevel() {
+		return cityImprovementLevels[CityImprovement.toCityImprovementIndex(
+				CityImprovement.CityImprovementType.TRADE)];
+	}
+
+	/**
+	 * Return player's current science discipline level
+	 *
+	 * @return the player's current science discipline level
+	 */
+	public int getScienceLevel() {
+		return cityImprovementLevels[CityImprovement.toCityImprovementIndex(
+				CityImprovement.CityImprovementType.SCIENCE)];
+	}
+
+	/**
+	 * Return player's current politics discipline level
+	 *
+	 * @return the player's current politics discipline level
+	 */
+	public int getPoliticsLevel() {
+		return cityImprovementLevels[CityImprovement.toCityImprovementIndex(
+				CityImprovement.CityImprovementType.POLITICS)];
 	}
 
 //TODO: see how we can use this similar code for progress cards

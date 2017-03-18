@@ -119,6 +119,8 @@
     <string name="player_city">Built a city</string>
 	<string name="player_city_wall">Built a city wall</string>
     <string name="player_place_knight">Dispatched a knight</string>
+	<string name="player_activate_knight">Activated a knight</string>
+	<string name="player_promote_knight">Promoted a knight</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
 	<string name="player_received_card">Received a card</string>
@@ -227,8 +229,12 @@
 	<string name="game_build_city">Build a city</string>
 	<string name="game_build_wall">Build a wall</string>
 	<string name="game_hire_knight">Dispatch knight</string>
+	<string name="game_activate_knight">Activate knight</string>
+	<string name="game_promote_knight">Promote knight</string>
 	<string name="game_cant_build_str">Can\'t build</string>
+	<string name="game_cant_act_str">Invalid action</string>
 	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
+	<string name="game_cant_promote_knight_str">Can\'t promote knight</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
@@ -251,6 +257,8 @@
 	<string name="game_nowhere_available_ship_build">No buildable ship locations</string>
 	<string name="game_nowhere_available_ship_move">Ship movement would not be possible right now</string>
     <string name="game_nowhere_available_hire_knight">No locations available to dispatch a knight</string>
+	<string name="game_nowhere_available_activate_knight">No locations available to activate a knight</string>
+	<string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
 	<string name="game_won">won</string>
 
 	<!-- Progress Cards -->

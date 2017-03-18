@@ -92,9 +92,8 @@ public class Board {
 	private Vertex[] vertices;
 	private Edge[] edges;
 	private Player[] players;
-	private int nextAvailableBasicKnightId = -1, nextAvailableStrongKnightId = -1,
-			nextAvailableMightyKnightId = -1;
-	private Knight[] basicKnights, strongKnights, mightyKnights;
+	private int nextAvailableKnightId = -1;
+	private Knight[] knights;
 	private int numPlayers;
 	private int numTotalPlayableKnights;
 	private Harbor[] harbors;
@@ -143,7 +142,7 @@ public class Board {
 		this.activeGameFragment = activeGameFragment;
 		this.numPlayers = gameParticipantIds.size();
 		this.numTotalPlayableKnights = numPlayers * 6;
-		nextAvailableBasicKnightId = nextAvailableStrongKnightId = nextAvailableMightyKnightId = 0;
+		nextAvailableKnightId = 0;
 
 		// initialize players
 		players = new Player[numPlayers];
@@ -183,19 +182,10 @@ public class Board {
 		playerIdsYetToDiscard = new Stack<Integer>();
 
 		//TODO: move to boardUtils
-		// initialize knights
-		basicKnights = new Knight[numPlayers * 2];
-		strongKnights = new Knight[numPlayers * 2];
-		mightyKnights = new Knight[numPlayers * 2];
-		for (int i = 0, j = 0; i < numPlayers; i++) {
-			// initialize 2 of each type per player
-			basicKnights[j] = new Knight(j);
-			basicKnights[j + 1] = new Knight(j + 1);
-			strongKnights[j] = new Knight(j, Knight.KnightRank.STRONG_KNIGHT, false);
-			strongKnights[j + 1] = new Knight(j + 1, Knight.KnightRank.STRONG_KNIGHT, false);
-			mightyKnights[j] = new Knight(j, Knight.KnightRank.STRONG_KNIGHT, false);
-			mightyKnights[j + 1] = new Knight(j + 1, Knight.KnightRank.STRONG_KNIGHT, false);
-			j += 2;
+		// initialize 6 knights per player
+		knights = new Knight[numPlayers * 6];
+		for (int i = 0; i < (numPlayers * 6); i++) {
+			knights[i] = new Knight(i);
 		}
 
 
@@ -313,7 +303,7 @@ public class Board {
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
 				int walls = getPlayerById(i).getNumOwnedCityWalls();
-				int extra = cards > (7+walls*2) ? cards / 2 : 0;
+				int extra = cards > (7 + walls * 2) ? cards / 2 : 0;
 
 				if (extra == 0)
 					continue;
@@ -817,97 +807,34 @@ public class Board {
 	}
 
 	/**
-	 * Get the basic knight with the given id
+	 * Get the knight with the given id
 	 *
-	 * @param basicKnightId
-	 *            the id of the basic knight
-	 * @return the basic knight
+	 * @param knightId
+	 *            the id of the knight
+	 * @return the knight
 	 */
-	public Knight getBasicKnightById(int basicKnightId) {
-		if (basicKnightId < 0 || basicKnightId >= basicKnights.length)
+	public Knight getKnightById(int knightId) {
+		if (knightId < 0 || knightId >= knights.length)
 		{
 			return null;
 		}
 
-		return basicKnights[basicKnightId];
+		return knights[knightId];
 	}
 
-	public Knight getNextAvailableBasicKnight() {
-		if (this.nextAvailableBasicKnightId < 0 ||
-				this.nextAvailableBasicKnightId >= basicKnights.length)
+	public Knight getNextAvailableKnight() {
+		if (this.nextAvailableKnightId < 0 ||
+				this.nextAvailableKnightId >= knights.length)
 		{
 			return null;
 		}
-		Knight nextAvailableBasicKnight = basicKnights[this.nextAvailableBasicKnightId];
-		this.nextAvailableBasicKnightId += 1;
-		return nextAvailableBasicKnight;
+		Knight nextAvailableKnight = knights[this.nextAvailableKnightId];
+		this.nextAvailableKnightId += 1;
+		return nextAvailableKnight;
 	}
 
-	public Knight[] getBasicKnights() {
-		return basicKnights;
-	}
-
-	/**
-	 * Get the strong knight with the given id
-	 *
-	 * @param strongKnightId
-	 *            the id of the strong knight
-	 * @return the strong knight
-	 */
-	public Knight getStrongKnightById(int strongKnightId) {
-		if (strongKnightId < 0 || strongKnightId >= strongKnights.length)
-		{
-			return null;
-		}
-
-		return strongKnights[strongKnightId];
-	}
-
-	public Knight getNextAvailableStrongKnight() {
-		if (this.nextAvailableStrongKnightId < 0 ||
-				this.nextAvailableStrongKnightId >= strongKnights.length)
-		{
-			return null;
-		}
-		Knight nextAvailableStrongKnight = strongKnights[this.nextAvailableStrongKnightId];
-		this.nextAvailableStrongKnightId += 1;
-		return nextAvailableStrongKnight;
-	}
-
-
-	public Knight[] getStrongKnights() {
-		return strongKnights;
-	}
-
-	/**
-	 * Get the mighty knight with the given id
-	 *
-	 * @param mightyKnightId
-	 *            the id of the mighty knight
-	 * @return the mighty knight
-	 */
-	public Knight getMightyKnightById(int mightyKnightId) {
-		if (mightyKnightId < 0 || mightyKnightId >= mightyKnights.length)
-		{
-			return null;
-		}
-
-		return mightyKnights[mightyKnightId];
-	}
-
-	public Knight getNextAvailableMightyKnight() {
-		if (this.nextAvailableMightyKnightId < 0 ||
-				this.nextAvailableMightyKnightId >= mightyKnights.length)
-		{
-			return null;
-		}
-		Knight nextAvailableMightyKnight = mightyKnights[this.nextAvailableMightyKnightId];
-		this.nextAvailableMightyKnightId += 1;
-		return nextAvailableMightyKnight;
-	}
-
-	public Knight[] getMightyKnights() {
-		return mightyKnights;
+	public Knight[] getKnights() {
+		return knights;
 	}
 
 	/**
@@ -1302,6 +1229,9 @@ public class Board {
 		}
 		for (Player player : players) {
 			player.setBoard(this);
+		}
+		for(Knight knight : knights) {
+			knight.setBoard(this);
 		}
 	}
 

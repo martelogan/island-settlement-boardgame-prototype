@@ -255,7 +255,11 @@ public class TextureManager {
         add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_CITY_IMPROVEMENT.ordinal(),
                 R.drawable.button_city_improvement, res);
         add(TextureType.BUTTON, UIButton.ButtonType.HIRE_KNIGHT.ordinal(),
-                R.drawable.button_play_knight, res);
+                R.drawable.button_hire_knight, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.ACTIVATE_KNIGHT.ordinal(),
+                R.drawable.button_activate_knight, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.PROMOTE_KNIGHT.ordinal(),
+                R.drawable.button_promote_knight, res);
         add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
                 R.drawable.button_barbarian_progress, res);
 	}
@@ -431,12 +435,12 @@ public class TextureManager {
 
         boolean isSelectable = selectableKnight != null;
         TextureType textureType = TextureType.NONE;
-        if (vertex.getCurUnitType() == Vertex.KNIGHT)
+        if (isSelectable) { // selectability takes precedence
+            textureType = getKnightTextureType(selectableKnight);
+        }
+        else if (vertex.getCurUnitType() == Vertex.KNIGHT)
         {
             textureType = getKnightTextureType(vertex.getPlacedKnight());
-        }
-        else if(isSelectable) {
-            textureType = getKnightTextureType(selectableKnight);
         }
 
         Player.Color color;

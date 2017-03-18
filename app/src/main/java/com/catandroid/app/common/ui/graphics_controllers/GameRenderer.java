@@ -20,7 +20,7 @@ public class GameRenderer implements Renderer {
 
 	public enum Action {
 		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_EDGE_UNIT, BUILD_ROAD,
-		BUILD_SHIP, HIRE_KNIGHT, MOVE_SHIP_1, MOVE_SHIP_2,
+		BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, MOVE_SHIP_1, MOVE_SHIP_2,
 		CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
 
@@ -232,6 +232,14 @@ public class GameRenderer implements Renderer {
 				}
 				else if(action == Action.HIRE_KNIGHT && player.canHireKnightTo(vertex)) {
 					selectableKnight = new Knight(Knight.KnightRank.BASIC_KNIGHT, false);
+				}
+				else if (action == Action.ACTIVATE_KNIGHT && player.canActivateKnightAt(vertex)) {
+					Knight toHighlight = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+				}
+				else if (action == Action.PROMOTE_KNIGHT && player.canPromoteKnightAt(vertex)) {
+					Knight toHighlight = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 				}
 				if (selectableKnight != null || vertex.getCurUnitType() == Vertex.KNIGHT)
 				{

@@ -307,6 +307,8 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
 			case HIRE_KNIGHT:
+			case ACTIVATE_KNIGHT:
+			case PROMOTE_KNIGHT:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -370,7 +372,8 @@ public class ActiveGameFragment extends Fragment {
 		{
 			vertexUnitType = Vertex.CITY_WALL;
 		}
-		else if (action == Action.HIRE_KNIGHT) {
+		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
+				|| action == Action.PROMOTE_KNIGHT) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -392,8 +395,17 @@ public class ActiveGameFragment extends Fragment {
 			case Vertex.KNIGHT: // selecting knight unit
 				switch(action) {
 					case HIRE_KNIGHT:
-						//TODO: hire knight (look at ship logic for inspiration)
 						if (player.hireKnightTo(vertex)) {
+							showState(false);
+						}
+						break;
+					case ACTIVATE_KNIGHT:
+						if (player.activateKnightAt(vertex)) {
+							showState(false);
+						}
+						break;
+					case PROMOTE_KNIGHT:
+						if (player.promoteKnightAt(vertex)) {
 							showState(false);
 						}
 						break;
@@ -750,6 +762,56 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_hire_knight));
 				break;
 
+			case ACTIVATE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canActivateKnightHere(player)) {
+						canAct = true;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.ACTIVATE_KNIGHT);
+					break;
+				}
+
+				renderer.setAction(Action.ACTIVATE_KNIGHT);
+				setButtons(Action.ACTIVATE_KNIGHT);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_activate_knight));
+				break;
+
+			case PROMOTE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canPromoteKnightHere(player)) {
+						canAct = true;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.PROMOTE_KNIGHT);
+					break;
+				}
+
+				int numOwnedBasicKnights = player.getNumOwnedBasicKnights(),
+						numOwnedStrongKnights = player.getNumOwnedStrongKnights(),
+						numOwnedMightyKnights = player.getNumOwnedMightyKnights(),
+						totalNumOwnedKnights = player.getTotalNumOwnedKnights();
+				if (numOwnedBasicKnights > Player.MAX_BASIC_KNIGHTS
+						|| numOwnedStrongKnights > Player.MAX_STRONG_KNIGHTS
+						|| numOwnedMightyKnights  > Player.MAX_MIGHTY_KNIGHTS
+						|| totalNumOwnedKnights >= Player.MAX_TOTAL_KNIGHTS) {
+
+					popup(getString(R.string.game_cant_promote_knight_str),
+							getString(R.string.game_total_knights_max));
+					break;
+				}
+
+				renderer.setAction(Action.PROMOTE_KNIGHT);
+				setButtons(Action.PROMOTE_KNIGHT);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_promote_knight));
+				break;
+
 			case PURCHASE_CITY_IMPROVEMENT:
                 FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
                 CityImprovementFragment cityImprovementFragment = new CityImprovementFragment();
@@ -1053,6 +1115,12 @@ public class ActiveGameFragment extends Fragment {
 			}
 			if(player.canAffordToHireKnight()) {
 				view.addButton(ButtonType.HIRE_KNIGHT);
+			}
+			if(player.canAffordToActivateKnight()) {
+				view.addButton(ButtonType.ACTIVATE_KNIGHT);
+			}
+			if(player.canAffordToPromoteKnight()) {
+				view.addButton(ButtonType.PROMOTE_KNIGHT);
 			}
 			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
@@ -1610,11 +1678,34 @@ public class ActiveGameFragment extends Fragment {
 				}
 				break;
 
+			case ACTIVATE_KNIGHT:
+					message = getString(R.string.game_nowhere_available_activate_knight);
+				break;
+
+			case PROMOTE_KNIGHT:
+				int numOwnedBasicKnights = player.getNumOwnedBasicKnights(),
+						numOwnedStrongKnights = player.getNumOwnedStrongKnights(),
+						numOwnedMightyKnights = player.getNumOwnedMightyKnights(),
+						totalNumOwnedKnights = player.getTotalNumOwnedKnights();
+				if (numOwnedBasicKnights > Player.MAX_BASIC_KNIGHTS
+						|| numOwnedStrongKnights > Player.MAX_STRONG_KNIGHTS
+						|| numOwnedMightyKnights  > Player.MAX_MIGHTY_KNIGHTS
+						|| totalNumOwnedKnights >= Player.MAX_TOTAL_KNIGHTS) {
+
+					message = getString(R.string.game_total_knights_max);
+					break;
+				}
+				else
+				{
+					message = getString(R.string.game_nowhere_available_promote_knight);
+				}
+				break;
+
 			default:
 				return;
 		}
 
-		popup(getString(R.string.game_cant_build_str), message);
+		popup(getString(R.string.game_cant_act_str), message);
 
 		showState(false);
 	}

@@ -17,7 +17,7 @@ public class Vertex {
 	public static final int CITY_WALL = 3;
 
 	// KNIGHT UNIT CONSTANT
-	public static final int KNIGHT = 4;
+	public static final int KNIGHT = 10;
 
 	private int id;
 	private int curUnitType;
@@ -188,16 +188,7 @@ public class Vertex {
 			return null;
 		}
 
-		switch(placedKnightRank) {
-			case BASIC_KNIGHT:
-				return board.getBasicKnightById(placedKnightId);
-			case STRONG_KNIGHT:
-				return board.getStrongKnightById(placedKnightId);
-			case MIGHTY_KNIGHT:
-				return board.getMightyKnightById(placedKnightId);
-			default: // invalid knight rank
-				return null;
-		}
+		return board.getKnightById(placedKnightId);
 	}
 
 	/**
@@ -422,6 +413,49 @@ public class Vertex {
 	}
 
 	/**
+	 * Check if player can activate a knight at this vertex
+	 *
+	 * @param player
+	 *            player to check for
+	 * @return true iff player can activate a knight at this vertex
+	 */
+	public boolean canActivateKnightHere(Player player) {
+
+		if (curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player) {
+			Knight toActivate = getPlacedKnight();
+			return !toActivate.isActive();
+		}
+		else{
+			return false;
+		}
+	}
+
+	/**
+	 * Check if player can promote a knight at this vertex
+	 *
+	 * @param player
+	 *            player to check for
+	 * @return true iff player can promote a knight at this vertex
+	 */
+	public boolean canPromoteKnightHere(Player player) {
+
+		if (curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player) {
+			Knight toPromote = getPlacedKnight();
+			Knight.KnightRank currentRank = toPromote.getKnightRank();
+			switch (currentRank) {
+				case BASIC_KNIGHT:
+				case STRONG_KNIGHT:
+					return toPromote.canPromote();
+				default:
+					return false;
+			}
+		}
+		else{
+			return false;
+		}
+	}
+
+	/**
 	 * Wrapper of canBuild(player, setup) where setup is false by default
 	 * 
 	 * @param player
@@ -492,6 +526,36 @@ public class Vertex {
 		curUnitType = KNIGHT;
 
 		return true;
+	}
+
+	/**
+	 * Activate a knight at this vertex for player
+	 *
+	 * @param player
+	 *            which player intends to activate a knight here
+	 */
+	public boolean activateKnight(Player player) {
+		if (!this.canActivateKnightHere(player))
+		{
+			return false;
+		}
+
+		return getPlacedKnight().activate();
+	}
+
+	/**
+	 * Promote a knight at this vertex for player
+	 *
+	 * @param player
+	 *            which player intends to promote a knight here
+	 */
+	public boolean promoteKnight(Player player) {
+		if (!this.canPromoteKnightHere(player))
+		{
+			return false;
+		}
+
+		return getPlacedKnight().promote();
 	}
 
 	public Harbor[] getHarbors() {
