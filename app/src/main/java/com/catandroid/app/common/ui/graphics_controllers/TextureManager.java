@@ -260,6 +260,10 @@ public class TextureManager {
                 R.drawable.button_activate_knight, res);
         add(TextureType.BUTTON, UIButton.ButtonType.PROMOTE_KNIGHT.ordinal(),
                 R.drawable.button_promote_knight, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.CHASE_ROBBER.ordinal(),
+                R.drawable.button_chase_robber, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.CHASE_PIRATE.ordinal(),
+                R.drawable.button_chase_pirate, res);
         add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
                 R.drawable.button_barbarian_progress, res);
 	}

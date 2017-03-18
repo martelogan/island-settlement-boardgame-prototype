@@ -121,6 +121,8 @@
     <string name="player_place_knight">Dispatched a knight</string>
 	<string name="player_activate_knight">Activated a knight</string>
 	<string name="player_promote_knight">Promoted a knight</string>
+	<string name="player_chase_robber">Chased the robber</string>
+	<string name="player_chase_pirate">Chased the pirate</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
 	<string name="player_received_card">Received a card</string>
@@ -207,6 +209,12 @@
 	<string name="game_use_str">Use</string>
 	<string name="game_purchased_str">Purchased a</string>
 	<string name="game_ok_str">OK</string>
+	<string name="game_confirm_chase_robber">Chase the robber</string>
+	<string name="game_confirm_chase_pirate">Chase the pirate</string>
+	<string name="game_chase_robber_title">Chase robber with...</string>
+	<string name="game_chase_pirate_title">Chase pirate with...</string>
+	<string name="game_confirm_chase_robber_title">Want to chase the robber?</string>
+	<string name="game_confirm_chase_pirate_title">Want to chase the pirate?</string>
 	<string name="game_cancel_str">Cancel</string>
 	<string name="game_resources_str">resources</string>
 	<string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>
@@ -231,6 +239,8 @@
 	<string name="game_hire_knight">Dispatch knight</string>
 	<string name="game_activate_knight">Activate knight</string>
 	<string name="game_promote_knight">Promote knight</string>
+	<string name="game_chase_robber">Chase the Robber</string>
+	<string name="game_chase_pirate">Chase the Pirate</string>
 	<string name="game_cant_build_str">Can\'t build</string>
 	<string name="game_cant_act_str">Invalid action</string>
 	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
@@ -259,6 +269,8 @@
     <string name="game_nowhere_available_hire_knight">No locations available to dispatch a knight</string>
 	<string name="game_nowhere_available_activate_knight">No locations available to activate a knight</string>
 	<string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
+	<string name="game_nowhere_available_chase_robber">No knights positioned to chase the robber</string>
+	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
 	<string name="game_won">won</string>
 
 	<!-- Progress Cards -->

@@ -22,6 +22,7 @@ public class Vertex {
 	private int id;
 	private int curUnitType;
 	private int placedKnightId = -1;
+	private boolean isAdjacentToRobber = false, isAdjacentToPirate = false;
 
 	// TODO: this should be okay since its an enum constant...
 	private Knight.KnightRank placedKnightRank;
@@ -176,6 +177,72 @@ public class Vertex {
 	 */
 	public Player getOwnerPlayer() {
 		return board.getPlayerById(ownerPlayerNumber);
+	}
+
+	/**
+	 * Check if the vertex is currently adjacent to the robber
+	 *
+	 * @return true iff the vertex is currently adjacent to the robber
+	 */
+	public boolean isAdjacentToRobber() {
+		return (this.isAdjacentToRobber);
+	}
+
+	/**
+	 * Robber is adjacent to this vertex
+	 *
+	 * @return true if the vertex is now adjacent to the robber
+	 */
+	public boolean setRobber() {
+		this.isAdjacentToRobber = true;
+		return true;
+	}
+
+	/**
+	 * Remove the robber from adjacency to this vertex
+	 *
+	 * @return true iff robber was indeed removed
+	 */
+	public boolean removeRobber() {
+		if (this.isAdjacentToRobber) {
+			this.isAdjacentToRobber = false;
+			return true;
+		}
+		// robber is no longer adjacent to vertex
+		return false;
+	}
+
+	/**
+	 * Check if the vertex is currently adjacent to the pirate
+	 *
+	 * @return true iff the vertex is currently adjacent to the pirate
+	 */
+	public boolean isAdjacentToPirate() {
+		return (this.isAdjacentToPirate);
+	}
+
+	/**
+	 * Pirate is adjacent to this vertex
+	 *
+	 * @return true if the vertex is now adjacent to the pirate
+	 */
+	public boolean setPirate() {
+		this.isAdjacentToPirate = true;
+		return true;
+	}
+
+	/**
+	 * Remove the pirate from adjacency to this vertex
+	 *
+	 * @return true iff pirate was indeed removed
+	 */
+	public boolean removePirate() {
+		if (this.isAdjacentToPirate) {
+			this.isAdjacentToPirate = false;
+			return true;
+		}
+		// pirate is no longer adjacent to vertex
+		return false;
 	}
 
 	/**
@@ -456,6 +523,40 @@ public class Vertex {
 	}
 
 	/**
+	 * Check if the player can chase the robber with a knight at this vertex
+	 *
+	 * @param player
+	 *            player to check for
+	 * @return true iff player can chase the robber with a knight from this vertex
+	 */
+	public boolean canChaseRobberFromHere(Player player) {
+
+		if (curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player) {
+			return isAdjacentToRobber && getPlacedKnight().canMakeMove();
+		}
+		else{
+			return false;
+		}
+	}
+
+	/**
+	 * Check if the player can chase the pirate with a knight at this vertex
+	 *
+	 * @param player
+	 *            player to check for
+	 * @return true iff player can chase the pirate with a knight from this vertex
+	 */
+	public boolean canChasePirateFromHere(Player player) {
+
+		if (curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player) {
+			return isAdjacentToPirate && getPlacedKnight().canMakeMove();
+		}
+		else{
+			return false;
+		}
+	}
+
+	/**
 	 * Wrapper of canBuild(player, setup) where setup is false by default
 	 * 
 	 * @param player
@@ -524,6 +625,7 @@ public class Vertex {
 		placedKnightRank = toPlace.getKnightRank();
 		ownerPlayerNumber = player.getPlayerNumber();
 		curUnitType = KNIGHT;
+		toPlace.setCurrentVertexLocation(this);
 
 		return true;
 	}

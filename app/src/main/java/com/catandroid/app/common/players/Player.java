@@ -49,6 +49,7 @@ public class Player {
 	protected int numOwnedMightyKnights;
 	protected Vector<Integer> ownedCommunityIds, reachingVertexIds;
 	protected Vector<Integer> roadIds, shipIds;
+	protected Vector<Integer> myKnightIds;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
@@ -112,6 +113,7 @@ public class Player {
 		reachingVertexIds = new Vector<Integer>();
 		roadIds = new Vector<Integer>();
 		shipIds = new Vector<Integer>();
+        myKnightIds = new Vector<Integer>();
 
 		countPerResource = new int[Resource.RESOURCE_TYPES.length];
 		harbors = new boolean[Resource.ResourceType.values().length];
@@ -591,7 +593,8 @@ public class Player {
 		// pay for the knight
 		useResources(ResourceType.WOOL, 1);
 		useResources(ResourceType.ORE, 1);
-		// update our knight counts
+		// update our knights
+		myKnightIds.add(hiredKnight.getId());
 		numOwnedBasicKnights += 1;
 		numTotalOwnedKnights += 1;
 		// knight may have blocked a trade route
@@ -677,6 +680,54 @@ public class Player {
 
 		// append to the turn log
 		appendAction(R.string.player_promote_knight);
+
+		return true;
+	}
+
+	/**
+	 * Attempt to chase the robber with the knight at this vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex of knight with which to chase the robber
+	 * @return
+	 */
+	public boolean chaseRobberFrom(Vertex vertex) {
+		if (vertex == null || !canChaseRobberFrom(vertex))
+		{
+			return false;
+		}
+
+		Knight toChaseRobber = vertex.getPlacedKnight();
+		if(!toChaseRobber.chaseRobber()) {
+			return false;
+		}
+
+		// append to the turn log
+		appendAction(R.string.player_chase_robber);
+
+		return true;
+	}
+
+	/**
+	 * Attempt to chase the pirate with the knight at this vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex of knight with which to chase the pirate
+	 * @return
+	 */
+	public boolean chasePirateFrom(Vertex vertex) {
+		if (vertex == null || !canChasePirateFrom(vertex))
+		{
+			return false;
+		}
+
+		Knight toChasePirate = vertex.getPlacedKnight();
+		if(!toChasePirate.chasePirate()) {
+			return false;
+		}
+
+		// append to the turn log
+		appendAction(R.string.player_chase_pirate);
 
 		return true;
 	}
@@ -843,6 +894,67 @@ public class Player {
 		}
 
 		return vertex.canPromoteKnightHere(this);
+	}
+
+	/**
+	 * Can you chase the robber with one of your knights?
+	 *
+	 * @return
+	 */
+	public boolean canChaseRobber() {
+		boolean canChase = false;
+		Knight curKnight;
+		Vertex curKnightVertexLocation;
+		for (int i = 0; i < myKnightIds.size(); i++) {
+			curKnight = getKnightAddedAtIndex(i);
+			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
+			if(curKnight.canMakeMove() && curKnightVertexLocation.isAdjacentToRobber()) {
+				canChase = true;
+				break;
+			}
+		}
+		return canChase;
+	}
+
+	/**
+	 * Can you chase the pirate with one of your knights?
+	 *
+	 * @return
+	 */
+	public boolean canChasePirate() {
+		boolean canChase = false;
+		Knight curKnight;
+		Vertex curKnightVertexLocation;
+		for (int i = 0; i < myKnightIds.size(); i++) {
+			curKnight = getKnightAddedAtIndex(i);
+			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
+			if(curKnight.canMakeMove() && curKnightVertexLocation.isAdjacentToPirate()) {
+				canChase = true;
+				break;
+			}
+		}
+		return canChase;
+	}
+
+
+	/**
+	 * Can you chase the robber with a knight from this vertex?
+	 * @param vertex
+	 *            vertex from which to chase the robber
+	 * @return
+	 */
+	public boolean canChaseRobberFrom(Vertex vertex) {
+		return vertex.canChaseRobberFromHere(this);
+	}
+
+	/**
+	 * Can you chase the pirate with a knight from this vertex?
+	 * @param vertex
+	 *            vertex from which to chase the pirate
+	 * @return
+	 */
+	public boolean canChasePirateFrom(Vertex vertex) {
+		return vertex.canChasePirateFromHere(this);
 	}
 
 	/**
@@ -1290,6 +1402,16 @@ public class Player {
 	public int getPoliticsLevel() {
 		return cityImprovementLevels[CityImprovement.toCityImprovementIndex(
 				CityImprovement.CityImprovementType.POLITICS)];
+	}
+
+	/**
+	 * Return player's nth hired knight
+	 * @param knightOrdinalIndex
+	 * 			ordinal index of knight hired by the player
+	 * @return the player's nth hired knight
+	 */
+	public Knight getKnightAddedAtIndex(int knightOrdinalIndex) {
+		return board.getKnightById(myKnightIds.get(knightOrdinalIndex));
 	}
 
 //TODO: see how we can use this similar code for progress cards

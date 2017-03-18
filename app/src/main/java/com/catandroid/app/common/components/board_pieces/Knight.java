@@ -2,6 +2,7 @@ package com.catandroid.app.common.components.board_pieces;
 
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
 
 /**
@@ -33,6 +34,7 @@ public class Knight extends OwnableUnit {
 
     private KnightRank knightRank;
     private int knightId = Integer.MIN_VALUE;
+    private int curVertexLocationId = -1;
     private int ownerPlayerNumber = -1;
     private boolean isActive = false;
     private int turnLastActivated = -1, turnLastMoved = -1, turnLastPromoted = -1;
@@ -76,6 +78,14 @@ public class Knight extends OwnableUnit {
         this.ownerPlayerNumber = ownerPlayerNumber;
     }
 
+    public Vertex getCurrentVertexLocation() {
+        return board.getVertexById(curVertexLocationId);
+    }
+
+    public void setCurrentVertexLocation(Vertex currentVertexLocation) {
+        this.curVertexLocationId = currentVertexLocation.getId();
+    }
+
     public KnightRank getKnightRank() {
         return this.knightRank;
     }
@@ -88,6 +98,10 @@ public class Knight extends OwnableUnit {
         this.knightRank = knightRank;
     }
 
+    public boolean canMakeMove() {
+        return isActive && !hasBeenActivatedThisTurn();
+    }
+
     public boolean isActive() {
         return isActive;
     }
@@ -98,6 +112,14 @@ public class Knight extends OwnableUnit {
         }
         this.isActive = true;
         this.turnLastActivated = board.getGameTurnNumber();
+        return true;
+    }
+
+    public boolean deactivate() {
+        if (!isActive) {
+            return false;
+        }
+        this.isActive = false;
         return true;
     }
 
@@ -115,6 +137,20 @@ public class Knight extends OwnableUnit {
         }
     }
 
+    public boolean canChaseRobber() {
+        if (!canMakeMove()) {
+            return false;
+        }
+        return getCurrentVertexLocation().canChaseRobberFromHere(getOwnerPlayer());
+    }
+
+    public boolean canChasePirate() {
+        if (!canMakeMove()) {
+            return false;
+        }
+        return getCurrentVertexLocation().canChasePirateFromHere(getOwnerPlayer());
+    }
+
     public boolean promote() {
         if (!canPromote()) {
             return false;
@@ -130,6 +166,26 @@ public class Knight extends OwnableUnit {
                 return false;
         }
         turnLastPromoted = board.getGameTurnNumber();
+        return true;
+    }
+
+    public boolean chaseRobber() {
+        if(!canChaseRobber()) {
+            return false;
+        }
+        board.setReturnPhase(board.getPhase());
+        board.startRobberPhase();
+        deactivate();
+        return true;
+    }
+
+    public boolean chasePirate() {
+        if(!canChasePirate()) {
+            return false;
+        }
+        board.setReturnPhase(board.getPhase());
+        board.startPiratePhase();
+        deactivate();
         return true;
     }
 

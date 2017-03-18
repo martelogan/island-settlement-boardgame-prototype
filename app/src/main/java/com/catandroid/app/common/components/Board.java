@@ -203,7 +203,10 @@ public class Board {
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
 
-		// reset the pirate hex now that the edges are ready
+		//TODO: remove robber reset when adding fishermen rules
+		// reset the robber hex now that the edges & verticesare ready
+		getCurRobberHex().setRobber();
+		// reset the pirate hex now that the edges & vertices are ready
 		getCurPirateHex().setPirate();
 		//generate progress card decks
 		progressCardInit();

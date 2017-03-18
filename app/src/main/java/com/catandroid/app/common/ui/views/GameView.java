@@ -311,6 +311,8 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			case HIRE_KNIGHT:
 			case ACTIVATE_KNIGHT:
 			case PROMOTE_KNIGHT:
+			case CHASE_ROBBER:
+			case CHASE_PIRATE:
 				// select a vertex
 				select = boardGeometry.getNearestVertex(x, y);
 				break;

@@ -309,6 +309,8 @@ public class ActiveGameFragment extends Fragment {
 			case HIRE_KNIGHT:
 			case ACTIVATE_KNIGHT:
 			case PROMOTE_KNIGHT:
+            case CHASE_ROBBER:
+            case CHASE_PIRATE:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -373,7 +375,8 @@ public class ActiveGameFragment extends Fragment {
 			vertexUnitType = Vertex.CITY_WALL;
 		}
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
-				|| action == Action.PROMOTE_KNIGHT) {
+				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
+                || action == Action.CHASE_PIRATE) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -409,6 +412,16 @@ public class ActiveGameFragment extends Fragment {
 							showState(false);
 						}
 						break;
+                    case CHASE_ROBBER:
+                        if (player.chaseRobberFrom(vertex)) {
+                            showState(false);
+                        }
+                        break;
+                    case CHASE_PIRATE:
+                        if (player.chasePirateFrom(vertex)) {
+                            showState(false);
+                        }
+                        break;
 				}
 		}
 	}
@@ -539,7 +552,7 @@ public class ActiveGameFragment extends Fragment {
 		switch (button) {
 			case PLAYER_STATUS:
 				//PLAYER_STATUS IS THE BUTTON THAT IS ALWAYS VISIBLE IN TOP LEFT CORNER
-				Log.d("myTag", "about to launch PLAYER PLAYER_STATUS");
+				Log.d("playerStatus", "about to launch PLAYER PLAYER_STATUS");
 
 				PlayerStatsFragment playerStatsFragment = new PlayerStatsFragment();
 				playerStatsFragment.setBoard(board);
@@ -810,6 +823,45 @@ public class ActiveGameFragment extends Fragment {
 				setButtons(Action.PROMOTE_KNIGHT);
 				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_promote_knight));
+				break;
+
+			case CHASE_ROBBER:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canChaseRobberFromHere(player)) {
+						canAct = true;
+						break;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.CHASE_ROBBER);
+					break;
+				}
+
+                renderer.setAction(Action.CHASE_ROBBER);
+                setButtons(Action.CHASE_ROBBER);
+                getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+                        + getActivity().getString(R.string.game_chase_robber_title));
+//				confirmChaseRobberDialog();
+				break;
+
+			case CHASE_PIRATE:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canChasePirateFromHere(player)) {
+						canAct = true;
+						break;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.CHASE_PIRATE);
+					break;
+				}
+                renderer.setAction(Action.CHASE_PIRATE);
+                setButtons(Action.CHASE_PIRATE);
+                getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+                        + getActivity().getString(R.string.game_chase_pirate_title));
+//				confirmChasePirateDialog();
 				break;
 
 			case PURCHASE_CITY_IMPROVEMENT:
@@ -1121,6 +1173,12 @@ public class ActiveGameFragment extends Fragment {
 			}
 			if(player.canAffordToPromoteKnight()) {
 				view.addButton(ButtonType.PROMOTE_KNIGHT);
+			}
+			if(player.canChaseRobber()) {
+				view.addButton(ButtonType.CHASE_ROBBER);
+			}
+			if(player.canChasePirate()) {
+				view.addButton(ButtonType.CHASE_PIRATE);
 			}
 			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
@@ -1701,6 +1759,14 @@ public class ActiveGameFragment extends Fragment {
 				}
 				break;
 
+			case CHASE_ROBBER:
+				message = getString(R.string.game_nowhere_available_chase_robber);
+				break;
+
+			case CHASE_PIRATE:
+				message = getString(R.string.game_nowhere_available_chase_pirate);
+				break;
+
 			default:
 				return;
 		}
@@ -1727,7 +1793,9 @@ public class ActiveGameFragment extends Fragment {
 
 		CharSequence[] items = new CharSequence[index];
 		for (int i = 0; i < index; i++)
+		{
 			items[i] = list[i];
+		}
 
 		final int cancel = index-1;
 
@@ -1784,6 +1852,60 @@ public class ActiveGameFragment extends Fragment {
 		//@TODO
 		//add merchant placement logic
 		toast("Played the merchant");
+	}
+
+	private void confirmChaseRobberDialog() {
+		final int confirm = 0;
+		final int cancel = 1;
+		CharSequence[] items = new CharSequence[2];
+		items[0] = getString(R.string.game_confirm_chase_robber);
+		items[1] = getString(R.string.game_cancel_str);
+
+		//create the popup asking which card to use
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_confirm_chase_robber_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+				if (item == cancel) {
+					dialog.dismiss();
+				} else if (item == confirm){
+					dialog.dismiss();
+					board.setReturnPhase(board.getPhase());
+					board.startRobberPhase();
+					showState(false);
+				}
+			}
+		});
+
+		builder.create().show();
+	}
+
+	private void confirmChasePirateDialog() {
+		final int confirm = 0;
+		final int cancel = 1;
+		CharSequence[] items = new CharSequence[2];
+		items[0] = getString(R.string.game_confirm_chase_pirate);
+		items[1] = getString(R.string.game_cancel_str);
+
+		//create the popup asking which card to use
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_confirm_chase_pirate_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+				if (item == cancel) {
+					dialog.dismiss();
+				} else if (item == confirm){
+					dialog.dismiss();
+					board.setReturnPhase(board.getPhase());
+					board.startPiratePhase();
+					showState(false);
+				}
+			}
+		});
+
+		builder.create().show();
 	}
 
 //	private void monopoly() {
