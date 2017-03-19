@@ -88,9 +88,6 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 	// Automatically start the sign-in flow when the Activity starts
 	private boolean mAutoStartSignInFlow = true;
 
-	// Current turn-based match
-	private TurnBasedMatch mTurnBasedMatch;
-
 
 	private AlertDialog mAlertDialog;
 
@@ -255,9 +252,9 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 
 		// Retrieve the TurnBasedMatch from the connectionHint
 		if (connectionHint != null) {
-			mTurnBasedMatch = connectionHint.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
+			mMatch = connectionHint.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
 
-			if (mTurnBasedMatch != null) {
+			if (mMatch != null) {
 				if (mGoogleApiClient == null || !mGoogleApiClient.isConnected()) {
 					Log.d(TAG, "Warning: accessing TurnBasedMatch when not connected");
 				}
@@ -265,7 +262,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				//if we are not playing game, refresh
 				if(findViewById(R.id.sign_in_button) != null){
 					setViewVisibility();
-					updateMatch(mTurnBasedMatch);
+					updateMatch(mMatch);
 				}
 				return;
 			}
@@ -273,6 +270,19 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		if(catandroidTurn.currentBoard == null) {
 			setViewVisibility();
 		}
+// else if(catandroidTurn.currentBoard != null){
+//			//when we are in a game and an update is made to it, we call upda
+//			if(mMatch != null && currentMatchId != null && mMatch.getMatchId().equals(currentMatchId)){
+//				Toast.makeText(this, "Loaded the most current board state", Toast.LENGTH_SHORT).show();
+//				String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
+//				String myParticipantId = mMatch.getParticipantId(playerId);
+//				catandroidTurn.unpersist(mMatch.getData());
+//				activeGameFragment.setBoard(catandroidTurn.currentBoard);
+//				activeGameFragment.setmListener(this);
+//				activeGameFragment.setMyParticipantId(myParticipantId);
+//				activeGameFragment.updateBoardState();
+//			}
+//		}
 
 		// As a demonstration, we are registering this activity as a handler for
 		// invitation and match events.
@@ -397,6 +407,24 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 
 		boardSizeSpinner.setAdapter(boardSizeChoice);
 		boardSizeSpinner.setSelection(0);
+
+		//Set the predefined board states
+		Spinner predefinedBoardSpinner = (Spinner) findViewById(R.id.option_predefined_board);
+		ArrayAdapter<CharSequence> predefinedBoardChoice = new ArrayAdapter<CharSequence>(
+				this, android.R.layout.simple_spinner_item);
+		predefinedBoardChoice
+				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+		predefinedBoardChoice.add("No Predefined State");
+		predefinedBoardChoice.add("Year of Plenty");
+		predefinedBoardChoice.add("Progress Card Abundance");
+		predefinedBoardChoice.add("Metropolis Land");
+		predefinedBoardChoice.add("Protected by Knights");
+		predefinedBoardChoice.add("Imminent Barbarian Attack!!");
+		predefinedBoardChoice.add("Winner is close!");
+
+		predefinedBoardSpinner.setAdapter(predefinedBoardChoice);
+		predefinedBoardSpinner.setSelection(0);
 
 		final Button start = (Button) findViewById(R.id.start);
 		start.setOnClickListener(new OnClickListener() {
@@ -671,6 +699,10 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		Spinner pointSpinner = (Spinner) findViewById(R.id.option_max_points);
 		int maxPoints = pointSpinner.getSelectedItemPosition() + 5;
 
+		Spinner predefinedBoardSpinner = (Spinner) findViewById(R.id.option_predefined_board);
+		int predefinedBoardSelected = predefinedBoardSpinner.getSelectedItemPosition();
+
+
 		CheckBox discardCheck = (CheckBox) findViewById(R.id.auto_discard);
 		boolean autoDiscard = discardCheck.isChecked();
 
@@ -681,11 +713,55 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		activeGameFragment.setmListener(this);
 		activeGameFragment.setMyParticipantId(myParticipantId);
 
-		//@TODO
-		//add the list of playerIds for the game and the number of players based on view
+		//@TODO ADD THE PRECREATED BOARD STATE
+		//set the board as new one or predefined based on choice
+		Board board;
+		switch(predefinedBoardSelected){
+			case 0:
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 1:
+				//Year of Plenty
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 2:
+				//Progress Card Abundance
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 3:
+				//Progress Card Abundance
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 4:
+				//Metropolis Land
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 5:
+				//Protected by Knights
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 6:
+				//Imminent Barbarian Attack!!
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			case 7:
+				//Winner is close!
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+			default:
+				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
+						autoDiscard, activeGameFragment);
+				break;
+		}
 
-		Board board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-				autoDiscard, activeGameFragment);
 		activeGameFragment.setBoard(board);
 
 		Gson gson = new Gson();
@@ -883,6 +959,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		Toast.makeText(this, "A match was updated.", Toast.LENGTH_SHORT).show();
 		//when we are in a game and an update is made to it, we call upda
 		if(match.getMatchId().equals(currentMatchId)){
+
 			String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
 			String myParticipantId = mMatch.getParticipantId(playerId);
 			catandroidTurn.unpersist(match.getData());
@@ -970,7 +1047,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				}
 
 				mSignInClicked = true;
-				mTurnBasedMatch = null;
+				mMatch = null;
 				findViewById(R.id.sign_in_button).setVisibility(View.GONE);
 				mGoogleApiClient.connect();
 				break;

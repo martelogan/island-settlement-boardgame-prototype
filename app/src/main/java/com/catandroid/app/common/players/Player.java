@@ -60,6 +60,8 @@ public class Player {
 	private Vector<ProgressCardType> newCards;
 	private boolean usedCardThisTurn;
 	private boolean shipWasMovedThisTurn;
+	public int metropolisTypeToBuild;
+	public boolean gotResourcesSinceLastTurn = false;
 	private String actionLog;
 
 	protected transient Board board;
@@ -477,7 +479,12 @@ public class Player {
 			{
 				return false;
 			}
-		} else {
+		} else if(metropolisTypeToBuild != -1){
+			if (!board.isBuildMetropolisPhase()){
+				return false;
+			}
+		}
+		else {
 			// invalid type
 			return false;
 		}
@@ -487,7 +494,7 @@ public class Player {
 			return false;
 		}
 
-		// deduct resources based on type
+		// deduct resources based on type and fix count/owner
 		if (vertex.getCurUnitType() == Vertex.SETTLEMENT) {
 			if (!setup) {
 				useResources(Resource.ResourceType.BRICK, 1);
@@ -508,12 +515,17 @@ public class Player {
 				ownedCommunityIds.add(vertex.getId());
 			}
 			numOwnedCities += 1;
-		} else if(vertex.getCurUnitType() == Vertex.CITY_WALL){
-			if (!setup) {
+		} else if(vertex.getCurUnitType() == Vertex.CITY_WALL
+				|| vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS
+				|| vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS
+				|| vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS){
+			if (!setup && metropolisTypeToBuild == -1) {
 				useResources(Resource.ResourceType.BRICK, 2);
+				numOwnedCityWalls += 1;
 			}
-			numOwnedCityWalls += 1;
 		}
+		//no need to do anything for metropolis since the cost and tracking is taken care by
+		//the CityImprovementFragment
 
 		//append to the turn log
 		switch(unitType) {
@@ -525,6 +537,15 @@ public class Player {
 				break;
 			case Vertex.CITY_WALL:
 				appendAction(R.string.player_city_wall);
+				break;
+			case Vertex.TRADE_METROPOLIS:
+				appendAction("Built a trade metropolis");
+				break;
+			case Vertex.SCIENCE_METROPOLIS:
+				appendAction("Built a science metropolis");
+				break;
+			case Vertex.POLITICS_METROPOLIS:
+				appendAction("Built a politics metropolis");
 				break;
 			default:
 				break;
@@ -1018,7 +1039,8 @@ public class Player {
 	 */
 	public void addResources(Resource.ResourceType resourceType, int count) {
 		//distribute the commodities when its a city, city+wall, metropolis
-		boolean isCity = (count == 2 || count == 3 || count == 4);
+		boolean isCity = (count == 2 || count == 3 || count == 4 || count == 4
+				|| count == 5 ||count == 6 || count == 7 || count == 8 || count == 9);
 		switch(resourceType) {
 			case LUMBER:
 				if(isCity){
@@ -1030,6 +1052,7 @@ public class Player {
 				break;
 			case WOOL:
 				if(isCity){
+					//@TODO REMOVE
 					countPerResource[Resource.toResourceIndex(ResourceType.CLOTH)] += 1;
 					countPerResource[resourceType.ordinal()] += 1;
 				} else {
@@ -1359,6 +1382,15 @@ public class Player {
 		//TODO: add other public vps
 		if (board.hasLongestTradeRoute(this))
 		{
+			points += 2;
+		}
+		if(board.getMetropolisOwners()[0] == getPlayerNumber()){
+			points += 2;
+		}
+		if(board.getMetropolisOwners()[1] == getPlayerNumber()){
+			points += 2;
+		}
+		if(board.getMetropolisOwners()[2] == getPlayerNumber()){
 			points += 2;
 		}
 
@@ -1966,6 +1998,7 @@ public class Player {
 
 	public void distributeProgressCard(int diceRollNumber2, CityImprovement.CityImprovementType type){
 		boolean barbarianRolled = type == null;
+
 		//if we rolled a cityimprovement, attempt to distribute progress
 		if(!barbarianRolled){
 			int playerDisciplineLevel = cityImprovementLevels[CityImprovement.toCityImprovementIndex(type)];

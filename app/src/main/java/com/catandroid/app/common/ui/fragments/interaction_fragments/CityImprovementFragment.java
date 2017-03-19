@@ -16,8 +16,10 @@ import com.catandroid.app.R;
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
+import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
 
 public class CityImprovementFragment extends Fragment {
 
@@ -360,35 +362,74 @@ public class CityImprovementFragment extends Fragment {
 		if(tradeButton != null) {
 			tradeButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					// Perform buy on click because only pressable if they can afford it
+				// Perform buy on click because only pressable if they can afford it
 					currentPlayer.appendAction(R.string.player_tradeImp, Integer.toString((playerTradeLevel + 1)));
 
-					// increase their discipline level
-					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] = playerTradeLevel + 1;
+				// increase their discipline level
+				playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] = playerTradeLevel + 1;
 
-					// Remove the resources from the player
+				// Remove the resources from the player
 					currentPlayer.useResources(Resource.ResourceType.CLOTH,
-							playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)]);
+				playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)]);
 
-					// if level just bought is 3, we need to give special priviledge
-					//now commodities harbours!
+				// if level just bought is 3, we need to give special priviledge
+				//now commodities harbours!
 					if (playerTradeLevel == 2) {
-						currentPlayer.setTradeValue(Resource.ResourceType.CLOTH);
-						currentPlayer.setTradeValue(Resource.ResourceType.PAPER);
-						currentPlayer.setTradeValue(Resource.ResourceType.COIN);
-					}
-
-					//if we bought level 4 they now own the metropolis of that color
-					//if steal if from someone else, we need to change thiers back to city
-					//prompt the user to chose which city becomes metropolis
-					//change that city to the metropolis
-					//if we bought level5 and someone else if level4 and owns metropolis we steal from them
-					//if steal if from someone else, we need to change thiers back to city
-					//prompt the user to chose which city becomes metropolis
-					//change that city to the metropolis
-					toast(getString(R.string.player_tradeImp, Integer.toString((playerTradeLevel + 1))));
-					getFragmentManager().popBackStack();
+					currentPlayer.setTradeValue(Resource.ResourceType.CLOTH);
+					currentPlayer.setTradeValue(Resource.ResourceType.PAPER);
+					currentPlayer.setTradeValue(Resource.ResourceType.COIN);
 				}
+
+				//if we bought level 4 or 5 they now own the metropolis of that color
+				//if steal if from someone else, we need to change thiers back to city
+				//prompt the user to chose which city becomes metropolis
+				//change that city to the metropolis
+				boolean buildNewMetropolis = false;
+					if(playerTradeLevel == 3 || playerTradeLevel == 4){
+
+					int currentTradeMetropolisOwner = board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)];
+					if(currentTradeMetropolisOwner != -1 && currentTradeMetropolisOwner != currentPlayer.getPlayerNumber()) {
+						boolean tradeMetropolisIsStealable = (board.getPlayerById(currentTradeMetropolisOwner).getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] == 4);
+						if (tradeMetropolisIsStealable) {
+							//remove the metropolis from the current user
+							for (Vertex vertex : board.getVertices()) {
+								switch (vertex.getCurUnitType()) {
+									case Vertex.TRADE_METROPOLIS:
+										vertex.setCurUnitType(Vertex.CITY);
+										break;
+									case Vertex.WALLED_TRADE_METROPOLIS:
+										vertex.setCurUnitType(Vertex.CITY_WALL);
+										break;
+									default:
+										break;
+								}
+							}
+							//reset the current owner
+							board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] = currentPlayer.getPlayerNumber();
+							buildNewMetropolis = true;
+                            currentPlayer.appendAction(R.string.player_stole_trade, board.getPlayerById(currentTradeMetropolisOwner).getPlayerName());
+						} else {
+							toast("Could not steal the metropolis!");
+						}
+					} else if (currentTradeMetropolisOwner == -1){
+						//we are the first ones to build it so just give it to us
+						board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] = currentPlayer.getPlayerNumber();
+						buildNewMetropolis = true;
+					} else if (currentTradeMetropolisOwner == currentPlayer.getPlayerNumber()){
+						//we already own it and should keep it,
+						//the level is already changed at this point
+					}
+				}
+
+				toast(getString(R.string.player_tradeImp, Integer.toString((playerTradeLevel + 1))));
+				getFragmentManager().popBackStack();
+
+				//ask the user to select the city to build the metropolis on if needed
+					if(buildNewMetropolis){
+					currentPlayer.metropolisTypeToBuild = Vertex.TRADE_METROPOLIS;
+					board.setPhase(Board.Phase.BUILD_METROPOLIS);
+				}
+			}
 			});
 		}
 
@@ -405,16 +446,56 @@ public class CityImprovementFragment extends Fragment {
 
 					// if level just bought is 3, we need to give special priviledge
 
-					//if we bought level 4 they now own the metropolis of that color
+
+					//if we bought level 4 or 5 they now own the metropolis of that color
 					//if steal if from someone else, we need to change thiers back to city
 					//prompt the user to chose which city becomes metropolis
 					//change that city to the metropolis
-					//if we bought level5 and someone else if level4 and owns metropolis we steal from them
-					//if steal if from someone else, we need to change thiers back to city
-					//prompt the user to chose which city becomes metropolis
-					//change that city to the metropolis
+					boolean buildNewMetropolis = false;
+					if(playerScienceLevel == 3 || playerScienceLevel == 4){
+
+						int currentScienceMetropolisOwner = board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)];
+						if(currentScienceMetropolisOwner != -1 && currentScienceMetropolisOwner != currentPlayer.getPlayerNumber()) {
+							boolean scienceMetropolisIsStealable = (board.getPlayerById(currentScienceMetropolisOwner).getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] == 4);
+							if (scienceMetropolisIsStealable) {
+								//remove the metropolis from the current user
+								for (Vertex vertex : board.getVertices()) {
+									switch (vertex.getCurUnitType()) {
+										case Vertex.SCIENCE_METROPOLIS:
+											vertex.setCurUnitType(Vertex.CITY);
+											break;
+										case Vertex.WALLED_SCIENCE_METROPOLIS:
+											vertex.setCurUnitType(Vertex.CITY_WALL);
+											break;
+										default:
+											break;
+									}
+								}
+								//reset the current owner
+								board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] = currentPlayer.getPlayerNumber();
+								buildNewMetropolis = true;
+                                currentPlayer.appendAction(R.string.player_stole_science, board.getPlayerById(currentScienceMetropolisOwner).getPlayerName());
+							} else {
+								toast("Could not steal the science metropolis!");
+							}
+						} else if (currentScienceMetropolisOwner == -1){
+							//we are the first ones to build it so just give it to us
+							board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] = currentPlayer.getPlayerNumber();
+							buildNewMetropolis = true;
+						} else if (currentScienceMetropolisOwner == currentPlayer.getPlayerNumber()){
+							//we already own it and should keep it,
+							//the level is already changed at this point
+						}
+					}
+
 					toast(getString(R.string.player_scienceImp, Integer.toString((playerScienceLevel + 1))));
 					getFragmentManager().popBackStack();
+
+					//ask the user to select the city to build the metropolis on if needed
+					if(buildNewMetropolis){
+						currentPlayer.metropolisTypeToBuild = Vertex.SCIENCE_METROPOLIS;
+						board.setPhase(Board.Phase.BUILD_METROPOLIS);
+					}
 
 				}
 			});
@@ -443,8 +524,52 @@ public class CityImprovementFragment extends Fragment {
 					//if steal if from someone else, we need to change thiers back to city
 					//prompt the user to chose which city becomes metropolis
 					//change that city to the metropolis
+					boolean buildNewMetropolis = false;
+					if(playerPoliticsLevel == 3 || playerPoliticsLevel == 4){
+
+						int currentPoliticsMetropolisOwner = board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)];
+						if(currentPoliticsMetropolisOwner != -1 && currentPoliticsMetropolisOwner != currentPlayer.getPlayerNumber()) {
+							boolean politicsMetropolisIsStealable = (board.getPlayerById(currentPoliticsMetropolisOwner).getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)] == 4);
+							if (politicsMetropolisIsStealable) {
+								//remove the metropolis from the current user
+								for (Vertex vertex : board.getVertices()) {
+									switch (vertex.getCurUnitType()) {
+										case Vertex.POLITICS_METROPOLIS:
+											vertex.setCurUnitType(Vertex.CITY);
+											break;
+										case Vertex.WALLED_POLITICS_METROPOLIS:
+											vertex.setCurUnitType(Vertex.CITY_WALL);
+											break;
+										default:
+											break;
+									}
+								}
+								//reset the current owner
+								board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)] = currentPlayer.getPlayerNumber();
+								buildNewMetropolis = true;
+                                currentPlayer.appendAction(R.string.player_stole_politics, board.getPlayerById(currentPoliticsMetropolisOwner).getPlayerName());
+							} else {
+								toast("Could not steal the politics metropolis!");
+							}
+						} else if (currentPoliticsMetropolisOwner == -1){
+							//we are the first ones to build it so just give it to us
+							board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)] = currentPlayer.getPlayerNumber();
+							buildNewMetropolis = true;
+						} else if (currentPoliticsMetropolisOwner == currentPlayer.getPlayerNumber()){
+							//we already own it and should keep it,
+							//the level is already changed at this point
+						}
+					}
+
 					toast(getString(R.string.player_politicsImp, Integer.toString((playerPoliticsLevel + 1))));
 					getFragmentManager().popBackStack();
+
+					//ask the user to select the city to build the metropolis on if needed
+					if(buildNewMetropolis){
+						currentPlayer.metropolisTypeToBuild = Vertex.POLITICS_METROPOLIS;
+						board.setPhase(Board.Phase.BUILD_METROPOLIS);
+					}
+
 				}
 			});
 		}

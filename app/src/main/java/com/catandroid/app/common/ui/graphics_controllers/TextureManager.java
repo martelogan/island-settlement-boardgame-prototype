@@ -35,8 +35,10 @@ public class TextureManager {
     */
 	private enum TextureType {
 		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, CITY_WALL, SHIP,
-        BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
+		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, CITY_WALL, 
+		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
+		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
+		SHIP, BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
         BASIC_KNIGHT_ACTIVE, STRONG_KNIGHT_ACTIVE, MIGHTY_KNIGHT_ACTIVE, BUTTON_BG, BUTTON
 	}
 
@@ -185,6 +187,66 @@ public class TextureManager {
         add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_mighty_b_active, res);
         add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_mighty_grn_active, res);
         add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_mighty_y_active,
+                res);
+
+        //load large TRADEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large SCIENCEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large POLITICSmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large WALLED_TRADEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large WALLED_SCIENCEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large WALLED_POLITICSmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
                 res);
 
         // load robber texture
@@ -369,10 +431,11 @@ public class TextureManager {
     }
 
     public void drawBuildableVertexUnit(Vertex vertex, boolean selectableSettlement, boolean selectableCity,
-                                        boolean selectableCityWall, GL10 gl, BoardGeometry boardGeometry) {
+                                        boolean selectableCityWall, boolean selectableMetropolis, 
+                                        GL10 gl, BoardGeometry boardGeometry) {
 
         TextureType textureType = TextureType.NONE;
-        if (vertex.getCurUnitType() == Vertex.CITY || selectableCity || selectableCityWall)
+        if (vertex.getCurUnitType() == Vertex.CITY || selectableCity || selectableCityWall || selectableMetropolis)
         {
             textureType = TextureType.CITY;
         }
@@ -387,7 +450,7 @@ public class TextureManager {
 
         Player.Color color;
         Player owner = vertex.getOwnerPlayer();
-        if (selectableSettlement || selectableCity || selectableCityWall)
+        if (selectableSettlement || selectableCity || selectableCityWall || selectableMetropolis)
         {
             color = Player.Color.SELECTING;
         }
@@ -445,6 +508,30 @@ public class TextureManager {
         else if (vertex.getCurUnitType() == Vertex.KNIGHT)
         {
             textureType = getKnightTextureType(vertex.getPlacedKnight());
+        }
+        else if (vertex.getCurUnitType() == Vertex.TRADE_METROPOLIS)
+        {
+            textureType = TextureType.TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.POLITICS_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_POLITICS_METROPOLIS;
         }
 
         Player.Color color;

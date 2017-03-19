@@ -91,8 +91,8 @@ public class BoardGeometry {
 		float minZoomY = 0.5f * (float) width / aspect / (5.1f * ZOOM_SCALE);
 
 		minZoom = min(minZoomX, minZoomY);
-		highZoom = 2 * minZoom;
-		maxZoom = 3 * minZoom;
+		highZoom = 3 * minZoom;
+		maxZoom = 4 * minZoom;
 
 		setZoom(minZoom);
 	}

@@ -19,7 +19,7 @@ import com.catandroid.app.common.ui.resources.Square;
 public class GameRenderer implements Renderer {
 
 	public enum Action {
-		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_EDGE_UNIT, BUILD_ROAD,
+		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT, BUILD_ROAD,
 		BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER, CHASE_PIRATE,
 		MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
@@ -224,6 +224,8 @@ public class GameRenderer implements Renderer {
                         && player.canBuildVertexUnit(vertex, Vertex.CITY);
 				boolean cityWall = player != null && action == Action.BUILD_CITY_WALL
 						&& player.canBuildVertexUnit(vertex, Vertex.CITY_WALL);
+				boolean metropolis = player != null && action == Action.BUILD_METROPOLIS
+						&& player.canBuildVertexUnit(vertex, board.getCurrentPlayer().metropolisTypeToBuild);
 
 				// TODO: many cases where we may want to hi-light a knight
 				Knight selectableKnight = null;
@@ -256,7 +258,7 @@ public class GameRenderer implements Renderer {
 
 				// try to render any buildable units on the vertex
                 texture.drawBuildableVertexUnit(vertex, settlement,
-                        city, cityWall, gl, boardGeometry);
+                        city, cityWall, metropolis, gl, boardGeometry);
             }
 
 			gl.glMatrixMode(GL10.GL_PROJECTION);

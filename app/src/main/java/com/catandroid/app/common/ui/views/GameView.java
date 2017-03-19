@@ -15,6 +15,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.opengl.GLSurfaceView;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.GestureDetector;
 import android.view.ScaleGestureDetector;
@@ -181,6 +182,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 	public boolean onScale(ScaleGestureDetector detector) {
 		BoardGeometry boardGeometry = renderer.getGeometry();
 		boardGeometry.zoomBy(detector.getScaleFactor());
+		Log.d("onScale", "onScale: " + detector.getScaleFactor());
 		return true;
 	}
 
@@ -219,6 +221,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		// first button is always in the top left corner
 		int x = 0;
 		int y = height;
+		boolean filledTopRow = false;
 
 		for (UIButton button : buttons) {
 			if (!button.isEnabled())
@@ -253,9 +256,14 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 					// portrait
 					int size = button.getWidth();
 					x += size;
-					if (x + 1.5 * size > endwidth) {
+					if (x + 1.5 * size > endwidth && !filledTopRow) {
 						x = 0;
 						y = button.getHeight();
+						filledTopRow = true;
+					} else if(x + 1.5 * size > (endwidth + button.getWidth()) && filledTopRow){
+						//we now have filled top and bottom rows
+						x = 0;
+						y = 2*button.getHeight();
 					}
 				} else {
 					// landscape
@@ -308,6 +316,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			case BUILD_SETTLEMENT:
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
+			case BUILD_METROPOLIS:
 			case HIRE_KNIGHT:
 			case ACTIVATE_KNIGHT:
 			case PROMOTE_KNIGHT:

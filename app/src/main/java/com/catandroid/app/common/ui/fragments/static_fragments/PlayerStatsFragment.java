@@ -103,6 +103,15 @@ public class PlayerStatsFragment extends Fragment {
 					+ player.getNumShips() + " / " + Player.MAX_SHIPS+ "\n";
 			message += getString(R.string.reference_city_wall) + ": "
 					+ player.getNumOwnedCityWalls() + " / " + Player.MAX_CITY_WALLS + "\n";
+			if(board.getMetropolisOwners()[0] == player.getPlayerNumber()){
+				message += "Trade Metropolis (2 points): 1/1\n";
+			}
+			if(board.getMetropolisOwners()[1] == player.getPlayerNumber()){
+				message += "Science Metropolis (2 points): 1/1\n";
+			}
+			if(board.getMetropolisOwners()[2] == player.getPlayerNumber()){
+				message += "Politics Metropolis (2 points): 1/1\n";
+			}
 
 			message += "\n";
 

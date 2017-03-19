@@ -17,6 +17,7 @@ import com.catandroid.app.common.players.AutomatedPlayer;
 import com.catandroid.app.common.players.BalancedAI;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
+import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +67,7 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, PLAYER_TURN, MOVING_SHIP, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2, BUILD_METROPOLIS,
 		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
 	}
 
@@ -122,6 +123,8 @@ public class Board {
 	private Integer longestTradeRouteOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
     private int tempEdgeIdMemory = -1;
+
+	private int[] metropolisOwners = {-1, -1, -1};
 
 	private boolean autoDiscard;
 
@@ -544,6 +547,10 @@ public class Board {
 				setTradeProposal(null);
 				phase = Phase.PLAYER_TURN;
 				break;
+			case BUILD_METROPOLIS:
+				phase = Phase.PLAYER_TURN;
+				getCurrentPlayer().metropolisTypeToBuild = -1;
+				break;
 			case DONE:
 				return false;
 		}
@@ -697,6 +704,8 @@ public class Board {
 
 	public boolean isTradeRespondedPhase() { return (phase == Phase.TRADE_RESPONDED);}
 
+	public boolean isBuildMetropolisPhase() { return (phase == Phase.BUILD_METROPOLIS);}
+
 	/**
 	 * Get the dice number token value for a hexagons
 	 * 
@@ -807,6 +816,14 @@ public class Board {
 	
 	public Vertex[] getVertices() {
 		return vertices;
+	}
+
+	public int[] getMetropolisOwners() {
+		return metropolisOwners;
+	}
+
+	public void setMetropolisOwners(int[] metropolisOwners) {
+		this.metropolisOwners = metropolisOwners;
 	}
 
 	/**
@@ -1158,6 +1175,8 @@ public class Board {
 				return R.string.waiting_trade_proposed;
 			case TRADE_RESPONDED:
 				return R.string.waiting_trade_responded;
+			case BUILD_METROPOLIS:
+				return R.string.game_build_metropolis;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -1238,6 +1257,7 @@ public class Board {
 		}
 	}
 
+
 	public ProgressCard.ProgressCardType pickNewProgressCard(CityImprovement.CityImprovementType type){
 		switch(type){
 			case TRADE:
@@ -1252,6 +1272,7 @@ public class Board {
 	}
 
 	public void returnProgressCard(ProgressCard.ProgressCardType card){
+
 		switch(ProgressCard.getDisciplineFromCard(card)){
 			case TRADE:
 				tradeDeck.add(card);
