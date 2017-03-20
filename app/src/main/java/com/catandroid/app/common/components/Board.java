@@ -67,8 +67,8 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, PLAYER_TURN, MOVING_SHIP, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2, BUILD_METROPOLIS,
-		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,
+		BUILD_METROPOLIS, CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -122,7 +122,7 @@ public class Board {
 			longestTradeRouteLength, maxPoints, lastDiceRollNumber;
 	private Integer longestTradeRouteOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
-    private int tempEdgeIdMemory = -1;
+    private int tempEdgeIdMemory = -1, tempVertexIdMemory = -1, tempKnightIdMemory = -1;
 
 	private int[] metropolisOwners = {-1, -1, -1};
 
@@ -238,17 +238,18 @@ public class Board {
 	}
 
 	/**
-	 * Get a costs_reference to the current players
+	 * Get a reference to the current player
 	 * 
-	 * @return the current players
+	 * @return the current player
 	 */
 	public Player getCurrentPlayer() {
 		if (players == null)
+		{
 			return null;
+		}
 
 		return players[curPlayerNumber];
 	}
-
 
 	/**
 	 * Get a player by player number
@@ -266,6 +267,32 @@ public class Board {
 	}
 
 	/**
+	 * Get a reference to the currently moving knight
+	 *
+	 * @return the currently moving knight (or null)
+	 */
+	public Knight getCurrentlyMovingKnight() {
+		if (phase != Phase.MOVING_KNIGHT) {
+			return null;
+		}
+
+		return getKnightById(tempKnightIdMemory);
+	}
+
+	/**
+	 * Get a reference to the old location of the currently moving knight
+	 *
+	 * @return previous location of the currently moving knight
+	 */
+	public Vertex getStartLocationOfMovingKnight() {
+		if (phase != Phase.MOVING_KNIGHT) {
+			return null;
+		}
+
+		return getVertexById(tempVertexIdMemory);
+	}
+
+	/**
 	 * Distribute resources for a given dice roll number
 	 *  @param diceRollNumber1
 	 *            the dice roll number to execute
@@ -273,6 +300,7 @@ public class Board {
 	 * @param eventRoll
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
+		//TODO: remove debugging
 		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 
 		CityImprovement.CityImprovementType disciplineRolled;
@@ -424,8 +452,12 @@ public class Board {
 					break;
 
                 case MOVING_SHIP:
-                    //TODO: automate
-                    break;
+					//TODO: automate
+					break;
+
+				case MOVING_KNIGHT:
+					//TODO: automate
+					break;
 
 				case PROGRESS_CARD_STEP_1:
 					current.progressRoad(edges);
@@ -511,6 +543,11 @@ public class Board {
             case MOVING_SHIP:
                 phase = returnPhase;
 				tempEdgeIdMemory = -1;
+				break;
+			case MOVING_KNIGHT:
+				// TODO: what else when ending knight movement?
+				phase = returnPhase;
+				tempKnightIdMemory = -1;
 				break;
 			case PROGRESS_CARD_STEP_1:
 				phase = Phase.PROGRESS_CARD_STEP_2;
@@ -613,6 +650,27 @@ public class Board {
 	}
 
 	/**
+	 * Enter moving knight phase
+	 */
+	public void startMovingKnightPhase(Knight toMove) {
+		//TODO: what else when moving knight?
+		returnPhase = phase;
+		phase = Phase.MOVING_KNIGHT;
+		tempKnightIdMemory = toMove.getId();
+		tempVertexIdMemory = toMove.getCurrentVertexLocation().getId();
+		runAITurn();
+	}
+
+	/**
+	 * Cancel moving knight phase
+	 */
+	public void cancelMovingKnightPhase() {
+		Vertex prevKnightLocation = getVertexById(tempVertexIdMemory);
+		prevKnightLocation.moveKnightBackHere();
+		nextPhase();
+	}
+
+	/**
 	 * Enter the trade proposal phase
 	 */
 	public void startTradeProposedPhase() {
@@ -685,8 +743,12 @@ public class Board {
 	}
 
     public boolean isMovingShipPhase() {
-        return (phase == Phase.MOVING_SHIP);
-    }
+		return (phase == Phase.MOVING_SHIP);
+	}
+
+	public boolean isMovingKnightPhase() {
+		return (phase == Phase.MOVING_KNIGHT);
+	}
 
 	public boolean isProgressPhase() {
 		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
@@ -1159,6 +1221,8 @@ public class Board {
                 return R.string.phase_player_turn;
             case MOVING_SHIP:
                 return R.string.phase_move_ship;
+			case MOVING_KNIGHT:
+				return R.string.phase_move_knight;
 			case PROGRESS_CARD_STEP_1:
 				// TODO: progress card step 1
 				return 0;

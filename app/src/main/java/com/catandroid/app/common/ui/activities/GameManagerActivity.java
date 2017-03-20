@@ -335,7 +335,6 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		findViewById(R.id.setup).setVisibility(View.GONE);
 		Intent intent = Games.TurnBasedMultiplayer.getInboxIntent(mGoogleApiClient);
 		startActivityForResult(intent, RC_LOOK_AT_MATCHES);
-
 	}
 
 	// Open the create-game UI. You will get back an onActivityResult

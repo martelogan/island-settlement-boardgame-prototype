@@ -754,6 +754,60 @@ public class Player {
 	}
 
 	/**
+	 * Attempt to move a knight away from this vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex of knight to move
+	 * @return
+	 */
+	public boolean removeKnightFrom(Vertex vertex) {
+
+		if (vertex == null || !canRemoveKnightFrom(vertex))
+		{
+			return false;
+		}
+
+		Knight toMove = vertex.getPlacedKnight();
+
+		if(!vertex.removeKnightFromHere(this)) {
+			return false;
+		}
+
+		// NOTE: knight will update board to intermediately moving the knight
+
+		//TODO: we will update the longest trade route when knight is actually moved
+
+		return true;
+	}
+
+	/**
+	 * Attempt to move a knight to this vertex. Returns true on success
+	 *
+	 * @param target
+	 *            target
+	 * @return
+	 */
+	public boolean moveKnightTo(Vertex target) {
+
+		if (target == null || !canMoveKnightTo(target))
+		{
+			return false;
+		}
+
+		Knight toMove = board.getCurrentlyMovingKnight();
+
+		if(toMove == null || !target.moveKnightToHere(this, toMove)) {
+			return false;
+		}
+
+		board.updateLongestTradeRoute();
+
+		// NOTE: calling method must update the board phase on success
+
+		return true;
+	}
+
+	/**
 	 * Can you build an edge unit on this edge?
 	 *
 	 * @param edge
@@ -976,6 +1030,57 @@ public class Player {
 	 */
 	public boolean canChasePirateFrom(Vertex vertex) {
 		return vertex.canChasePirateFromHere(this);
+	}
+
+	/**
+	 * Can you move at least one of your knights?
+	 *
+	 * @return
+	 */
+	public boolean canMoveSomeKnight() {
+		boolean canMove = false;
+		Knight curKnight;
+		Vertex curKnightVertexLocation;
+		for (int i = 0; i < myKnightIds.size(); i++) {
+			curKnight = getKnightAddedAtIndex(i);
+			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
+			if(curKnight.canMakeMove() && curKnightVertexLocation.canRemoveKnightFromHere(this)) {
+				canMove = true;
+				break;
+			}
+		}
+		return canMove;
+	}
+
+	/**
+	 * Can you move the player's knight away from this vertex?
+	 * @param vertex
+	 *            vertex from which to remove a knight
+	 * @return
+	 */
+	public boolean canRemoveKnightFrom(Vertex vertex) {
+		return vertex.canRemoveKnightFromHere(this);
+	}
+
+	/**
+	 * Can you place the currently moving knight at this vertex?
+	 *
+	 * @param vertex
+	 * @return
+	 */
+	public boolean canMoveKnightTo(Vertex vertex) {
+		if (vertex == null)
+		{
+			return false;
+		}
+
+		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+
+		if(!isMyKnight(currentlyMovingKnight)) {
+			return false;
+		}
+
+		return vertex.canMoveKnightToHere(this, currentlyMovingKnight);
 	}
 
 	/**
@@ -1444,6 +1549,28 @@ public class Player {
 	 */
 	public Knight getKnightAddedAtIndex(int knightOrdinalIndex) {
 		return board.getKnightById(myKnightIds.get(knightOrdinalIndex));
+	}
+
+	/**
+	 * Does this knight belong to the player?
+	 * @param toCheck
+	 * 			knight for which to check ownership
+	 * @return true iff the toCheck belongs to this player
+	 */
+	public boolean isMyKnight(Knight toCheck) {
+		if(toCheck.getOwnerPlayer() != this) {
+			return false;
+		}
+		else {
+			Knight curKnight;
+			for (int i = 0; i < myKnightIds.size(); i++) {
+				curKnight = getKnightAddedAtIndex(i);
+				if(curKnight == toCheck) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 //TODO: see how we can use this similar code for progress cards

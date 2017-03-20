@@ -140,7 +140,7 @@ public class Edge {
 		for (int i = 0; i < 2; i++) {
 			// the player has an edgeUnit to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).connectedToEdgeUnitOwnedBy(player) &&
+			if (board.getVertexById(vertexIds[i]).isConnectedToEdgeUnitOwnedBy(player) &&
 					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
 					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
@@ -166,7 +166,7 @@ public class Edge {
 		for (int i = 0; i < 2; i++) {
 			// the player has a road to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).connectedToRoadOwnedBy(player) &&
+			if (board.getVertexById(vertexIds[i]).isConnectedToRoadOwnedBy(player) &&
 					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
 					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
@@ -192,7 +192,7 @@ public class Edge {
 		for (int i = 0; i < 2; i++) {
 			// the player has a ship to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).connectedToShipOwnedBy(player) &&
+			if (board.getVertexById(vertexIds[i]).isConnectedToShipOwnedBy(player) &&
 					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
 					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
@@ -287,8 +287,8 @@ public class Edge {
 
 		// return true iff at least one end of edge is not connected to piece owned by player
 		Vertex v0 = getV0Clockwise(), v1 = getV1Clockwise();
-		return !(v0.getOwnerPlayer() == player || v0.connectedToShipOwnedBy(player, this))
-				|| !(v1.getOwnerPlayer() == player || v1.connectedToShipOwnedBy(player, this));
+		return !(v0.getOwnerPlayer() == player || v0.isConnectedToShipOwnedBy(player, this))
+				|| !(v1.getOwnerPlayer() == player || v1.isConnectedToShipOwnedBy(player, this));
 	}
 
 	public boolean canMoveShipToHere(Player player) {
@@ -317,7 +317,6 @@ public class Edge {
 		}
 
 		// move ship to this edge
-		//TODO: turn thing is dangerous
 		ownerPlayerNumber = player.getPlayerNumber();
 		curUnitType = SHIP;
 		return true;

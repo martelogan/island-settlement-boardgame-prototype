@@ -292,6 +292,8 @@ public class TextureManager {
 				R.drawable.button_pressed, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.PLAYER_STATUS.ordinal(),
 				R.drawable.button_player_stats, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
+                R.drawable.button_barbarian_progress, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.DICE_ROLL.ordinal(), R.drawable.button_roll_dice,
 				res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_ROAD.ordinal(), R.drawable.button_build_road,
@@ -326,8 +328,8 @@ public class TextureManager {
                 R.drawable.button_chase_robber, res);
         add(TextureType.BUTTON, UIButton.ButtonType.CHASE_PIRATE.ordinal(),
                 R.drawable.button_chase_pirate, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
-                R.drawable.button_barbarian_progress, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.MOVE_KNIGHT.ordinal(), R.drawable.button_move_knight,
+                res);
 	}
 
     public void drawButton(UIButton button, GL10 gl) {

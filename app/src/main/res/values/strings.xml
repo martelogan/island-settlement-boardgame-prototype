@@ -196,6 +196,7 @@
     <string name="phase_your_turn">Your turn</string>
     <string name="phase_player_turn">Make your moves</string>
 	<string name="phase_move_ship">Move the ship</string>
+	<string name="phase_move_knight">Move the knight</string>
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
 	<string name="phase_move_pirate">Move the pirate</string>
@@ -251,6 +252,7 @@
 	<string name="game_cant_act_str">Invalid action</string>
 	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
 	<string name="game_cant_promote_knight_str">Can\'t promote knight</string>
+	<string name="game_move_knight">Knight to move?</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
@@ -277,6 +279,7 @@
 	<string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
 	<string name="game_nowhere_available_chase_robber">No knights positioned to chase the robber</string>
 	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
+	<string name="game_nowhere_available_knight_move">No moveable knights at the ready</string>
 	<string name="game_won">won</string>
 
 	<!-- Progress Cards -->
