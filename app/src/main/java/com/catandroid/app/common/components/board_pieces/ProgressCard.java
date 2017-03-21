@@ -19,6 +19,22 @@ public class ProgressCard extends InventoryItem {
         switch (card) {
             case MERCHANT:
                 return R.string.merchant;
+            case CRANE:
+                return R.string.crane;
+            case ENGINEER:
+                return R.string.engineer;
+            case IRRIGIATION:
+                return R.string.irrigation;
+            case MINING:
+                return R.string.mining;
+            case DESERTER:
+                return R.string.deserter;
+            case WEDDING:
+                return R.string.wedding;
+            case SPY:
+                return R.string.spy;
+            case MASTER_MERCHANT:
+                return R.string.master_merchant;
             default:
                 return R.string.empty_string;
         }
@@ -34,6 +50,22 @@ public class ProgressCard extends InventoryItem {
         switch (card) {
             case MERCHANT:
                 return R.string.merchant_description;
+            case CRANE:
+                return R.string.crane_description;
+            case ENGINEER:
+                return R.string.engineer_description;
+            case IRRIGIATION:
+                return R.string.irrigation_description;
+            case MINING:
+                return R.string.mining_description;
+            case DESERTER:
+                return R.string.deserter_description;
+            case WEDDING:
+                return R.string.wedding_description;
+            case SPY:
+                return R.string.spy_description;
+            case MASTER_MERCHANT:
+                return R.string.master_merchant_description;
             default:
                 return R.string.empty_string;
         }
@@ -52,7 +84,7 @@ public class ProgressCard extends InventoryItem {
             case CRANE:
             case ENGINEER:
             case INVENTOR:
-            case IRIGIATION:
+            case IRRIGIATION:
             case MEDICINE:
             case MINING:
             case PRINTER:
@@ -77,7 +109,7 @@ public class ProgressCard extends InventoryItem {
     public enum ProgressCardType {
         COMMERCIAL_HARBOR, MASTER_MERCHANT, MERCHANT, MERCHANT_FLEET, RESOURCE_MONOPOLY, TRADE_MONOPOLY,
 
-        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
+        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
 
         BISHOP, CONSTITUTION, DESERTER, DIPLOMAT, INTRIGUE, SABOTEUR, SPY, WARLORD, WEDDING
     }

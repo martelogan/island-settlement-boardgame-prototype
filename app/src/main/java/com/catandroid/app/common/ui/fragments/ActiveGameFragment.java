@@ -1602,6 +1602,30 @@ public class ActiveGameFragment extends Fragment {
 												case MERCHANT:
 													playMerchant();
 													break;
+												case CRANE:
+													playCrane();
+													break;
+												case ENGINEER:
+													playEngineer();
+													break;
+												case IRRIGIATION:
+													playIrrigation();
+													break;
+												case MINING:
+													playMining();
+													break;
+												case DESERTER:
+													playDeserter();
+													break;
+												case WEDDING:
+													playWedding();
+													break;
+												case SPY:
+													playSpy();
+													break;
+												case MASTER_MERCHANT:
+													playMasterMerchant();
+													break;
 												default:
 													break;
 											}
@@ -1622,12 +1646,53 @@ public class ActiveGameFragment extends Fragment {
 		builder.create().show();
 	}
 
-	private void playMerchant(){
+	private void playMerchant()
+	{
 		//@TODO
 		//add merchant placement logic
 		toast("Played the merchant");
 	}
+	private void playCrane()
+	{
+		FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
+		CityImprovementFragment cityImprovementFragment = new CityImprovementFragment();
+		cityImprovementFragment.setBoard(board);
+		cityImprovementFragment.setActiveGameFragment(this);
+		FragmentTransaction cityImprovementFragmentTransaction =  cityImprovementFragmentManager.beginTransaction();
+		cityImprovementFragmentTransaction.replace(R.id.fragment_container, cityImprovementFragment,cityImprovementFragment.getClass().getSimpleName());
+		cityImprovementFragmentTransaction.addToBackStack(cityImprovementFragment.getClass().getSimpleName());
+		cityImprovementFragmentTransaction.commit();
 
+		toast("Played the crane");
+	}
+	private void playEngineer()
+	{
+		toast("Played the engineer");
+	}
+	private void playIrrigation()
+	{
+		toast("Played irrigation");
+	}
+	private void playMining()
+	{
+		toast("Played Mining");
+	}
+	private void playDeserter()
+	{
+		toast("Played the deserter");
+	}
+	private void playWedding()
+	{
+		toast("Played the wedding");
+	}
+	private void playSpy()
+	{
+		toast("Played the spy");
+	}
+	private void playMasterMerchant()
+	{
+		toast("Played the master merchant");
+	}
 //	private void monopoly() {
 //		CharSequence[] items = new CharSequence[Resource.RESOURCE_TYPES.length];
 //		for (int i = 0; i < items.length; i++)

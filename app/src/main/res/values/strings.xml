@@ -244,9 +244,24 @@
 
 	<!-- Progress Cards -->
 	<string name="merchant">Merchant</string>
+	<string name="crane">Crane</string>
+	<string name="engineer">Engineer</string>
+	<string name="irrigation">Irrigation</string>
+	<string name="mining">Mining</string>
+	<string name="deserter">Deserter</string>
+	<string name="wedding">Wedding</string>
+	<string name="spy">Spy</string>
+	<string name="master_merchant">Master_merchant</string>
 
 	<!-- Progress Card Description -->
 	<string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
-
+	<string name="crane_description">The Crane can only be used to reduce the cost of building one city improvement. If you build a city, you must pay the normal resource costs. You may use a Crane to reduce the cost of a first level improvement (to nothing). You may not combine 2 Crane cards on the same improvement.</string>
+	<string name="engineer_description">You may build one city wall for free. Take a city wall and put it under one of your cities. A city wall increases the number of cards you can safely hold in your hand when a “7” is rolled, by 2 cards. Each city can only have 1 city wall, and you cannot have more than 3 city walls at a time. </string>
+	<string name="irrigation_description">You receive 2 grain cards for each fields hex next to any of your settlements and cities. Unlike normal production, cities do not increase this bonus.</string>
+	<string name="mining_description">You receive 2 ore cards for each mountains hex next to any of your settlements and cities. Unlike normal production, cities do not increase this bonus.</string>
+	<string name="deserter_description">Choose another player. That player must remove one of his knights from the board. You may then place one of your own knights, of equal strength, on the board for free (the normal rules for placing knights apply).</string>
+	<string name="wedding_description">Each of your opponents who has more victory points than you must give you 2 Resource/Commodity Cards of his choice.</string>
+	<string name="spy_description">Look at another player’s hand of Progress Cards. You may choose 1 card to take and add to your hand. You may even steal another Spy and play it immediately, or save it for later. Victory Point Cards cannot be stolen. </string>
+	<string name="master_merchant_description">Choose another player who has more victory points than you do. Look at the player’s hand of Resource and Commodity Cards and choose 2 cards to take and add to your hand.</string>
 
 </resources>
