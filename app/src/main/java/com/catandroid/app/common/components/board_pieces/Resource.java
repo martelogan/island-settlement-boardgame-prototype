@@ -9,10 +9,11 @@ import com.catandroid.app.R;
 public class Resource {
 
     public static final ResourceType[] RESOURCE_TYPES =
-            { ResourceType.LUMBER, ResourceType.WOOL, ResourceType.GRAIN,
-                    ResourceType.BRICK, ResourceType.ORE, ResourceType.GOLD, ResourceType.PAPER, ResourceType.COIN, ResourceType.CLOTH };
+            { ResourceType.LUMBER, ResourceType.WOOL, ResourceType.GRAIN, ResourceType.BRICK,
+                    ResourceType.ORE, ResourceType.GOLD, ResourceType.PAPER,
+                    ResourceType.COIN, ResourceType.CLOTH };
 
-    public static final int sizeResources = 5;
+    public static final int numBaseCatanResourceTypes = 5;
 
     private ResourceType resourceType;
 

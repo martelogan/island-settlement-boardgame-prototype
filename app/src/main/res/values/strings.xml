@@ -18,6 +18,7 @@
     <string name="start">Start</string>
     <string name="resume_button">Resume</string>
     <string name="option_victory_points_to_win">Points to win</string>
+	<string name="option_predefined_board">Predefined Board States</string>
     <string name="option_num_players">Number of Players</string>
     <string name="victory_points_to_win">Victory points to win</string>
     <string name="option_auto_discard">Discard automatically when 7 is rolled</string>
@@ -64,6 +65,11 @@
 	<string name="paper">paper</string>
 	<string name="coin">coin</string>
 	<string name="cloth">cloth</string>
+
+    <!-- Knight knightRanks -->
+    <string name="knight_basic">basic knight</string>
+    <string name="knight_strong">strong knight</string>
+    <string name="knight_mighty">mighty knight</string>
 
 	<!-- Trade screen -->
 	<string name="trade">Trade</string>
@@ -112,7 +118,12 @@
 	<string name="player_ship">Built a ship</string>
     <string name="player_settlement">Built a settlement</string>
     <string name="player_city">Built a city</string>
-	<string name="player_wall">Built a wall</string>
+	<string name="player_city_wall">Built a city wall</string>
+    <string name="player_place_knight">Dispatched a knight</string>
+	<string name="player_activate_knight">Activated a knight</string>
+	<string name="player_promote_knight">Promoted a knight</string>
+	<string name="player_chase_robber">Chased the robber</string>
+	<string name="player_chase_pirate">Chased the pirate</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
 	<string name="player_received_card">Received a card</string>
@@ -127,6 +138,9 @@
 	<string name="player_tradeImp">Purchased Trade Improvement Level: %s</string>
 	<string name="player_scienceImp">Purchased Science Improvement Level: %s</string>
 	<string name="player_politicsImp">Purchased Politics Improvement Level: %s</string>
+	<string name="player_stole_trade">Stole Trade Metropolis From: %s</string>
+	<string name="player_stole_science">Stole Science Metropolis From: %s</string>
+	<string name="player_stole_politics">Stole Politics Metropolis From: %s</string>
 
 	<!-- PlayerStatsFragment screen -->
 	<string name="status">Status</string>
@@ -153,6 +167,7 @@
 	<string name="reference_settlement">Settlement</string>
 	<string name="reference_city">City</string>
 	<string name="reference_city_wall">City Wall</string>
+	<string name="reference_ship">Ship</string>
 	<string name="reference_tradeImprovement">Trade</string>
 	<string name="reference_scienceImprovement">Science</string>
 	<string name="reference_politicsImprovement">Politics</string>
@@ -179,7 +194,7 @@
     <string name="phase_first_city">Place a city</string>
     <string name="phase_second_edge_unit">Place 2nd road/ship</string>
     <string name="phase_your_turn">Your turn</string>
-    <string name="phase_build">Build</string>
+    <string name="phase_player_turn">Make your moves</string>
 	<string name="phase_move_ship">Move the ship</string>
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
@@ -193,12 +208,19 @@
 	<string name="waiting_trade_responded">Trade Results</string>
 	<string name="waiting_trade_responded_nobody">Nobody accepted your trade offer!</string>
 	<string name="waiting_trade_responded_somebody"> accepted your trade offer!</string>
+	<string name="game_build_metropolis">Build Metropolis</string>
 	<string name="game_rolled_str">Rolled</string>
 	<string name="game_back_to_board">Back to board</string>
 	<string name="game_return_to_menu">Return to menu</string>
 	<string name="game_use_str">Use</string>
 	<string name="game_purchased_str">Purchased a</string>
 	<string name="game_ok_str">OK</string>
+	<string name="game_confirm_chase_robber">Chase the robber</string>
+	<string name="game_confirm_chase_pirate">Chase the pirate</string>
+	<string name="game_chase_robber_title">Chase robber with...</string>
+	<string name="game_chase_pirate_title">Chase pirate with...</string>
+	<string name="game_confirm_chase_robber_title">Want to chase the robber?</string>
+	<string name="game_confirm_chase_pirate_title">Want to chase the pirate?</string>
 	<string name="game_cancel_str">Cancel</string>
 	<string name="game_resources_str">resources</string>
 	<string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>
@@ -220,7 +242,15 @@
 	<string name="game_build_settlement">Build a settlement</string>
 	<string name="game_build_city">Build a city</string>
 	<string name="game_build_wall">Build a wall</string>
+	<string name="game_hire_knight">Dispatch knight</string>
+	<string name="game_activate_knight">Activate knight</string>
+	<string name="game_promote_knight">Promote knight</string>
+	<string name="game_chase_robber">Chase the Robber</string>
+	<string name="game_chase_pirate">Chase the Pirate</string>
 	<string name="game_cant_build_str">Can\'t build</string>
+	<string name="game_cant_act_str">Invalid action</string>
+	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
+	<string name="game_cant_promote_knight_str">Can\'t promote knight</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
@@ -233,13 +263,20 @@
 	<string name="game_build_edge_unit_max">Reached the maximum number of edge units.</string>
 	<string name="game_build_road_max">Reached the maximum number of roads.</string>
 	<string name="game_build_ship_max">Reached the maximum number of ships.</string>
-	<string name="game_nothing_available_settlement">No buildable settlement locations.</string>
-	<string name="game_nothing_available_city">No buildable city locations.</string>
-	<string name="game_nothing_available_city_wall">No buildable wall locations.</string>
-	<string name="game_nothing_available_edge_unit">No buildable road/ship locations</string>
-	<string name="game_nothing_available_road">No buildable road locations</string>
-	<string name="game_nothing_available_ship_build">No buildable ship locations</string>
-	<string name="game_nothing_available_ship_move">Ship movement would not be possible right now</string>
+	<string name="game_basic_knight_max">No basic knights available to hire.</string>
+    <string name="game_total_knights_max">No remaining knights to play.</string>
+	<string name="game_nowhere_available_settlement">No buildable settlement locations.</string>
+	<string name="game_nowhere_available_city">No buildable city locations.</string>
+	<string name="game_nowhere_available_city_wall">No buildable wall locations.</string>
+	<string name="game_nowhere_available_edge_unit_build">No buildable road/ship locations</string>
+	<string name="game_nowhere_available_road_build">No buildable road locations</string>
+	<string name="game_nowhere_available_ship_build">No buildable ship locations</string>
+	<string name="game_nowhere_available_ship_move">Ship movement would not be possible right now</string>
+    <string name="game_nowhere_available_hire_knight">No locations available to dispatch a knight</string>
+	<string name="game_nowhere_available_activate_knight">No locations available to activate a knight</string>
+	<string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
+	<string name="game_nowhere_available_chase_robber">No knights positioned to chase the robber</string>
+	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
 	<string name="game_won">won</string>
 
 	<!-- Progress Cards -->

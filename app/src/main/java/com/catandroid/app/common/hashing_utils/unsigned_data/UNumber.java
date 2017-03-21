@@ -1,4 +1,4 @@
-package com.catandroid.app.common.components.utilities.hex_grid_utils.unsigned_data;
+package com.catandroid.app.common.hashing_utils.unsigned_data;
 
 /*
  * Copyright (c) 2011-2016, Data Geekery GmbH (http://www.datageekery.com)

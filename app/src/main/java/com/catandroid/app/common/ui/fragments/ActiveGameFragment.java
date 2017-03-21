@@ -1,6 +1,7 @@
 package com.catandroid.app.common.ui.fragments;
 
-import com.catandroid.app.common.components.TradeProposal;
+import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
+import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
@@ -306,6 +307,12 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_SETTLEMENT:
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
+			case BUILD_METROPOLIS:
+			case HIRE_KNIGHT:
+			case ACTIVATE_KNIGHT:
+			case PROMOTE_KNIGHT:
+            case CHASE_ROBBER:
+            case CHASE_PIRATE:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -356,28 +363,73 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void select(Action action, Vertex vertex) {
-		int type = Vertex.NONE;
+		int vertexUnitType = Vertex.NONE;
 		if (action == Action.BUILD_SETTLEMENT)
 		{
-			type = Vertex.SETTLEMENT;
+			vertexUnitType = Vertex.SETTLEMENT;
 		}
 		else if (action == Action.BUILD_CITY)
 		{
-			type = Vertex.CITY;
+			vertexUnitType = Vertex.CITY;
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			type = Vertex.WALL;
+			vertexUnitType = Vertex.CITY_WALL;
+		}
+		else if(action == Action.BUILD_METROPOLIS)
+		{
+			vertexUnitType = board.getCurrentPlayer().metropolisTypeToBuild;
+		}
+		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
+				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
+                || action == Action.CHASE_PIRATE) {
+			vertexUnitType = Vertex.KNIGHT;
 		}
 
 		Player player = board.getCurrentPlayer();
-		if (player.buildVertexUnit(vertex, type)) {
-			if (board.isSetupSettlement() || board.isSetupCity())
-			{
-				board.nextPhase();
-			}
+		switch(vertexUnitType) {
+			case Vertex.SETTLEMENT:
+			case Vertex.CITY:
+			case Vertex.CITY_WALL:
+			    // selecting buildable vertex unit
+				if (player.buildVertexUnit(vertex, vertexUnitType)) {
+					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
+					{
+						board.nextPhase();
+					}
 
-			showState(false);
+					showState(false);
+				}
+				break;
+
+			case Vertex.KNIGHT: // selecting knight unit
+				switch(action) {
+					case HIRE_KNIGHT:
+						if (player.hireKnightTo(vertex)) {
+							showState(false);
+						}
+						break;
+					case ACTIVATE_KNIGHT:
+						if (player.activateKnightAt(vertex)) {
+							showState(false);
+						}
+						break;
+					case PROMOTE_KNIGHT:
+						if (player.promoteKnightAt(vertex)) {
+							showState(false);
+						}
+						break;
+                    case CHASE_ROBBER:
+                        if (player.chaseRobberFrom(vertex)) {
+                            showState(false);
+                        }
+                        break;
+                    case CHASE_PIRATE:
+                        if (player.chasePirateFrom(vertex)) {
+                            showState(false);
+                        }
+                        break;
+				}
 		}
 	}
 
@@ -507,7 +559,7 @@ public class ActiveGameFragment extends Fragment {
 		switch (button) {
 			case PLAYER_STATUS:
 				//PLAYER_STATUS IS THE BUTTON THAT IS ALWAYS VISIBLE IN TOP LEFT CORNER
-				Log.d("myTag", "about to launch PLAYER PLAYER_STATUS");
+				Log.d("playerStatus", "about to launch PLAYER PLAYER_STATUS");
 
 				PlayerStatsFragment playerStatsFragment = new PlayerStatsFragment();
 				playerStatsFragment.setBoard(board);
@@ -521,6 +573,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case DICE_ROLL:
+
 				// enter build phase
 				board.nextPhase();
 
@@ -531,6 +584,29 @@ public class ActiveGameFragment extends Fragment {
 				board.getCurrentPlayer().rollDice(roll1, roll2 , event);
 				if(!board.isMyPseudoTurn()){
 					mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+				}
+
+				//give free resource if they have AQUEDUCT and didnt get any resources and not 7
+				if(player.getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] >= 3
+						&& player.gotResourcesSinceLastTurn == false && roll != 7){
+
+					CharSequence[] items = new CharSequence[4];
+					items[0] = "Lumber";
+					items[1] = "Wool";
+					items[2] = "Grain";
+					items[3] = "Brick";
+
+					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					builder.setTitle("Aqueduct: Choose your free resource!");
+					builder.setItems(items, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int item) {
+							board.getCurrentPlayer().addResources(Resource.RESOURCE_TYPES[item], 1);
+						}
+					});
+
+					AlertDialog chooseFreeResourceDialog = builder.create();
+					chooseFreeResourceDialog.setCancelable(false);
+					chooseFreeResourceDialog.show();
 				}
 
 				if (roll == 7) {
@@ -640,7 +716,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumSettlements() >= Player.MAX_SETTLEMENTS) {
+				if (board.getCurrentPlayer().getNumOwnedSettlements() >= Player.MAX_SETTLEMENTS) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_settlements_max));
 					break;
@@ -663,7 +739,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumCities() >= Player.MAX_CITIES) {
+				if (board.getCurrentPlayer().getNumOwnedCities() >= Player.MAX_CITIES) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_city_max));
 					break;
@@ -675,15 +751,17 @@ public class ActiveGameFragment extends Fragment {
 						 + getActivity().getString(R.string.game_build_city));
 				break;
 
-			case PROGRESS_CARD:
+			case PLAY_PROGRESS_CARD:
 				progressCardDialog();
 
 				break;
 
-			case BUILD_WALL:
+			case BUILD_CITY_WALL:
 				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canBuild(player, Vertex.WALL, false))
+					if (vertex.canBuild(player, Vertex.CITY_WALL, false))
+					{
 						canAct = true;
+					}
 				}
 
 				if (!canAct) {
@@ -691,7 +769,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumWalls() >= Player.MAX_CITY_WALLS) {
+				if (board.getCurrentPlayer().getNumOwnedCityWalls() >= Player.MAX_CITY_WALLS) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_wall_max));
 					break;
@@ -703,8 +781,118 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_build_wall));
 				break;
 
-			case PLAY_KNIGHT:
-				toast("Hire knight/Active Knight");
+			case HIRE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canPlaceKnightHere(player)) {
+						canAct = true;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.HIRE_KNIGHT);
+					break;
+				}
+
+				if (player.getNumOwnedBasicKnights() >= Player.MAX_BASIC_KNIGHTS
+						|| player.getTotalNumOwnedKnights() >= Player.MAX_TOTAL_KNIGHTS) {
+					popup(getString(R.string.game_cant_hire_knight_str),
+							getString(R.string.game_basic_knight_max));
+					break;
+				}
+
+				renderer.setAction(Action.HIRE_KNIGHT);
+				setButtons(Action.HIRE_KNIGHT);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_hire_knight));
+				break;
+
+			case ACTIVATE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canActivateKnightHere(player)) {
+						canAct = true;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.ACTIVATE_KNIGHT);
+					break;
+				}
+
+				renderer.setAction(Action.ACTIVATE_KNIGHT);
+				setButtons(Action.ACTIVATE_KNIGHT);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_activate_knight));
+				break;
+
+			case PROMOTE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canPromoteKnightHere(player)) {
+						canAct = true;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.PROMOTE_KNIGHT);
+					break;
+				}
+
+				int numOwnedBasicKnights = player.getNumOwnedBasicKnights(),
+						numOwnedStrongKnights = player.getNumOwnedStrongKnights(),
+						numOwnedMightyKnights = player.getNumOwnedMightyKnights(),
+						totalNumOwnedKnights = player.getTotalNumOwnedKnights();
+				if (numOwnedBasicKnights > Player.MAX_BASIC_KNIGHTS
+						|| numOwnedStrongKnights > Player.MAX_STRONG_KNIGHTS
+						|| numOwnedMightyKnights  > Player.MAX_MIGHTY_KNIGHTS
+						|| totalNumOwnedKnights >= Player.MAX_TOTAL_KNIGHTS) {
+
+					popup(getString(R.string.game_cant_promote_knight_str),
+							getString(R.string.game_total_knights_max));
+					break;
+				}
+
+				renderer.setAction(Action.PROMOTE_KNIGHT);
+				setButtons(Action.PROMOTE_KNIGHT);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_promote_knight));
+				break;
+
+			case CHASE_ROBBER:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canChaseRobberFromHere(player)) {
+						canAct = true;
+						break;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.CHASE_ROBBER);
+					break;
+				}
+
+                renderer.setAction(Action.CHASE_ROBBER);
+                setButtons(Action.CHASE_ROBBER);
+                getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+                        + getActivity().getString(R.string.game_chase_robber_title));
+//				confirmChaseRobberDialog();
+				break;
+
+			case CHASE_PIRATE:
+				for (Vertex vertex : board.getVertices()) {
+					if (vertex.canChasePirateFromHere(player)) {
+						canAct = true;
+						break;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.CHASE_PIRATE);
+					break;
+				}
+                renderer.setAction(Action.CHASE_PIRATE);
+                setButtons(Action.CHASE_PIRATE);
+                getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+                        + getActivity().getString(R.string.game_chase_pirate_title));
+//				confirmChasePirateDialog();
 				break;
 
 			case PURCHASE_CITY_IMPROVEMENT:
@@ -768,6 +956,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case END_TURN:
+				player.gotResourcesSinceLastTurn = false;
 				board.nextPhase();
 				showState(true);
 				break;
@@ -790,7 +979,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	public boolean clickResource(int index) {
-		if (!board.getCurrentPlayer().isHuman() || !board.isBuildPhase())
+		if (!board.getCurrentPlayer().isHuman() || !board.isPlayerTurnPhase())
 			return false;
 
 
@@ -888,6 +1077,9 @@ public class ActiveGameFragment extends Fragment {
 		else if (board.isMovingShipPhase()) {
 			action = Action.MOVE_SHIP_2;
 		}
+		else if(board.isBuildMetropolisPhase()){
+			action = Action.BUILD_METROPOLIS;
+		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -962,7 +1154,7 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
-		} else if (action != Action.NONE) {
+		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS ) {
 			// cancel the action
 			view.addButton(ButtonType.CANCEL_ACTION);
 		} else if (board.isProduction()) {
@@ -970,23 +1162,23 @@ public class ActiveGameFragment extends Fragment {
             //TODO: add button to play progress cards
 //			if (player.canUseCard())
 //            {
-//                view.addButton(ButtonType.PROGRESS_CARD);
+//                view.addButton(ButtonType.PLAY_PROGRESS_CARD);
 //            }
-		} else if (board.isBuildPhase()) {
+		} else if (board.isPlayerTurnPhase()) {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
 
             if (!player.getHand().isEmpty())
             {
-                view.addButton(UIButton.ButtonType.PROGRESS_CARD);
+                view.addButton(UIButton.ButtonType.PLAY_PROGRESS_CARD);
             }
 
-			if (player.affordRoad())
+			if (player.canAffordToBuildRoad())
             {
                 view.addButton(UIButton.ButtonType.BUILD_ROAD);
             }
 
-            if (player.affordShip())
+            if (player.canAffordToBuildShip())
             {
 				view.addButton(UIButton.ButtonType.BUILD_SHIP);
 			}
@@ -995,22 +1187,36 @@ public class ActiveGameFragment extends Fragment {
 				view.addButton(UIButton.ButtonType.MOVE_SHIP);
 			}
 
-			if (player.affordSettlement())
+			if (player.canAffordToBuildSettlement())
             {
                 view.addButton(UIButton.ButtonType.BUILD_SETTLEMENT);
             }
 
-			if (player.affordCity())
+			if (player.canAffordToBuildCity())
             {
                 view.addButton(UIButton.ButtonType.BUILD_CITY);
             }
-            if (player.affordWall())
+            if (player.canAffordToBuildCityWall())
             {
-				view.addButton(ButtonType.BUILD_WALL);
+				view.addButton(ButtonType.BUILD_CITY_WALL);
+			}
+			if(player.canAffordToHireKnight()) {
+				view.addButton(ButtonType.HIRE_KNIGHT);
+			}
+			if(player.canAffordToActivateKnight()) {
+				view.addButton(ButtonType.ACTIVATE_KNIGHT);
+			}
+			if(player.canAffordToPromoteKnight()) {
+				view.addButton(ButtonType.PROMOTE_KNIGHT);
+			}
+			if(player.canChaseRobber()) {
+				view.addButton(ButtonType.CHASE_ROBBER);
+			}
+			if(player.canChasePirate()) {
+				view.addButton(ButtonType.CHASE_PIRATE);
 			}
 			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
-//			view.addButton(ButtonType.PLAY_KNIGHT);
 		}
 	}
 
@@ -1360,8 +1566,8 @@ public class ActiveGameFragment extends Fragment {
 		if (index == 0) {
 			// nobody to rob from
 			toast(getString(R.string.game_steal_fail_str));
-
 			board.nextPhase();
+			mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
 			showState(false);
 			return;
 		} else if (index == 1) {
@@ -1443,6 +1649,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 
 				board.nextPhase();
+				mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
 				showState(false);
 				return;
 			}
@@ -1466,7 +1673,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_nothing_available_edge_unit);
+					message = getString(R.string.game_nowhere_available_edge_unit_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1484,7 +1691,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_nothing_available_road);
+					message = getString(R.string.game_nowhere_available_road_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1502,7 +1709,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 				else
 				{
-					message = getString(R.string.game_nothing_available_ship_build);
+					message = getString(R.string.game_nowhere_available_ship_build);
 				}
 
 				if (board.isProgressPhase1()) {
@@ -1516,44 +1723,97 @@ public class ActiveGameFragment extends Fragment {
 			case MOVE_SHIP_1:
 			case MOVE_SHIP_2:
 
-				message = getString(R.string.game_nothing_available_ship_move);
+				message = getString(R.string.game_nowhere_available_ship_move);
 
 				break;
 
 			case BUILD_SETTLEMENT:
-				if (player.getNumSettlements() == Player.MAX_SETTLEMENTS)
+				if (player.getNumOwnedSettlements() == Player.MAX_SETTLEMENTS)
+				{
 					message = getString(R.string.game_build_settlements_max);
+				}
 				else
-					message = getString(R.string.game_nothing_available_settlement);
+				{
+					message = getString(R.string.game_nowhere_available_settlement);
+				}
 
 				break;
 
 			case BUILD_CITY:
-				if (player.getNumCities() == Player.MAX_CITIES)
+				if (player.getNumOwnedCities() == Player.MAX_CITIES)
 					message = getString(R.string.game_build_city_max);
 				else
-					message = getString(R.string.game_nothing_available_city);
+					message = getString(R.string.game_nowhere_available_city);
 
 				break;
 
 			case BUILD_CITY_WALL:
-				if (player.getNumWalls() == Player.MAX_CITY_WALLS)
+				if (player.getNumOwnedCityWalls() == Player.MAX_CITY_WALLS)
+				{
 					message = getString(R.string.game_build_wall_max);
+				}
 				else
-					message = getString(R.string.game_nothing_available_city_wall);
+				{
+					message = getString(R.string.game_nowhere_available_city_wall);
+				}
+				break;
+
+			case HIRE_KNIGHT:
+				if (player.getNumOwnedBasicKnights() == Player.MAX_BASIC_KNIGHTS)
+				{
+					message = getString(R.string.game_basic_knight_max);
+					if (player.getTotalNumOwnedKnights() == Player.MAX_TOTAL_KNIGHTS) {
+						message += "\n" + getString(R.string.game_total_knights_max);
+					}
+				}
+				else
+				{
+					message = getString(R.string.game_nowhere_available_hire_knight);
+				}
+				break;
+
+			case ACTIVATE_KNIGHT:
+					message = getString(R.string.game_nowhere_available_activate_knight);
+				break;
+
+			case PROMOTE_KNIGHT:
+				int numOwnedBasicKnights = player.getNumOwnedBasicKnights(),
+						numOwnedStrongKnights = player.getNumOwnedStrongKnights(),
+						numOwnedMightyKnights = player.getNumOwnedMightyKnights(),
+						totalNumOwnedKnights = player.getTotalNumOwnedKnights();
+				if (numOwnedBasicKnights > Player.MAX_BASIC_KNIGHTS
+						|| numOwnedStrongKnights > Player.MAX_STRONG_KNIGHTS
+						|| numOwnedMightyKnights  > Player.MAX_MIGHTY_KNIGHTS
+						|| totalNumOwnedKnights >= Player.MAX_TOTAL_KNIGHTS) {
+
+					message = getString(R.string.game_total_knights_max);
+					break;
+				}
+				else
+				{
+					message = getString(R.string.game_nowhere_available_promote_knight);
+				}
+				break;
+
+			case CHASE_ROBBER:
+				message = getString(R.string.game_nowhere_available_chase_robber);
+				break;
+
+			case CHASE_PIRATE:
+				message = getString(R.string.game_nowhere_available_chase_pirate);
 				break;
 
 			default:
 				return;
 		}
 
-		popup(getString(R.string.game_cant_build_str), message);
+		popup(getString(R.string.game_cant_act_str), message);
 
 		showState(false);
 	}
 
 	private void progressCardDialog() {
-		final Player me = board.getPlayerFromParticipantId(myParticipantId);
+		final Player me = board.getCurrentPlayer();
 		final Vector<ProgressCard.ProgressCardType> cards = me.getHand();
 
 		CharSequence[] list = new CharSequence[cards.size()+1];
@@ -1569,7 +1829,9 @@ public class ActiveGameFragment extends Fragment {
 
 		CharSequence[] items = new CharSequence[index];
 		for (int i = 0; i < index; i++)
+		{
 			items[i] = list[i];
+		}
 
 		final int cancel = index-1;
 
@@ -1597,6 +1859,7 @@ public class ActiveGameFragment extends Fragment {
 											//remove that card from the player & return to bottom of deck
 											cards.remove(card);
 											board.returnProgressCard(card);
+											showState(false);
 											//play the card
 											switch (card) {
 												case MERCHANT:
@@ -1652,6 +1915,7 @@ public class ActiveGameFragment extends Fragment {
 		//add merchant placement logic
 		toast("Played the merchant");
 	}
+<<<<<<< HEAD
 	private void playCrane()
 	{
 		FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
@@ -1693,6 +1957,63 @@ public class ActiveGameFragment extends Fragment {
 	{
 		toast("Played the master merchant");
 	}
+=======
+
+	private void confirmChaseRobberDialog() {
+		final int confirm = 0;
+		final int cancel = 1;
+		CharSequence[] items = new CharSequence[2];
+		items[0] = getString(R.string.game_confirm_chase_robber);
+		items[1] = getString(R.string.game_cancel_str);
+
+		//create the popup asking which card to use
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_confirm_chase_robber_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+				if (item == cancel) {
+					dialog.dismiss();
+				} else if (item == confirm){
+					dialog.dismiss();
+					board.setReturnPhase(board.getPhase());
+					board.startRobberPhase();
+					showState(false);
+				}
+			}
+		});
+
+		builder.create().show();
+	}
+
+	private void confirmChasePirateDialog() {
+		final int confirm = 0;
+		final int cancel = 1;
+		CharSequence[] items = new CharSequence[2];
+		items[0] = getString(R.string.game_confirm_chase_pirate);
+		items[1] = getString(R.string.game_cancel_str);
+
+		//create the popup asking which card to use
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_confirm_chase_pirate_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+				if (item == cancel) {
+					dialog.dismiss();
+				} else if (item == confirm){
+					dialog.dismiss();
+					board.setReturnPhase(board.getPhase());
+					board.startPiratePhase();
+					showState(false);
+				}
+			}
+		});
+
+		builder.create().show();
+	}
+
+>>>>>>> master
 //	private void monopoly() {
 //		CharSequence[] items = new CharSequence[Resource.RESOURCE_TYPES.length];
 //		for (int i = 0; i < items.length; i++)
