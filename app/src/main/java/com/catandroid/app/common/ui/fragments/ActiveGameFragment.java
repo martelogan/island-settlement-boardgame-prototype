@@ -1602,6 +1602,16 @@ public class ActiveGameFragment extends Fragment {
 												case MERCHANT:
 													playMerchant();
 													break;
+												case PRINTER: //must be played immediately
+													playPrinter();
+													break;
+												case CONSTITUTION: //must be played immediately
+													playConstitution();
+													break;
+												case ROAD_BUILDING:
+													playRoadBuilding();
+													break;
+
 												default:
 													break;
 											}
@@ -1626,6 +1636,23 @@ public class ActiveGameFragment extends Fragment {
 		//@TODO
 		//add merchant placement logic
 		toast("Played the merchant");
+	}
+
+	private void playPrinter(){
+		//@TODO
+		(board.getCurrentPlayer()).incProgressCardVictoryPointsCount(1);
+		toast("Played printer");
+	}
+
+	private void playConstitution(){
+		//@TODO
+		(board.getCurrentPlayer()).incProgressCardVictoryPointsCount(1);
+		toast("Played constitution");
+	}
+
+	private void playRoadBuilding(){ //needs to be ship or road
+		//buttonPress(ButtonType.BUILD_ROAD);
+		toast("Played Road Builder");
 	}
 
 //	private void monopoly() {

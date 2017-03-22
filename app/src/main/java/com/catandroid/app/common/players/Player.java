@@ -30,7 +30,7 @@ public class Player {
 	public static final int[] ROAD_COST = { 1, 0, 0, 1, 0, 0 };
 	public static final int[] SETTLEMENT_COST = { 1, 1, 1, 1, 0, 0 };
 	public static final int[] CITY_COST = { 0, 0, 2, 0, 3, 0 };
-
+	private int ProgressCardVictoryPointsCount;
 	private String googlePlayParticipantId;
 	private int playerNumber;
 	private Color color;
@@ -85,6 +85,7 @@ public class Player {
 		knightsCount = 0;
 		roadLength = 0;
 		privateVictoryPointsCount = 0;
+		ProgressCardVictoryPointsCount = 0;
 		tradeValue = 4;
 		usedCardThisTurn = false;
 		shipWasMovedThisTurn = false;
@@ -1043,13 +1044,20 @@ public class Player {
 		return points;
 	}
 
+	public int getProgressCardVictoryPointsCount(){
+		return ProgressCardVictoryPointsCount;
+	}
+
+	public void incProgressCardVictoryPointsCount(int inc){
+		ProgressCardVictoryPointsCount = ProgressCardVictoryPointsCount + inc;
+	}
 	/**
 	 * Return player's current total privateVictoryPointsCount points
 	 *
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getVictoryPoints() {
-		return getPublicVictoryPoints() + privateVictoryPointsCount;
+		return getPublicVictoryPoints() + privateVictoryPointsCount + ProgressCardVictoryPointsCount;
 	}
 
 //TODO: see how we can use this similar code for progress cards

@@ -19,6 +19,22 @@ public class ProgressCard extends InventoryItem {
         switch (card) {
             case MERCHANT:
                 return R.string.merchant;
+            case PRINTER:
+                return R.string.printer;
+            case CONSTITUTION:
+                return R.string.constitution;
+            case MEDICINE:
+                return R.string.medicine;
+            case RESOURCE_MONOPOLY:
+                return R.string.resource_monopoly;
+            case TRADE_MONOPOLY:
+                return R.string.trade_monopoly;
+            case ROAD_BUILDING:
+                return R.string.road_building;
+            case INVENTOR:
+                return R.string.inventor;
+            case DIPLOMAT:
+                return R.string.diplomat;
             default:
                 return R.string.empty_string;
         }
@@ -34,6 +50,23 @@ public class ProgressCard extends InventoryItem {
         switch (card) {
             case MERCHANT:
                 return R.string.merchant_description;
+            case PRINTER:
+                return R.string.printer_constitution_description;
+            case CONSTITUTION:
+                return R.string.printer_constitution_description;
+            case MEDICINE:
+                return R.string.medicine_description;
+            case RESOURCE_MONOPOLY:
+                return R.string.resource_monopoly_description;
+            case TRADE_MONOPOLY:
+                return R.string.trade_monopoly_description;
+            case ROAD_BUILDING:
+                return R.string.road_building_description;
+            case INVENTOR:
+                return R.string.inventor_description;
+            case DIPLOMAT:
+                return R.string.diplomat_description;
+
             default:
                 return R.string.empty_string;
         }
@@ -56,7 +89,7 @@ public class ProgressCard extends InventoryItem {
             case MEDICINE:
             case MINING:
             case PRINTER:
-            case ROAD_BUILLDING:
+            case ROAD_BUILDING:
             case SMITH:
                 return CityImprovement.CityImprovementType.SCIENCE;
             case BISHOP:
@@ -77,7 +110,7 @@ public class ProgressCard extends InventoryItem {
     public enum ProgressCardType {
         COMMERCIAL_HARBOR, MASTER_MERCHANT, MERCHANT, MERCHANT_FLEET, RESOURCE_MONOPOLY, TRADE_MONOPOLY,
 
-        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
+        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILDING, SMITH,
 
         BISHOP, CONSTITUTION, DESERTER, DIPLOMAT, INTRIGUE, SABOTEUR, SPY, WARLORD, WEDDING
     }
