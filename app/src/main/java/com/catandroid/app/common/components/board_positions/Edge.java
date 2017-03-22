@@ -14,7 +14,7 @@ public class Edge {
 	private int turnShipWasBuilt = -1;
 	private int[] vertexIds;
 	private int ownerPlayerNumber = -1;
-	private int lastRoadCountId;
+	private int numberOfLongestTradeRouteUpdates;
 	private int originHexId;
     private int originHexDirect;
 	private int neighborHexId = -1;
@@ -34,7 +34,7 @@ public class Edge {
 		vertexIds = new int[2];
 		vertexIds[0] = vertexIds[1] = -1;
 		ownerPlayerNumber = -1;
-		lastRoadCountId = 0;
+		numberOfLongestTradeRouteUpdates = 0;
 		this.board = board;
 	}
 
@@ -141,8 +141,8 @@ public class Edge {
 			// the player has an edgeUnit to an unoccupied vertex
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).connectedToEdgeUnitOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
+					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
 			}
 		}
@@ -167,8 +167,8 @@ public class Edge {
 			// the player has a road to an unoccupied vertex
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).connectedToRoadOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
+					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
 			}
 		}
@@ -193,8 +193,8 @@ public class Edge {
 			// the player has a ship to an unoccupied vertex
 			// or the player has an adjacent building
 			if (board.getVertexById(vertexIds[i]).connectedToShipOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasBuilding()
-					|| board.getVertexById(vertexIds[i]).hasBuilding(player.getPlayerNumber())) {
+					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
+					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
 				return true;
 			}
 		}
@@ -530,49 +530,57 @@ public class Edge {
 	}
 
 	/**
-	 * Get the road length through this edge
+	 * Get the longest road length through this edge
 	 * 
 	 * @param player
 	 *            player to measure for
 	 * @param from
 	 *            where we are measuring from
-	 * @param countId
-	 *            unique id for this count iteration
-	 * @return the road length
+	 * @param numberOfLongestTradeRouteUpdatesSoFar
+	 *            number of times the longest trade route was recalculated through here
+	 * @return the longest trade route length through this edge
 	 */
-	public int getRoadLength(Player player, Vertex from, int countId) {
-		if (ownerPlayerNumber != player.getPlayerNumber() || lastRoadCountId == countId) {
+	public int getLongestTradeRouteLengthFromHere(Player player, Vertex from,
+												  int numberOfLongestTradeRouteUpdatesSoFar) {
+		if (ownerPlayerNumber != player.getPlayerNumber()
+				|| numberOfLongestTradeRouteUpdates == numberOfLongestTradeRouteUpdatesSoFar) {
 			return 0;
 		}
 
-		// this ensures that that road isn't counted multiple times (cycles)
-		lastRoadCountId = countId;
+		// this ensures that that we don't repeatedly recalculate from this edge
+		this.numberOfLongestTradeRouteUpdates = numberOfLongestTradeRouteUpdatesSoFar;
 
-		// find other vertexIds
-		int to = (from.getId() == vertexIds[0] ? vertexIds[1] : vertexIds[0]);
+		// jump to next vertex
+		Vertex to = board.getVertexById(from.getId() == vertexIds[0] ? vertexIds[1] : vertexIds[0]);
 
-		// return road length
-		return board.getVertexById(to).getRoadLength(player, this, countId) + 1;
+		// return longest trade route length from this vertex
+		return to.getLongestTradeRouteLengthFromHere(player,
+				this, numberOfLongestTradeRouteUpdatesSoFar) + 1;
 	}
 
 	/**
-	 * Get the longest road length through this edge
+	 * Get the longest trade route length through this edge
 	 * 
-	 * @param countId
-	 *            unique id for this count iteration
-	 * @return the road length
+	 * @param numberOfLongestTradeRouteUpdatesSoFar
+	 *            number of times the longest trade route was recalculated through here
+	 * @return the longest trade route length through this edge
 	 */
-	public int getRoadLength(int countId) {
+	public int getLongestTradeRouteLengthFromHere(int numberOfLongestTradeRouteUpdatesSoFar) {
 		Player ownerPlayer = board.getPlayerById(ownerPlayerNumber);
 		if (ownerPlayer == null) {
 			return 0;
 		}
 
-		// this ensures that that road isn't counted multiple times (cycles)
-		lastRoadCountId = countId;
+		// this ensures that that we don't repeatedly recalculate from this edge
+		this.numberOfLongestTradeRouteUpdates = numberOfLongestTradeRouteUpdatesSoFar;
 
-		int length1 = board.getVertexById(vertexIds[0]).getRoadLength(ownerPlayer, this, countId);
-		int length2 = board.getVertexById(vertexIds[1]).getRoadLength(ownerPlayer, this, countId);
-		return length1 + length2 + 1;
+		int longestTradeRouteLengthFromV0Clockwise = getV0Clockwise().getLongestTradeRouteLengthFromHere(
+				ownerPlayer, this, numberOfLongestTradeRouteUpdatesSoFar);
+		int longestTradeRouteLengthFromV1Clockwise = getV1Clockwise().getLongestTradeRouteLengthFromHere(
+				ownerPlayer, this, numberOfLongestTradeRouteUpdatesSoFar);
+		return longestTradeRouteLengthFromV0Clockwise + longestTradeRouteLengthFromV1Clockwise + 1;
 	}
+
+
+
 }

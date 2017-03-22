@@ -13,10 +13,12 @@ import android.graphics.BitmapFactory.Options;
 import android.opengl.GLUtils;
 
 import com.catandroid.app.common.components.BoardGeometry;
+import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.hashing_utils.HashingUtils;
 import com.catandroid.app.common.ui.resources.Square;
 import com.catandroid.app.common.ui.resources.UIButton;
 import com.catandroid.app.R;
@@ -25,18 +27,27 @@ import com.catandroid.app.common.players.Player;
 
 public class TextureManager {
 
+    /* IMPORTANT: here, the ordering of these constants designates the depth
+    * at which they are drawn (ie. increasing depth left -> right => layered
+    * progressively more towards the top). In particular, the ordering from
+    * NONE -> CITY must be preserved for proper behaviour. Afterwards, we render
+    * button just on top (layer CITY + 1) and all remaining png's at the city layer
+    */
 	private enum TextureType {
 		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SHIP, SETTLEMENT, CITY, BUTTON_BG, BUTTON,
-        WALL
+		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, CITY_WALL, 
+		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
+		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
+		SHIP, BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
+        BASIC_KNIGHT_ACTIVE, STRONG_KNIGHT_ACTIVE, MIGHTY_KNIGHT_ACTIVE, BUTTON_BG, BUTTON
 	}
 
-	private Hashtable<Integer, Bitmap> bitmap;
-	private Hashtable<Integer, Integer> resource;
-	private Hashtable<Integer, Square> square;
+	private Hashtable<Long, Bitmap> bitmap;
+	private Hashtable<Long, Integer> resource;
+	private Hashtable<Long, Square> square;
 
     public void initGL(GL10 gl) {
-        for (Integer key : bitmap.keySet()) {
+        for (Long key : bitmap.keySet()) {
             gl.glBindTexture(GL10.GL_TEXTURE_2D, resource.get(key));
 
             gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER,
@@ -56,9 +67,9 @@ public class TextureManager {
 
 	public TextureManager(Resources res) {
 		// initialize hash table
-		bitmap = new Hashtable<Integer, Bitmap>();
-		resource = new Hashtable<Integer, Integer>();
-		square = new Hashtable<Integer, Square>();
+		bitmap = new Hashtable<Long, Bitmap>();
+		resource = new Hashtable<Long, Integer>();
+		square = new Hashtable<Long, Square>();
 
 		// load hex terrain textures
 		add(TextureType.HEX_COAST, 0, R.drawable.hex_coast, res);
@@ -108,14 +119,134 @@ public class TextureManager {
         add(TextureType.CITY, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
                 res);
 
-        //load large wall textures
-        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
-        add(TextureType.WALL, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+        //load large city wall textures
+        //@TODO ADD PNG RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.CITY_WALL, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALL, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALL, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALL, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.CITY_WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.CITY_WALL, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.CITY_WALL, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.CITY_WALL, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large inactive basic knight textures
+        //@TODO ADD CORRECT PNG RESOURCES FOR INACTIVE BASIC KNIGHT
+        add(TextureType.BASIC_KNIGHT_INACTIVE, Player.Color.SELECTING.ordinal(), R.drawable.knight_basic_grey,
+                res);
+        add(TextureType.BASIC_KNIGHT_INACTIVE, Player.Color.RED.ordinal(), R.drawable.knight_basic_r_inactive, res);
+        add(TextureType.BASIC_KNIGHT_INACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_basic_b_inactive, res);
+        add(TextureType.BASIC_KNIGHT_INACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_basic_grn_inactive, res);
+        add(TextureType.BASIC_KNIGHT_INACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_basic_y_inactive,
+                res);
+
+        //load large inactive strong knight textures
+        //@TODO ADD CORRECT PNG RESOURCES FOR INACTIVE STRONG KNIGHT
+        add(TextureType.STRONG_KNIGHT_INACTIVE, Player.Color.SELECTING.ordinal(), R.drawable.knight_strong_grey,
+                res);
+        add(TextureType.STRONG_KNIGHT_INACTIVE, Player.Color.RED.ordinal(), R.drawable.knight_strong_r_inactive, res);
+        add(TextureType.STRONG_KNIGHT_INACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_strong_b_inactive, res);
+        add(TextureType.STRONG_KNIGHT_INACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_strong_grn_inactive, res);
+        add(TextureType.STRONG_KNIGHT_INACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_strong_y_inactive,
+                res);
+
+        //load large inactive mighty knight textures
+        //@TODO ADD CORRECT PNG RESOURCES FOR INACTIVE MIGHTY KNIGHT
+        add(TextureType.MIGHTY_KNIGHT_INACTIVE, Player.Color.SELECTING.ordinal(), R.drawable.knight_mighty_grey,
+                res);
+        add(TextureType.MIGHTY_KNIGHT_INACTIVE, Player.Color.RED.ordinal(), R.drawable.knight_mighty_r_inactive, res);
+        add(TextureType.MIGHTY_KNIGHT_INACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_mighty_b_inactive, res);
+        add(TextureType.MIGHTY_KNIGHT_INACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_mighty_grn_inactive, res);
+        add(TextureType.MIGHTY_KNIGHT_INACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_mighty_y_inactive,
+                res);
+
+        //load large active basic knight textures
+        //@TODO ADD CORRECT PNG RESOURCES FOR ACTIVE BASIC KNIGHT
+        add(TextureType.BASIC_KNIGHT_ACTIVE, Player.Color.SELECTING.ordinal(), R.drawable.knight_basic_grey,
+                res);
+        add(TextureType.BASIC_KNIGHT_ACTIVE, Player.Color.RED.ordinal(), R.drawable.knight_basic_r_active, res);
+        add(TextureType.BASIC_KNIGHT_ACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_basic_b_active, res);
+        add(TextureType.BASIC_KNIGHT_ACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_basic_grn_active, res);
+        add(TextureType.BASIC_KNIGHT_ACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_basic_y_active,
+                res);
+
+        //load large active strong knight textures
+        //@TODO ADD CORRECT PNG RESOURCES FOR ACTIVE STRONG KNIGHT
+        add(TextureType.STRONG_KNIGHT_ACTIVE, Player.Color.SELECTING.ordinal(), R.drawable.knight_strong_grey,
+                res);
+        add(TextureType.STRONG_KNIGHT_ACTIVE, Player.Color.RED.ordinal(), R.drawable.knight_strong_r_active, res);
+        add(TextureType.STRONG_KNIGHT_ACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_strong_b_active, res);
+        add(TextureType.STRONG_KNIGHT_ACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_strong_grn_active, res);
+        add(TextureType.STRONG_KNIGHT_ACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_strong_y_active,
+                res);
+
+        //load large active mighty knight textures
+        //@TODO ADD CORRECT PNG RESOURCES FOR ACTIKVE MIGHTY KNIGHT
+        add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.SELECTING.ordinal(), R.drawable.knight_mighty_grey,
+                res);
+        add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.RED.ordinal(), R.drawable.knight_mighty_r_active, res);
+        add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.BLUE.ordinal(), R.drawable.knight_mighty_b_active, res);
+        add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.GREEN.ordinal(), R.drawable.knight_mighty_grn_active, res);
+        add(TextureType.MIGHTY_KNIGHT_ACTIVE, Player.Color.YELLOW.ordinal(), R.drawable.knight_mighty_y_active,
+                res);
+
+        //load large TRADEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large SCIENCEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large POLITICSmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large WALLED_TRADEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large WALLED_SCIENCEmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+                res);
+
+        //load large WALLED_POLITICSmetropolis textures
+        //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
+                res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
                 res);
 
         // load robber texture
@@ -173,7 +304,7 @@ public class TextureManager {
 				R.drawable.button_build_settlement, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY.ordinal(), R.drawable.button_build_city,
 				res);
-		add(TextureType.BUTTON, UIButton.ButtonType.PROGRESS_CARD.ordinal(),
+		add(TextureType.BUTTON, UIButton.ButtonType.PLAY_PROGRESS_CARD.ordinal(),
 				R.drawable.button_progress_cards, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.TRADE.ordinal(),
 				R.drawable.button_init_trade, res);
@@ -181,12 +312,20 @@ public class TextureManager {
 				R.drawable.button_end_turn, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.CANCEL_ACTION.ordinal(),
 				R.drawable.button_cancel_action, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.BUILD_WALL.ordinal(),
+        add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY_WALL.ordinal(),
                 R.drawable.button_cancel_action, res);
         add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_CITY_IMPROVEMENT.ordinal(),
                 R.drawable.button_city_improvement, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.PLAY_KNIGHT.ordinal(),
-                R.drawable.button_cancel_action, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.HIRE_KNIGHT.ordinal(),
+                R.drawable.button_hire_knight, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.ACTIVATE_KNIGHT.ordinal(),
+                R.drawable.button_activate_knight, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.PROMOTE_KNIGHT.ordinal(),
+                R.drawable.button_promote_knight, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.CHASE_ROBBER.ordinal(),
+                R.drawable.button_chase_robber, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.CHASE_PIRATE.ordinal(),
+                R.drawable.button_chase_pirate, res);
         add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
                 R.drawable.button_barbarian_progress, res);
 	}
@@ -201,9 +340,12 @@ public class TextureManager {
         square.get(hash(TextureType.BUTTON_BG, UIButton.ButtonBackground.DEFAULT.ordinal())).render(gl);
 
         if (button.isPressed())
+        {
             square.get(hash(TextureType.BUTTON_BG, UIButton.ButtonBackground.PRESSED.ordinal())).render(gl);
+        }
 
-        square.get(hash(TextureType.BUTTON, button.getButtonType().ordinal())).render(gl);
+        Square sqObj = square.get(hash(TextureType.BUTTON, button.getButtonType().ordinal()));
+        sqObj.render(gl);
 
 //		if (!button.isEnabled())
 //			square.get(hash(ResourceType.BUTTON_BG, UIButton.ButtonBackground.ACTIVATED.ordinal())).render(gl);
@@ -288,26 +430,27 @@ public class TextureManager {
         gl.glPopMatrix();
     }
 
-    public void drawVertex(Vertex vertex, boolean buildsettlement, boolean buildCity,
-                           boolean buildWall, GL10 gl, BoardGeometry boardGeometry) {
+    public void drawBuildableVertexUnit(Vertex vertex, boolean selectableSettlement, boolean selectableCity,
+                                        boolean selectableCityWall, boolean selectableMetropolis, 
+                                        GL10 gl, BoardGeometry boardGeometry) {
 
         TextureType textureType = TextureType.NONE;
-        if (vertex.getCurUnitType() == Vertex.CITY || buildCity || buildWall)
+        if (vertex.getCurUnitType() == Vertex.CITY || selectableCity || selectableCityWall || selectableMetropolis)
         {
             textureType = TextureType.CITY;
         }
-        else if (vertex.getCurUnitType() == Vertex.SETTLEMENT || buildsettlement)
+        else if (vertex.getCurUnitType() == Vertex.SETTLEMENT || selectableSettlement)
         {
             textureType = TextureType.SETTLEMENT;
         }
-        else if (vertex.getCurUnitType() == Vertex.WALL)
+        else if (vertex.getCurUnitType() == Vertex.CITY_WALL)
         {
-            textureType = TextureType.WALL;
+            textureType = TextureType.CITY_WALL;
         }
 
         Player.Color color;
         Player owner = vertex.getOwnerPlayer();
-        if (buildsettlement || buildCity || buildWall)
+        if (selectableSettlement || selectableCity || selectableCityWall || selectableMetropolis)
         {
             color = Player.Color.SELECTING;
         }
@@ -324,7 +467,94 @@ public class TextureManager {
         if (object != null) {
             gl.glPushMatrix();
             int id = vertex.getId();
-            gl.glTranslatef(boardGeometry.getVertexX(id), boardGeometry.getVertexY(id), TextureType.SETTLEMENT.ordinal());
+            gl.glTranslatef(boardGeometry.getVertexX(id), boardGeometry.getVertexY(id),
+                    TextureType.SETTLEMENT.ordinal());
+            object.render(gl);
+            gl.glPopMatrix();
+        }
+    }
+
+    public TextureType getKnightTextureType(Knight knight) {
+        if (knight.isActive()) {
+            switch(knight.getKnightRank()) {
+                case BASIC_KNIGHT:
+                    return TextureType.BASIC_KNIGHT_ACTIVE;
+                case STRONG_KNIGHT:
+                    return TextureType.STRONG_KNIGHT_ACTIVE;
+                case MIGHTY_KNIGHT:
+                    return TextureType.MIGHTY_KNIGHT_ACTIVE;
+            }
+        } else {
+            switch(knight.getKnightRank()) {
+                case BASIC_KNIGHT:
+                   return TextureType.BASIC_KNIGHT_INACTIVE;
+                case STRONG_KNIGHT:
+                    return TextureType.STRONG_KNIGHT_INACTIVE;
+                case MIGHTY_KNIGHT:
+                    return TextureType.MIGHTY_KNIGHT_INACTIVE;
+            }
+        }
+        return TextureType.NONE;
+    }
+
+    public void drawKnight(Vertex vertex, Knight selectableKnight,
+                           GL10 gl, BoardGeometry boardGeometry) {
+
+        boolean isSelectable = selectableKnight != null;
+        TextureType textureType = TextureType.NONE;
+        if (isSelectable) { // selectability takes precedence
+            textureType = getKnightTextureType(selectableKnight);
+        }
+        else if (vertex.getCurUnitType() == Vertex.KNIGHT)
+        {
+            textureType = getKnightTextureType(vertex.getPlacedKnight());
+        }
+        else if (vertex.getCurUnitType() == Vertex.TRADE_METROPOLIS)
+        {
+            textureType = TextureType.TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.POLITICS_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_POLITICS_METROPOLIS;
+        }
+
+        Player.Color color;
+        Player owner = vertex.getOwnerPlayer();
+        if (isSelectable)
+        {
+            color = Player.Color.SELECTING;
+        }
+        else if (owner != null)
+        {
+            color = owner.getColor();
+        }
+        else
+        {
+            color = Player.Color.NONE;
+        }
+
+        Square object = square.get(hash(textureType, color.ordinal()));
+        if (object != null) {
+            gl.glPushMatrix();
+            int id = vertex.getId();
+            gl.glTranslatef(boardGeometry.getVertexX(id), boardGeometry.getVertexY(id),
+                    TextureType.SETTLEMENT.ordinal());
             object.render(gl);
             gl.glPopMatrix();
         }
@@ -460,8 +690,8 @@ public class TextureManager {
 		return array;
 	}
 
-    private static int hash(TextureType textureType, int variant) {
-        return variant << 6 | textureType.ordinal();
+    private static Long hash(TextureType textureType, int variant) {
+        return HashingUtils.perfectHash(textureType.ordinal(), variant);
     }
 
     private Bitmap get(TextureType textureType, int variant) {
@@ -469,11 +699,24 @@ public class TextureManager {
     }
 
     private void add(TextureType textureType, int variant, int id, Resources res) {
-        int key = hash(textureType, variant);
+        Long key = hash(textureType, variant);
         Bitmap bitmap = BitmapFactory.decodeResource(res, id, new Options());
         this.bitmap.put(key, bitmap);
         this.resource.put(key, id);
-        this.square.put(key, new Square(id, 0, 0, textureType.ordinal(),
+        int textureDepth = 0;
+        if(textureType == TextureType.BUTTON || textureType == TextureType.BUTTON_BG) {
+            // buttons should always be rendered at the topmost layer
+            textureDepth = TextureType.CITY.ordinal() + 1;
+        }
+        else if (textureType.ordinal() > TextureType.CITY.ordinal()) {
+            // render most textures at the depth of a city
+            textureDepth = TextureType.CITY.ordinal();
+        }
+        else {
+            // the ordinal number of a texture type designates its layering
+            textureDepth = textureType.ordinal();
+        }
+        this.square.put(key, new Square(id, 0, 0, textureDepth,
                 (float) bitmap.getWidth() / (float) BoardGeometry.HEX_PNG_SCALE,
                 (float) bitmap.getHeight() / (float) BoardGeometry.HEX_PNG_SCALE));
     }

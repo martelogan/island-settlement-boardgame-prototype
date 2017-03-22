@@ -4,6 +4,7 @@ import android.widget.Toast;
 
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
+import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
@@ -11,17 +12,18 @@ import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.components.utilities.BoardUtils;
+import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
 import com.catandroid.app.common.players.AutomatedPlayer;
 import com.catandroid.app.common.players.BalancedAI;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
+import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
-import java.util.Vector;
 
 public class Board {
 
@@ -65,8 +67,8 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, BUILD, MOVING_SHIP, PROGRESS_CARD_1, PROGRESS_CARD_2,
-		CHOOSE_ROBBER_PIRATE, ROBBER, PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2, BUILD_METROPOLIS,
+		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -91,7 +93,10 @@ public class Board {
 	private Vertex[] vertices;
 	private Edge[] edges;
 	private Player[] players;
+	private int nextAvailableKnightId = -1;
+	private Knight[] knights;
 	private int numPlayers;
+	private int numTotalPlayableKnights;
 	private Harbor[] harbors;
 	private Stack<Integer> playerIdsYetToDiscard;
 	private BoardGeometry boardGeometry;
@@ -113,11 +118,13 @@ public class Board {
 
 	private Integer curRobberHexId = null, prevRobberHexId = null,
 			curPirateHexId = null, prevPirateHexId = null;
-	private int curPlayerNumber, gameTurnNumber, gameRoundNumber, roadCountId, longestRoad,
-			maxPoints, lastDiceRollNumber;
-	private Integer longestRoadOwnerId = null, winnerId = null;
+	private int curPlayerNumber, gameTurnNumber, gameRoundNumber, numberOfLongestTradeRouteUpdates,
+			longestTradeRouteLength, maxPoints, lastDiceRollNumber;
+	private Integer longestTradeRouteOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
     private int tempEdgeIdMemory = -1;
+
+	private int[] metropolisOwners = {-1, -1, -1};
 
 	private boolean autoDiscard;
 
@@ -137,9 +144,8 @@ public class Board {
 		this.gameParticipantIds = gameParticipantIds;
 		this.activeGameFragment = activeGameFragment;
 		this.numPlayers = gameParticipantIds.size();
-		commonInit();
-
-		this.autoDiscard = autoDiscard;
+		this.numTotalPlayableKnights = numPlayers * 6;
+		nextAvailableKnightId = 0;
 
 		// initialize players
 		players = new Player[numPlayers];
@@ -155,6 +161,10 @@ public class Board {
 			}
 
 		}
+
+		commonInit();
+
+		this.autoDiscard = autoDiscard;
 	}
 
 	public void setActiveGameFragment(ActiveGameFragment activeGameFragment){
@@ -166,16 +176,25 @@ public class Board {
 		gameRoundNumber = 1;
 		gameTurnNumber = 1;
 		phase = Phase.SETUP_SETTLEMENT;
-		roadCountId = 0;
-		longestRoad = 4;
-		longestRoadOwnerId = null;
+		numberOfLongestTradeRouteUpdates = 0;
+		longestTradeRouteLength = 4;
+		longestTradeRouteOwnerId = null;
 		hexagons = null;
 		winnerId = null;
 
 		playerIdsYetToDiscard = new Stack<Integer>();
+
+		//TODO: move to boardUtils
+		// initialize 6 knights per player
+		knights = new Knight[numPlayers * 6];
+		for (int i = 0; i < (numPlayers * 6); i++) {
+			knights[i] = new Knight(i);
+		}
+
+
 		hexIdMap = new HashMap<Long, Integer>();
 
-		// randomly initialize hexagons
+		// randomly initialize board positions
 		vertices = BoardUtils.generateVertices(this, boardGeometry.getVertexCount());
 		edges = BoardUtils.generateEdges(this, boardGeometry.getEdgeCount());
 		hexagons = BoardUtils.initRandomHexes(this);
@@ -187,7 +206,10 @@ public class Board {
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
 
-		// reset the pirate hex now that the edges are ready
+		//TODO: remove robber reset when adding fishermen rules
+		// reset the robber hex now that the edges & verticesare ready
+		getCurRobberHex().setRobber();
+		// reset the pirate hex now that the edges & vertices are ready
 		getCurPirateHex().setPirate();
 		//generate progress card decks
 		progressCardInit();
@@ -286,8 +308,8 @@ public class Board {
 			// reduce each players to 7 cards
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
-				int walls = getPlayerById(i).getNumWalls();
-				int extra = cards > (7+walls*2) ? cards / 2 : 0;
+				int walls = getPlayerById(i).getNumOwnedCityWalls();
+				int extra = cards > (7 + walls * 2) ? cards / 2 : 0;
 
 				if (extra == 0)
 					continue;
@@ -397,7 +419,7 @@ public class Board {
 					players[curPlayerNumber].rollDice();
 					break;
 
-				case BUILD:
+				case PLAYER_TURN:
 					current.buildPhase();
 					break;
 
@@ -405,16 +427,16 @@ public class Board {
                     //TODO: automate
                     break;
 
-				case PROGRESS_CARD_1:
+				case PROGRESS_CARD_STEP_1:
 					current.progressRoad(edges);
-				case PROGRESS_CARD_2:
+				case PROGRESS_CARD_STEP_2:
 					current.progressRoad(edges);
 					phase = returnPhase;
 					return;
 
 				case CHOOSE_ROBBER_PIRATE:
-				case ROBBER:
-				case PIRATE:
+				case MOVING_ROBBER:
+				case MOVING_PIRATE:
 					startAIRobberPhase(current);
 					return;
 
@@ -467,9 +489,9 @@ public class Board {
 				}
 				break;
 			case PRODUCTION:
-				phase = Phase.BUILD;
+				phase = Phase.PLAYER_TURN;
 				break;
-			case BUILD:
+			case PLAYER_TURN:
 				if (curPlayerNumber == numPlayers - 1)
 				{
 					gameRoundNumber += 1;
@@ -490,16 +512,16 @@ public class Board {
                 phase = returnPhase;
 				tempEdgeIdMemory = -1;
 				break;
-			case PROGRESS_CARD_1:
-				phase = Phase.PROGRESS_CARD_2;
+			case PROGRESS_CARD_STEP_1:
+				phase = Phase.PROGRESS_CARD_STEP_2;
 				break;
-			case PROGRESS_CARD_2:
+			case PROGRESS_CARD_STEP_2:
 				phase = returnPhase;
 				break;
-			case ROBBER:
+			case MOVING_ROBBER:
 				phase = returnPhase;
 				break;
-			case PIRATE:
+			case MOVING_PIRATE:
 				phase = returnPhase;
 				break;
 			case TRADE_PROPOSED:
@@ -523,7 +545,11 @@ public class Board {
 			case TRADE_RESPONDED:
 				//reset the board to state before trade
 				setTradeProposal(null);
-				phase = Phase.BUILD;
+				phase = Phase.PLAYER_TURN;
+				break;
+			case BUILD_METROPOLIS:
+				phase = Phase.PLAYER_TURN;
+				getCurrentPlayer().metropolisTypeToBuild = -1;
 				break;
 			case DONE:
 				return false;
@@ -563,7 +589,7 @@ public class Board {
 	 */
 	public void startProgressPhase1() {
 		returnPhase = phase;
-		phase = Phase.PROGRESS_CARD_1;
+		phase = Phase.PROGRESS_CARD_STEP_1;
 		runAITurn();
 	}
 
@@ -643,19 +669,19 @@ public class Board {
 	}
 
 	public boolean isRobberPhase() {
-		return (phase == Phase.ROBBER);
+		return (phase == Phase.MOVING_ROBBER);
 	}
 
 	public boolean isPiratePhase() {
-		return (phase == Phase.PIRATE);
+		return (phase == Phase.MOVING_PIRATE);
 	}
 
 	public boolean isProduction() {
 		return (phase == Phase.PRODUCTION);
 	}
 
-	public boolean isBuildPhase() {
-		return (phase == Phase.BUILD);
+	public boolean isPlayerTurnPhase() {
+		return (phase == Phase.PLAYER_TURN);
 	}
 
     public boolean isMovingShipPhase() {
@@ -663,20 +689,22 @@ public class Board {
     }
 
 	public boolean isProgressPhase() {
-		return (phase == Phase.PROGRESS_CARD_1 || phase == Phase.PROGRESS_CARD_2);
+		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
 	}
 
 	public boolean isProgressPhase1() {
-		return (phase == Phase.PROGRESS_CARD_1);
+		return (phase == Phase.PROGRESS_CARD_STEP_1);
 	}
 
 	public boolean isProgressPhase2() {
-		return (phase == Phase.PROGRESS_CARD_2);
+		return (phase == Phase.PROGRESS_CARD_STEP_2);
 	}
 
 	public boolean isTradeProposedPhase() { return (phase == Phase.TRADE_PROPOSED);}
 
 	public boolean isTradeRespondedPhase() { return (phase == Phase.TRADE_RESPONDED);}
+
+	public boolean isBuildMetropolisPhase() { return (phase == Phase.BUILD_METROPOLIS);}
 
 	/**
 	 * Get the dice number token value for a hexagons
@@ -790,6 +818,45 @@ public class Board {
 		return vertices;
 	}
 
+	public int[] getMetropolisOwners() {
+		return metropolisOwners;
+	}
+
+	public void setMetropolisOwners(int[] metropolisOwners) {
+		this.metropolisOwners = metropolisOwners;
+	}
+
+	/**
+	 * Get the knight with the given id
+	 *
+	 * @param knightId
+	 *            the id of the knight
+	 * @return the knight
+	 */
+	public Knight getKnightById(int knightId) {
+		if (knightId < 0 || knightId >= knights.length)
+		{
+			return null;
+		}
+
+		return knights[knightId];
+	}
+
+	public Knight getNextAvailableKnight() {
+		if (this.nextAvailableKnightId < 0 ||
+				this.nextAvailableKnightId >= knights.length)
+		{
+			return null;
+		}
+		Knight nextAvailableKnight = knights[this.nextAvailableKnightId];
+		this.nextAvailableKnightId += 1;
+		return nextAvailableKnight;
+	}
+
+	public Knight[] getKnights() {
+		return knights;
+	}
+
 	/**
 	 * Get a progress card
 	 *
@@ -826,7 +893,7 @@ public class Board {
 		}
 		this.prevRobberHexId = this.curRobberHexId;
 		this.curRobberHexId = null;
-		phase = Phase.ROBBER;
+		phase = Phase.MOVING_ROBBER;
 		// run AI's turn
 		runAITurn();
 	}
@@ -840,7 +907,7 @@ public class Board {
 		}
 		this.prevPirateHexId = this.curPirateHexId;
 		this.curPirateHexId = null;
-		phase = Phase.PIRATE;
+		phase = Phase.MOVING_PIRATE;
 		// run AI's turn
 		runAITurn();
 	}
@@ -873,7 +940,7 @@ public class Board {
 		int hexCount = this.boardGeometry.getHexCount();
 		int curRobberId = this.curRobberHexId != null ? hexagons[this.curRobberHexId].getId() : -1;
 		int prevRobberId = this.prevRobberHexId != null ? hexagons[this.prevRobberHexId].getId() : -1;
-		if (this.phase == Phase.ROBBER && prevRobberId >= 0 && prevRobberId < hexCount)
+		if (this.phase == Phase.MOVING_ROBBER && prevRobberId >= 0 && prevRobberId < hexCount)
 		{
 			return hexagons[this.prevRobberHexId];
 		}
@@ -897,7 +964,7 @@ public class Board {
                 hexagons[this.curPirateHexId].getId() : -1;
         int prevPirateHexId = this.prevPirateHexId != null
                 ? hexagons[this.prevPirateHexId].getId() : -1;
-        if (this.phase == Phase.PIRATE && prevPirateHexId >= 0 && prevPirateHexId < hexCount)
+        if (this.phase == Phase.MOVING_PIRATE && prevPirateHexId >= 0 && prevPirateHexId < hexCount)
         {
             return hexagons[this.prevPirateHexId];
         }
@@ -959,53 +1026,61 @@ public class Board {
 		return barbarianPosition;
 	}
 
+
+	//TODO: adapt to fit ship requirements
 	/**
-	 * Update the longest road owner and length
+	 * Update the longest trade route length and owner
 	 */
-	public void checkLongestRoad() {
-		Player previousOwner = longestRoadOwnerId != null ? players[longestRoadOwnerId] : null;
+	public void updateLongestTradeRoute() {
+		Player previousOwner = longestTradeRouteOwnerId != null ? players[longestTradeRouteOwnerId] : null;
 
-		// reset road length in case a road was split
-		longestRoad = 4;
-		longestRoadOwnerId = null;
+		// reset trade route length in case a path was broken
+		longestTradeRouteLength = 4;
+		longestTradeRouteOwnerId = null;
 
-		// reset players' road lengths to 0
+		// temporarily reset players' trade route lengths to 0
 		for (int i = 0; i < numPlayers; i++)
 		{
-			players[i].cancelRoadLength();
+			players[i].cancelMyLongestTradeRouteLength();
 		}
 
-		// find longest road
-		for (int i = 0; i < edges.length; i++) {
-			if (edges[i].hasEdgeUnit()) {
-				int length = edges[i].getRoadLength(++roadCountId);
+		// find longest trade route
+		int i, longestTradeRouteFromCurEdge;
+		Edge curEdge = null;
+		Player curEdgeOwner;
+		for (i = 0; i < edges.length; i++) {
+			curEdge = edges[i];
+			if (curEdge.hasEdgeUnit()) {
+				longestTradeRouteFromCurEdge = curEdge.getLongestTradeRouteLengthFromHere(
+						++numberOfLongestTradeRouteUpdates);
 
-				Player owner = edges[i].getOwnerPlayer();
-				owner.setRoadLength(length);
-				if (length > longestRoad) {
-					longestRoad = length;
-					longestRoadOwnerId = owner.getPlayerNumber();
+				curEdgeOwner = curEdge.getOwnerPlayer();
+				curEdgeOwner.notifyTradeRouteLength(longestTradeRouteFromCurEdge);
+				if (longestTradeRouteFromCurEdge > longestTradeRouteLength) {
+					longestTradeRouteLength = longestTradeRouteFromCurEdge;
+					longestTradeRouteOwnerId = curEdgeOwner.getPlayerNumber();
 				}
 			}
 		}
 
-		// the same players keeps the longest road if length doesn't change
+		// barring a change, the previous title holder retains the achievement
 		if (previousOwner != null
-				&& previousOwner.getRoadLength() == longestRoad)
+				&& previousOwner.getMyLongestTradeRouteLength() == longestTradeRouteLength)
 		{
-			longestRoadOwnerId = previousOwner.getPlayerNumber();
+			longestTradeRouteOwnerId = previousOwner.getPlayerNumber();
 		}
 	}
 
 	/**
-	 * Determine if players has the longest road
+	 * Determine if a player currently has the longest trade route
 	 * 
 	 * @param player
-	 *            the players
-	 * @return true if players had the longest road
+	 *            the player
+	 * @return true iff player currently has the longest trade route
 	 */
-	public boolean hasLongestRoad(Player player) {
-		return (longestRoadOwnerId != null && player.getPlayerNumber() == longestRoadOwnerId);
+	public boolean hasLongestTradeRoute(Player player) {
+		return (longestTradeRouteOwnerId != null
+				&& player.getPlayerNumber() == longestTradeRouteOwnerId);
 	}
 
 	/**
@@ -1013,17 +1088,17 @@ public class Board {
 	 * 
 	 * @return the length of the longest road
 	 */
-	public int getLongestRoad() {
-		return longestRoad;
+	public int getLongestTradeRouteLength() {
+		return longestTradeRouteLength;
 	}
 
 	/**
-	 * Get the owner of the longest road
+	 * Get the current owner of the longest trade route
 	 * 
-	 * @return the players with the longest road
+	 * @return the current owner of the longest trade route
 	 */
-	public Player getLongestRoadOwner() {
-		return longestRoadOwnerId != null ? players[longestRoadOwnerId] : null;
+	public Player getLongestTradeRouteOwner() {
+		return longestTradeRouteOwnerId != null ? players[longestTradeRouteOwnerId] : null;
 	}
 
 	/**
@@ -1080,26 +1155,28 @@ public class Board {
 				return R.string.phase_second_edge_unit;
 			case PRODUCTION:
 				return R.string.phase_your_turn;
-			case BUILD:
-                return R.string.phase_build;
+			case PLAYER_TURN:
+                return R.string.phase_player_turn;
             case MOVING_SHIP:
                 return R.string.phase_move_ship;
-			case PROGRESS_CARD_1:
+			case PROGRESS_CARD_STEP_1:
 				// TODO: progress card step 1
 				return 0;
-			case PROGRESS_CARD_2:
+			case PROGRESS_CARD_STEP_2:
 				// TODO: progress card step 2
 				return 0;
 			case CHOOSE_ROBBER_PIRATE:
 				return R.string.phase_make_choice;
-			case ROBBER:
+			case MOVING_ROBBER:
 				return R.string.phase_move_robber;
-			case PIRATE:
+			case MOVING_PIRATE:
 				return R.string.phase_move_pirate;
 			case TRADE_PROPOSED:
 				return R.string.waiting_trade_proposed;
 			case TRADE_RESPONDED:
 				return R.string.waiting_trade_responded;
+			case BUILD_METROPOLIS:
+				return R.string.game_build_metropolis;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -1175,7 +1252,11 @@ public class Board {
 		for (Player player : players) {
 			player.setBoard(this);
 		}
+		for(Knight knight : knights) {
+			knight.setBoard(this);
+		}
 	}
+
 
 	public ProgressCard.ProgressCardType pickNewProgressCard(CityImprovement.CityImprovementType type){
 		switch(type){
@@ -1191,6 +1272,7 @@ public class Board {
 	}
 
 	public void returnProgressCard(ProgressCard.ProgressCardType card){
+
 		switch(ProgressCard.getDisciplineFromCard(card)){
 			case TRADE:
 				tradeDeck.add(card);

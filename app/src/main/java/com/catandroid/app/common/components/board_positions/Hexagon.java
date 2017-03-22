@@ -380,6 +380,15 @@ public class Hexagon {
 	 */
 	public boolean setRobber() {
 		if (this.terrainType != TerrainType.SEA) {
+			Vertex curVertex;
+			for (int i = 0; i < 6; i++) {
+				curVertex = board.getVertexById(vertexIds[i]);
+				// TODO: technically a dirty write
+				if(curVertex != null && !curVertex.setRobber()) {
+					// something went wrong
+					return false;
+				}
+			}
 			this.hasRobber = true;
 			return true;
 		}
@@ -394,10 +403,16 @@ public class Hexagon {
 	public boolean setPirate() {
 		if (this.terrainType == TerrainType.SEA) {
 			Edge curEdge;
+			Vertex curVertex;
 			for (int i = 0; i < 6; i++) {
 				curEdge = board.getEdgeById(edgeIds[i]);
-				// TODO: technically a dirty write
+				curVertex = board.getVertexById(vertexIds[i]);
+				// TODO: technically dirty writes
 				if(curEdge != null && !curEdge.setBlockedByPirate()) {
+					// something went wrong
+					return false;
+				}
+				if(curVertex != null && !curVertex.setPirate()) {
 					// something went wrong
 					return false;
 				}
@@ -415,6 +430,15 @@ public class Hexagon {
 	 */
 	public boolean removeRobber() {
 		if (this.hasRobber) {
+			Vertex curVertex;
+			for (int i = 0; i < 6; i++) {
+				curVertex = board.getVertexById(vertexIds[i]);
+				// TODO: technically a dirty write
+				if(curVertex != null && !curVertex.removeRobber()) {
+					// something went wrong
+					return false;
+				}
+			}
 			this.hasRobber = false;
 			return true;
 		}
@@ -430,10 +454,16 @@ public class Hexagon {
 	public boolean removePirate() {
 		if (this.hasPirate) {
 			Edge curEdge;
+			Vertex curVertex;
 			for (int i = 0; i < 6; i++) {
 				curEdge = board.getEdgeById(edgeIds[i]);
+				curVertex = board.getVertexById(vertexIds[i]);
 				// TODO: technically a dirty write
 				if(curEdge != null && !curEdge.removePirate()) {
+					// something went wrong
+					return false;
+				}
+				if(curVertex != null && !curVertex.removePirate()) {
 					// something went wrong
 					return false;
 				}

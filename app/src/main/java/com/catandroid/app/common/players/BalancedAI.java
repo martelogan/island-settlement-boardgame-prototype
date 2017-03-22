@@ -23,9 +23,9 @@ public class BalancedAI extends Player implements AutomatedPlayer {
         while (!done) {
             done = true;
 
-            boolean hasLongest = board.getLongestRoadOwner() == this;
+            boolean hasLongest = board.getLongestTradeRouteOwner() == this;
             boolean settlementPriority = numOwnedSettlements + numOwnedCities < 4;
-            boolean roadContender = board.getLongestRoad() - getRoadLength() <= 3;
+            boolean roadContender = board.getLongestTradeRouteLength() - getMyLongestTradeRouteLength() <= 3;
 
             boolean canSettle = false;
             boolean canCity = false;
@@ -54,7 +54,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                     && (!canSettle || (!hasLongest && roadContender && !settlementPriority));
 
             // try to build a settlement
-            if (canSettle && affordSettlement()) {
+            if (canSettle && canAffordToBuildSettlement()) {
                 Vertex pick = pickSettlement();
                 if (pick != null && buildVertexUnit(pick, Vertex.SETTLEMENT))
                 {
@@ -63,9 +63,9 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             }
 
             // try to build a city
-            if (canCity && affordCity()) {
-                for (int i = 0; i < settlementIds.size(); i++) {
-                    Vertex settlement = board.getVertexById(settlementIds.get(i));
+            if (canCity && canAffordToBuildCity()) {
+                for (int i = 0; i < ownedCommunityIds.size(); i++) {
+                    Vertex settlement = board.getVertexById(ownedCommunityIds.get(i));
                     if (settlement.getCurUnitType() == Vertex.SETTLEMENT
                             && buildVertexUnit(settlement, Vertex.CITY))
                     {
@@ -75,7 +75,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             }
 
             // try to build a road if we can afford it
-            if (considerRoad && affordRoad()) {
+            if (considerRoad && canAffordToBuildRoad()) {
                 boolean builtRoad = false;
 
                 // try to build towards somewhere nearby to settle
@@ -90,7 +90,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                             }
 
                             Vertex other = edge.getAdjacent(vertex);
-                            if (!other.hasBuilding() && other.couldBuild()
+                            if (!other.hasVertexUnitPlacedHere() && other.canPlaceBuildableVertexUnitHere()
                                     && buildRoad(edge)) {
                                 builtRoad = true;
                                 break;
@@ -142,21 +142,21 @@ public class BalancedAI extends Player implements AutomatedPlayer {
                 //TODO: consider progress card options here
 
                 // trade road road resources
-                if (considerRoad && !affordRoad() && tradeFor(ROAD_COST)) {
-                    if (affordRoad())
+                if (considerRoad && !canAffordToBuildRoad() && tradeFor(ROAD_COST)) {
+                    if (canAffordToBuildRoad())
                         done = false;
                 }
 
                 // trade for settlement resources
-                else if (canSettle && !affordSettlement() && tradeFor(SETTLEMENT_COST)) {
-                    if (affordSettlement())
+                else if (canSettle && !canAffordToBuildSettlement() && tradeFor(SETTLEMENT_COST)) {
+                    if (canAffordToBuildSettlement())
                         done = false;
                 }
 
                 // trade for city resources
-                else if (canCity && !affordCity() && !settlementPriority
+                else if (canCity && !canAffordToBuildCity() && !settlementPriority
                         && tradeFor(CITY_COST)) {
-                    if (affordCity())
+                    if (canAffordToBuildCity())
                         done = false;
                 }
             }
@@ -190,8 +190,8 @@ public class BalancedAI extends Player implements AutomatedPlayer {
     public int setupRoad(Edge[] edges) {
         // build from random settlement and build in a random direction
         while (true) {
-            Vertex vertex = board.getVertexById(settlementIds.get(
-                    (int) (Math.random() * settlementIds.size())));
+            Vertex vertex = board.getVertexById(ownedCommunityIds.get(
+                    (int) (Math.random() * ownedCommunityIds.size())));
             int pick = (int) (Math.random() * 3);
             Edge edge = vertex.getEdge(pick);
             if (edge != null && buildRoad(edge))
@@ -309,7 +309,7 @@ public class BalancedAI extends Player implements AutomatedPlayer {
     }
 
     protected Vertex pickSettlement() {
-        if (!affordSettlement())
+        if (!canAffordToBuildSettlement())
         {
             return null;
         }
@@ -531,13 +531,13 @@ public class BalancedAI extends Player implements AutomatedPlayer {
 
         // deduct anything that we can already build
         do {
-            if (affordCity()) {
+            if (canAffordToBuildCity()) {
                 subtractList(extra, CITY_COST);
                 continue;
-            } else if (affordSettlement()) {
+            } else if (canAffordToBuildSettlement()) {
                 subtractList(extra, SETTLEMENT_COST);
                 continue;
-            } else if (affordRoad()) {
+            } else if (canAffordToBuildRoad()) {
                 subtractList(extra, ROAD_COST);
                 continue;
             }
@@ -571,15 +571,15 @@ public class BalancedAI extends Player implements AutomatedPlayer {
 
         // deduct anything that we can already build
         do {
-            if (affordCity() && count >= 5) {
+            if (canAffordToBuildCity() && count >= 5) {
                 subtractList(extra, CITY_COST);
                 count -= 5;
                 continue;
-            } else if (affordSettlement() && count >= 4) {
+            } else if (canAffordToBuildSettlement() && count >= 4) {
                 subtractList(extra, SETTLEMENT_COST);
                 count -= 4;
                 continue;
-            } else if (affordRoad() && count >= 2) {
+            } else if (canAffordToBuildRoad() && count >= 2) {
                 subtractList(extra, ROAD_COST);
                 count -= 2;
                 continue;
