@@ -123,10 +123,10 @@ public class TextureManager {
         //@TODO ADD PNG RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.CITY_WALL, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.CITY_WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.CITY_WALL, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.CITY_WALL, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.CITY_WALL, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.CITY_WALL, Player.Color.RED.ordinal(), R.drawable.walled_city_r, res);
+        add(TextureType.CITY_WALL, Player.Color.BLUE.ordinal(), R.drawable.walled_city_b, res);
+        add(TextureType.CITY_WALL, Player.Color.GREEN.ordinal(), R.drawable.walled_city_grn, res);
+        add(TextureType.CITY_WALL, Player.Color.YELLOW.ordinal(), R.drawable.walled_city_y,
                 res);
 
         //load large inactive basic knight textures
@@ -193,60 +193,60 @@ public class TextureManager {
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.trade_metropolis_r, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.trade_metropolis_b, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.trade_metropolis_grn, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.trade_metropolis_y,
                 res);
 
         //load large SCIENCEmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.science_metropolis_r, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.science_metropolis_b, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.science_metropolis_grn, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.science_metropolis_y,
                 res);
 
         //load large POLITICSmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.politics_metropolis_r, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.politics_metropolis_b, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.politics_metropolis_grn, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.politics_metropolis_y,
                 res);
 
         //load large WALLED_TRADEmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.walled_trade_metropolis_r, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.walled_trade_metropolis_b, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.walled_trade_metropolis_grn, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.walled_trade_metropolis_y,
                 res);
 
         //load large WALLED_SCIENCEmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.walled_science_metropolis_r, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.walled_science_metropolis_b, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.walled_science_metropolis_grn, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.walled_science_metropolis_y,
                 res);
 
         //load large WALLED_POLITICSmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.walled_politics_metropolis_r, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.walled_politics_metropolis_b, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.walled_politics_metropolis_grn, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.walled_politics_metropolis_y,
                 res);
 
         // load robber texture

@@ -50,6 +50,7 @@ public class Player {
 	protected Vector<Integer> ownedCommunityIds, reachingVertexIds;
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myKnightIds;
+	private int defenderOfCatan = 0;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
@@ -1393,6 +1394,7 @@ public class Player {
 		if(board.getMetropolisOwners()[2] == getPlayerNumber()){
 			points += 2;
 		}
+		points += defenderOfCatan;
 
 		return points;
 	}
@@ -1444,6 +1446,24 @@ public class Player {
 	 */
 	public Knight getKnightAddedAtIndex(int knightOrdinalIndex) {
 		return board.getKnightById(myKnightIds.get(knightOrdinalIndex));
+	}
+
+	/**
+	 * Pillage one city to a settlement
+	 * @return the player's nth hired knight
+	 */
+	public void pillageCity() {
+		board.pillageCity(playerNumber);
+		numOwnedCities--;
+		numOwnedSettlements++;
+	}
+
+	/**
+	 * Increment defender of catan
+	 * @return void
+	 */
+	public void wonDefenderOfCatan(){
+		defenderOfCatan++;
 	}
 
 //TODO: see how we can use this similar code for progress cards
@@ -2032,6 +2052,11 @@ public class Player {
 	 */
 	public Vector<ProgressCardType> getHand(){
 		return hand;
+	}
+
+
+	public int getDefenderOfCatan() {
+		return defenderOfCatan;
 	}
 
 	/**

@@ -17,9 +17,9 @@ import com.catandroid.app.common.players.AutomatedPlayer;
 import com.catandroid.app.common.players.BalancedAI;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
-import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
@@ -68,7 +68,8 @@ public class Board {
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
 		PRODUCTION, PLAYER_TURN, MOVING_SHIP, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2, BUILD_METROPOLIS,
-		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED, DONE
+		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
+		DEFENDER_OF_CATAN, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -98,7 +99,7 @@ public class Board {
 	private int numPlayers;
 	private int numTotalPlayableKnights;
 	private Harbor[] harbors;
-	private Stack<Integer> playerIdsYetToDiscard;
+	private Stack<Integer> playerIdsYetToAct;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
 
@@ -182,7 +183,7 @@ public class Board {
 		hexagons = null;
 		winnerId = null;
 
-		playerIdsYetToDiscard = new Stack<Integer>();
+		playerIdsYetToAct = new Stack<Integer>();
 
 		//TODO: move to boardUtils
 		// initialize 6 knights per player
@@ -274,7 +275,6 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
-
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
@@ -326,7 +326,7 @@ public class Board {
 					bot.discard(extra);
 				} else if (players[i].isHuman()) {
 					// queue human players to discard_resources
-					playerIdsYetToDiscard.add(players[i].getPlayerNumber());
+					playerIdsYetToAct.add(players[i].getPlayerNumber());
 				}
 			}
 
@@ -551,6 +551,15 @@ public class Board {
 				phase = Phase.PLAYER_TURN;
 				getCurrentPlayer().metropolisTypeToBuild = -1;
 				break;
+			case DEFENDER_OF_CATAN:
+				//pass to the next player according to stack
+				if(!playerIdsYetToAct.isEmpty()){
+					int nextPlayerToRespondNum = playerIdsYetToAct.peek();
+					activeGameFragment.mListener.endTurn(gameParticipantIds.get(nextPlayerToRespondNum),false);
+				} else {
+					phase = Phase.PLAYER_TURN;
+					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber),false);
+				}
 			case DONE:
 				return false;
 		}
@@ -630,11 +639,112 @@ public class Board {
 	}
 
 	public void resolveBarbarians(){
-		barbarianPosition++;
-		if(barbarianPosition == 7){
+		barbarianPosition += 7;
+		if(barbarianPosition >= 7){
 			//the barbarians attack!!
-			//performAttack();
 			toast("The barbarians attack!");
+			players[curPlayerNumber].appendAction(R.string.player_barbarians_attack);
+			int barbarianStrength = 0;
+			for(int i = 0; i < numPlayers; i++){
+				barbarianStrength += players[i].getNumOwnedCities();
+			}
+
+			int strengthCatan = 0;
+			Knight currentKnight;
+			int[] playerStrength = new int[numPlayers];
+			Arrays.fill(playerStrength, 0);
+			for(int i = 0; i < knights.length; i++){
+				currentKnight = knights[i];
+				if(currentKnight.isActive()){
+					switch(currentKnight.getKnightRank()){
+						case BASIC_KNIGHT:
+							strengthCatan += 1;
+							playerStrength[currentKnight.getOwnerPlayer().getPlayerNumber()] += 1;
+							break;
+						case STRONG_KNIGHT:
+							strengthCatan += 2;
+							playerStrength[currentKnight.getOwnerPlayer().getPlayerNumber()] += 2;
+							break;
+						case MIGHTY_KNIGHT:
+							strengthCatan += 3;
+							playerStrength[currentKnight.getOwnerPlayer().getPlayerNumber()] += 3;
+							break;
+						default:
+							break;
+
+					}
+				}
+			}
+			boolean barbariansWin = (barbarianStrength > strengthCatan);
+			//performAttack();
+			if(barbariansWin){
+				players[curPlayerNumber].appendAction(R.string.player_barbarians_won);
+				int minValue = Integer.MAX_VALUE;
+				ArrayList<Player> losers = new ArrayList<>();
+				for(int i=0; i < numPlayers; i++){
+					int playerMetropolisOwned = 0;
+					if(metropolisOwners[0] == i) playerMetropolisOwned++;
+					if(metropolisOwners[1] == i) playerMetropolisOwned++;
+					if(metropolisOwners[2] == i) playerMetropolisOwned++;
+					int playerCitiesOwned = players[i].getNumOwnedCities();
+
+					//dont count players that don't have cities or only metropolis
+					if(playerCitiesOwned > 0 && (playerMetropolisOwned != playerCitiesOwned)){
+						if(playerStrength[i] < minValue){
+							losers.clear();
+							losers.add(players[i]);
+							minValue = playerStrength[i];
+						} else if(playerStrength[i] == minValue){
+							losers.add(players[i]);
+						}
+					}
+				}
+
+				for(Player loser : losers){
+					loser.pillageCity();
+				}
+
+			} else{
+				players[curPlayerNumber].appendAction(R.string.player_barbarians_lose);
+				int maxValue = Integer.MIN_VALUE;
+				ArrayList<Player> winners = new ArrayList<>();
+				for(int i=0; i < numPlayers; i++){
+					if(playerStrength[i] > maxValue){
+						winners.clear();
+						winners.add(players[i]);
+						maxValue = playerStrength[i];
+					} else if(playerStrength[i] == maxValue){
+						winners.add(players[i]);
+					}
+				}
+
+				if(winners.size() == 1){
+					players[curPlayerNumber].appendAction(R.string.player_barbarians_defender, winners.get(0).getPlayerName());
+					winners.get(0).wonDefenderOfCatan();
+				} else if(winners.size() > 1){
+					Player currentPlayer = players[curPlayerNumber];
+					boolean currentPlayerDefended = false;
+					if(winners.contains(currentPlayer)){
+						//dont pass turn to us after
+						winners.remove(currentPlayer);
+						currentPlayerDefended = true;
+						players[curPlayerNumber].appendAction(R.string.player_barbarians_tie, currentPlayer.getPlayerName());
+					}
+					for(Player winner : winners){
+						playerIdsYetToAct.add(winner.getPlayerNumber());
+						players[curPlayerNumber].appendAction(R.string.player_barbarians_tie, winner.getPlayerName());
+					}
+
+					if(currentPlayerDefended) playerIdsYetToAct.add(curPlayerNumber);
+
+					this.setPhase(Board.Phase.DEFENDER_OF_CATAN);
+					nextPhase();
+				}
+
+			}
+			for(int i = 0; i < knights.length; i ++){
+				knights[i].deactivate();
+			}
 			barbarianPosition = 0;
 		}
 	}
@@ -875,9 +985,9 @@ public class Board {
 		//the turn passing then occurs in the turnHandler for each player.
 		//the turn is passed in the discardResourcesFragment
 		//when the stack is empty, the turn is passed back to the player that rolled 7
-		if(!playerIdsYetToDiscard.isEmpty()){
+		if(!playerIdsYetToAct.isEmpty()){
 			activeGameFragment.mListener.endTurn(
-					getPlayerById(playerIdsYetToDiscard.peek()).getGooglePlayParticipantId(), false);
+					getPlayerById(playerIdsYetToAct.peek()).getGooglePlayParticipantId(), false);
 			toast("Your turn will resume when all players have discarded! Check back later.");
 		}
 		// run AI's turn
@@ -1026,6 +1136,25 @@ public class Board {
 		return barbarianPosition;
 	}
 
+	/**
+	 * Pillage one city to a settlement
+	 *
+	 * @return void
+	 */
+	public void pillageCity(int playerNumber)
+	{
+		//@TODO add city wall removal
+		for(int i = 0; i < vertices.length; i++){
+			boolean isPillageableCity = vertices[i].getCurUnitType() == Vertex.CITY
+					|| vertices[i].getCurUnitType() == Vertex.CITY_WALL;
+
+			if(vertices[i].getOwnerPlayer() != null && vertices[i].getOwnerPlayer().getPlayerNumber() == playerNumber
+					&& isPillageableCity){
+				vertices[i].setCurUnitType(Vertex.SETTLEMENT);
+				return;
+			}
+		}
+	}
 
 	//TODO: adapt to fit ship requirements
 	/**
@@ -1106,8 +1235,8 @@ public class Board {
 	 * 
 	 * @return true if one or more players need to discard_resources
 	 */
-	public boolean hasPlayersYetToDiscard() {
-		return !playerIdsYetToDiscard.empty();
+	public boolean hasPlayersYetToAct() {
+		return !playerIdsYetToAct.empty();
 	}
 
 	/**
@@ -1115,9 +1244,9 @@ public class Board {
 	 *
 	 * @return a players or null
 	 */
-	public Player checkNextPlayerToDiscard() {
+	public Player checkNextPlayerToAct() {
 		try {
-			Integer playerId = playerIdsYetToDiscard.peek();
+			Integer playerId = playerIdsYetToAct.peek();
 			return playerId != null ? players[playerId] : null;
 		} catch (EmptyStackException e) {
 			return null;
@@ -1129,9 +1258,9 @@ public class Board {
 	 * 
 	 * @return a players or null
 	 */
-	public Player getPlayerToDiscard() {
+	public Player getPlayerToAct() {
 		try {
-			Integer playerId = playerIdsYetToDiscard.pop();
+			Integer playerId = playerIdsYetToAct.pop();
 			return playerId != null ? players[playerId] : null;
 		} catch (EmptyStackException e) {
 			return null;
@@ -1177,6 +1306,8 @@ public class Board {
 				return R.string.waiting_trade_responded;
 			case BUILD_METROPOLIS:
 				return R.string.game_build_metropolis;
+			case DEFENDER_OF_CATAN:
+				return R.string.game_defended_catan_wait_pick_card;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -1388,7 +1519,7 @@ public class Board {
 			        tradeProposal.getCurrentPlayerToProposeId()
             ).getGooglePlayParticipantId().equals(activeGameFragment.myParticipantId));
 		}
-		else if(hasPlayersYetToDiscard()){
+		else if(hasPlayersYetToAct()){
 			return true;
 		}
         else if(phase == Phase.CHOOSE_ROBBER_PIRATE &&
