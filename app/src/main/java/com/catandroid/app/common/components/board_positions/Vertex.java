@@ -595,7 +595,7 @@ public class Vertex {
 		if (resourceType != null) {
 			// Gold gets two times more on distribution (2 for settlement, 4 for city)
 			if(resourceType == Resource.ResourceType.GOLD){
-				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive*2);
+				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
 				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
 			} else {
 				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);

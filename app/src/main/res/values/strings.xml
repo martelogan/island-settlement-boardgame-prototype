@@ -141,6 +141,11 @@
 	<string name="player_stole_trade">Stole Trade Metropolis From: %s</string>
 	<string name="player_stole_science">Stole Science Metropolis From: %s</string>
 	<string name="player_stole_politics">Stole Politics Metropolis From: %s</string>
+	<string name="player_barbarians_attack">Barbarians Attacked!</string>
+	<string name="player_barbarians_won">Barbarians were Victorious!</string>
+	<string name="player_barbarians_lose">Catan Defended Successfully!</string>
+	<string name="player_barbarians_defender">%s was Defender of Catan!</string>
+	<string name="player_barbarians_tie">Players %s tied for defender of Catan!</string>
 
 	<!-- PlayerStatsFragment screen -->
 	<string name="status">Status</string>
@@ -237,6 +242,8 @@
 	<string name="game_choose_road">Build road</string>
 	<string name="game_choose_ship">Build ship</string>
 	<string name="game_road_ship_title">Build a road or ship?</string>
+	<string name="game_defended_catan">Defended Catan! Pick Card.</string>
+	<string name="game_defended_catan_wait_pick_card">Waiting Others To Pick Card!</string>
 	<string name="game_build_road">Build a road</string>
 	<string name="game_build_ship">Build a ship</string>
     <string name="game_move_ship">Ship to move?</string>

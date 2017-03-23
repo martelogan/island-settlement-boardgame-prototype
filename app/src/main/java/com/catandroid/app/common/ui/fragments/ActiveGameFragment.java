@@ -57,10 +57,11 @@ import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
 
-	private static final int MIN_BOT_DELAY = 1000;
+	private static final int MIN_BOT_DELAY = 5000;
 	private static final int DEFAULT_TURN_DELAY = 750;
 
-	private static final int UPDATE_MESSAGE = 1, LOG_MESSAGE = 2, DISCARD_MESSAGE = 3;
+	private static final int UPDATE_MESSAGE = 1, LOG_MESSAGE = 2, DISCARD_MESSAGE = 3,
+			PICK_PROGRESS_CARD_MESSAGE = 4;
 
 	private RelativeLayout rl;
 	private FragmentActivity fa;
@@ -124,12 +125,21 @@ public class ActiveGameFragment extends Fragment {
 					return;
 				}
 
-				if (board.hasPlayersYetToDiscard()) {
+				if (board.hasPlayersYetToAct()) {
 					//show popup if we are the ones that should discard
-					if(board.checkNextPlayerToDiscard().getGooglePlayParticipantId().equals(myParticipantId)){
+					if(board.checkNextPlayerToAct().getGooglePlayParticipantId().equals(myParticipantId)
+							&& board.getPhase() == Board.Phase.CHOOSE_ROBBER_PIRATE){
 						Message discard = new Message();
 						discard.what = DISCARD_MESSAGE;
 						turnHandler.sendMessage(discard);
+					}
+					//show card choose if defended catan
+					Player p = board.checkNextPlayerToAct();
+					if(p.getGooglePlayParticipantId().equals(myParticipantId)
+							&& board.getPhase() == Board.Phase.DEFENDER_OF_CATAN){
+						Message pickCard = new Message();
+						pickCard.what = PICK_PROGRESS_CARD_MESSAGE;
+						turnHandler.sendMessage(pickCard);
 					}
 				} else if (board.getCurrentPlayer().isBot()) {
 					board.runAITurn();
@@ -188,7 +198,7 @@ public class ActiveGameFragment extends Fragment {
 						return;
 					}
 
-					Player toDiscard = board.getPlayerToDiscard();
+					Player toDiscard = board.getPlayerToAct();
 					int cards = toDiscard.getResourceCount();
 					int extra = cards > 7 ? cards / 2 : 0;
 
@@ -213,6 +223,37 @@ public class ActiveGameFragment extends Fragment {
 
 
 					break;
+
+				case PICK_PROGRESS_CARD_MESSAGE:
+					//show popup for pick card
+					Player toPick = board.getPlayerToAct();
+					CharSequence[] items = new CharSequence[3];
+					items[0] = getString(R.string.tradeImprovement);
+					items[1] = getString(R.string.scienceImprovement);
+					items[2] = getString(R.string.politicsImprovement);
+
+					Builder builder = new Builder(getActivity());
+					builder.setTitle(getString(R.string.game_defended_catan));
+					builder.setItems(items, new OnClickListener() {
+						public void onClick(DialogInterface dialog, int item) {
+							Player currentPlayer = board.getPlayerFromParticipantId(myParticipantId);
+							if (item == 0) {
+								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.TRADE));
+							} else if(item == 1){
+								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+							} else if(item == 2){
+								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+							}
+
+							//pass turn
+							board.nextPhase();
+							showState(true);
+						}
+					});
+
+					AlertDialog choseProgressCardDialog = builder.create();
+					choseProgressCardDialog.setCancelable(false);
+					choseProgressCardDialog.show();
 				}
 
 				super.handleMessage(msg);
