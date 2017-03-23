@@ -167,13 +167,22 @@ public class Vertex {
 	}
 
 	/**
-	 * Check if vertex has a community placed here by the given player
+	 * Check if vertex is currently owned by another player
 	 *
-	 * @param player
+	 * @param me
 	 *            the player to check for
-	 * @return true iff there is a community built here by the player
+	 * @return true iff the vertex is either owned another player
 	 */
-	public boolean hasCommunityOf(Player player) {
+	public boolean isOwnedByAnotherPlayer(Player me) {
+		return this.hasVertexUnitPlacedHere() && this.getOwnerPlayer() != me;
+	}
+
+	/**
+	 * Check if vertex has a community placed here
+	 *
+	 * @return true iff there is a community built here by the player here
+	 * */
+	public boolean hasCommunity() {
 		switch(curUnitType) {
 			case SETTLEMENT:
 			case CITY:
@@ -184,10 +193,21 @@ public class Vertex {
 			case WALLED_TRADE_METROPOLIS:
 			case WALLED_SCIENCE_METROPOLIS:
 			case WALLED_POLITICS_METROPOLIS:
-				return (board.getPlayerById(ownerPlayerNumber) == player);
+				return true;
 			default: // e.g. a knight of player
 				return false;
 		}
+	}
+
+	/**
+	 * Check if vertex has a community placed here by the given player
+	 *
+	 * @param player
+	 *            the player to check for
+	 * @return true iff there is a community built here by the player
+	 */
+	public boolean hasCommunityOf(Player player) {
+		return hasCommunity() && (board.getPlayerById(ownerPlayerNumber) == player);
 	}
 
 	/**
@@ -473,7 +493,11 @@ public class Vertex {
 					curEdge.getCurUnitType() != Edge.NONE)
 			{
 				neighborVertex = curEdge.getAdjacent(this);
-				if (neighborVertex == target) { // base case
+				if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
+					// can't pass through vertex owned by another player
+					continue;
+				}
+				if (neighborVertex == target) { // positive base case
 					return true;
 				}
 				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
@@ -521,6 +545,10 @@ public class Vertex {
 					&& curEdge.getCurUnitType() != Edge.NONE)
 			{
 				neighborVertex = curEdge.getAdjacent(this);
+				if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
+					// can't pass through vertex owned by another player
+					continue;
+				}
 				if (neighborVertex == target) { // base case
 					return true;
 				}
@@ -554,9 +582,9 @@ public class Vertex {
 
 		// determine how many resources to distribute
 		if(curUnitType == Vertex.SETTLEMENT){
-			numToGive = 1;
+			numToGive = 100;
 		} else if(curUnitType == Vertex.CITY || curUnitType == Vertex.CITY_WALL){
-			numToGive = 2;
+			numToGive = 200;
 		}
 
 		if (ownerPlayerNumber == -1)
@@ -597,7 +625,7 @@ public class Vertex {
 			if (intersectingEdge != null)
 			{
 				adjVertexId = intersectingEdge.getAdjacent(this).getId();
-				if(board.getVertexById(adjVertexId).hasVertexUnitPlacedHere()) {
+				if(board.getVertexById(adjVertexId).hasCommunity()) {
 					// there is a nearby community and we cannot build here
 					noAdjacentCommunity = false;
 					break;

@@ -301,7 +301,8 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
+		int diceRollNumber = 3;
+//		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){

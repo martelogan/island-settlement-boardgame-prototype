@@ -567,13 +567,13 @@ public class Player {
 							&& terrainType != Hexagon.TerrainType.GOLD_FIELD) {
 						// collect resource for hex adjacent to city
 						resourceType = curHex.getResourceType();
-						addResources(resourceType, 2);
+						addResources(resourceType, 200);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(2) + " " + Resource.toRString(resourceType));
 					} else if(terrainType == Hexagon.TerrainType.GOLD_FIELD){
 						// collect 4 gold coins for gold hex adjacent to city at start
 						resourceType = curHex.getResourceType();
-						addResources(resourceType, 4);
+						addResources(resourceType, 400);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(4) + " " + Resource.toRString(resourceType));
 					}
