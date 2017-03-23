@@ -52,14 +52,16 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
 
-	private static final int MIN_BOT_DELAY = 1000;
+	private static final int MIN_BOT_DELAY = 5000;
 	private static final int DEFAULT_TURN_DELAY = 750;
 
-	private static final int UPDATE_MESSAGE = 1, LOG_MESSAGE = 2, DISCARD_MESSAGE = 3;
+	private static final int UPDATE_MESSAGE = 1, LOG_MESSAGE = 2, DISCARD_MESSAGE = 3,
+			PICK_PROGRESS_CARD_MESSAGE = 4;
 
 	private RelativeLayout rl;
 	private FragmentActivity fa;
@@ -123,12 +125,21 @@ public class ActiveGameFragment extends Fragment {
 					return;
 				}
 
-				if (board.hasPlayersYetToDiscard()) {
+				if (board.hasPlayersYetToAct()) {
 					//show popup if we are the ones that should discard
-					if(board.checkNextPlayerToDiscard().getGooglePlayParticipantId().equals(myParticipantId)){
+					if(board.checkNextPlayerToAct().getGooglePlayParticipantId().equals(myParticipantId)
+							&& board.getPhase() == Board.Phase.CHOOSE_ROBBER_PIRATE){
 						Message discard = new Message();
 						discard.what = DISCARD_MESSAGE;
 						turnHandler.sendMessage(discard);
+					}
+					//show card choose if defended catan
+					Player p = board.checkNextPlayerToAct();
+					if(p.getGooglePlayParticipantId().equals(myParticipantId)
+							&& board.getPhase() == Board.Phase.DEFENDER_OF_CATAN){
+						Message pickCard = new Message();
+						pickCard.what = PICK_PROGRESS_CARD_MESSAGE;
+						turnHandler.sendMessage(pickCard);
 					}
 				} else if (board.getCurrentPlayer().isBot()) {
 					board.runAITurn();
@@ -187,7 +198,7 @@ public class ActiveGameFragment extends Fragment {
 						return;
 					}
 
-					Player toDiscard = board.getPlayerToDiscard();
+					Player toDiscard = board.getPlayerToAct();
 					int cards = toDiscard.getResourceCount();
 					int extra = cards > 7 ? cards / 2 : 0;
 
@@ -212,6 +223,37 @@ public class ActiveGameFragment extends Fragment {
 
 
 					break;
+
+				case PICK_PROGRESS_CARD_MESSAGE:
+					//show popup for pick card
+					Player toPick = board.getPlayerToAct();
+					CharSequence[] items = new CharSequence[3];
+					items[0] = getString(R.string.tradeImprovement);
+					items[1] = getString(R.string.scienceImprovement);
+					items[2] = getString(R.string.politicsImprovement);
+
+					Builder builder = new Builder(getActivity());
+					builder.setTitle(getString(R.string.game_defended_catan));
+					builder.setItems(items, new OnClickListener() {
+						public void onClick(DialogInterface dialog, int item) {
+							Player currentPlayer = board.getPlayerFromParticipantId(myParticipantId);
+							if (item == 0) {
+								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.TRADE));
+							} else if(item == 1){
+								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+							} else if(item == 2){
+								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+							}
+
+							//pass turn
+							board.nextPhase();
+							showState(true);
+						}
+					});
+
+					AlertDialog choseProgressCardDialog = builder.create();
+					choseProgressCardDialog.setCancelable(false);
+					choseProgressCardDialog.show();
 				}
 
 				super.handleMessage(msg);
@@ -313,6 +355,8 @@ public class ActiveGameFragment extends Fragment {
 			case PROMOTE_KNIGHT:
             case CHASE_ROBBER:
             case CHASE_PIRATE:
+			case MOVE_KNIGHT_1:
+			case MOVE_KNIGHT_2:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -382,7 +426,8 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
-                || action == Action.CHASE_PIRATE) {
+                || action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
+				|| action == Action.MOVE_KNIGHT_2) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -429,6 +474,19 @@ public class ActiveGameFragment extends Fragment {
                             showState(false);
                         }
                         break;
+					case MOVE_KNIGHT_1:
+						if (player.removeKnightFrom(vertex)) {
+							renderer.setAction(Action.MOVE_KNIGHT_2);
+							showState(true);
+						}
+						break;
+					case MOVE_KNIGHT_2:
+						if (player.moveKnightTo(vertex)) {
+							board.nextPhase();
+							renderer.setAction(Action.NONE);
+							showState(true);
+						}
+						break;
 				}
 		}
 	}
@@ -535,14 +593,12 @@ public class ActiveGameFragment extends Fragment {
 			}
 		}
 		else if (action == Action.MOVE_SHIP_1) {
-			//TODO: test move ship
 			if (player.removeShipFrom(edge)) {
 				renderer.setAction(Action.MOVE_SHIP_2);
-				showState(false);
+				showState(true);
 			}
 		}
 		else if (action == Action.MOVE_SHIP_2) {
-            //TODO: test move ship
             if (player.moveShipTo(edge)) {
 				board.nextPhase();
                 renderer.setAction(Action.NONE);
@@ -895,6 +951,27 @@ public class ActiveGameFragment extends Fragment {
 //				confirmChasePirateDialog();
 				break;
 
+			case  MOVE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					// ensure that removed knight would have >= 1 target movement
+					if (vertex.canRemoveKnightFromHere(player))
+					{
+						canAct = true;
+						break;
+					}
+				}
+
+				if (!canAct) {
+					cantAct(Action.MOVE_KNIGHT_1);
+					break;
+				}
+
+				renderer.setAction(Action.MOVE_KNIGHT_1);
+				setButtons(Action.MOVE_KNIGHT_1);
+				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_move_knight));
+				break;
+
 			case PURCHASE_CITY_IMPROVEMENT:
                 FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
                 CityImprovementFragment cityImprovementFragment = new CityImprovementFragment();
@@ -967,6 +1044,9 @@ public class ActiveGameFragment extends Fragment {
 
 				if (renderer.getAction() == Action.MOVE_SHIP_2) {
 					board.cancelMovingShipPhase();
+				}
+				else if (renderer.getAction() == Action.MOVE_KNIGHT_2) {
+					board.cancelMovingKnightPhase();
 				}
 
 				//TODO: could this be moved?
@@ -1076,6 +1156,9 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (board.isMovingShipPhase()) {
 			action = Action.MOVE_SHIP_2;
+		}
+		else if (board.isMovingKnightPhase()) {
+			action = Action.MOVE_KNIGHT_2;
 		}
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
@@ -1214,6 +1297,9 @@ public class ActiveGameFragment extends Fragment {
 			}
 			if(player.canChasePirate()) {
 				view.addButton(ButtonType.CHASE_PIRATE);
+			}
+			if(player.canMoveSomeKnight()) {
+				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
 			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
@@ -1801,6 +1887,13 @@ public class ActiveGameFragment extends Fragment {
 
 			case CHASE_PIRATE:
 				message = getString(R.string.game_nowhere_available_chase_pirate);
+				break;
+
+			case MOVE_KNIGHT_1:
+			case MOVE_KNIGHT_2:
+
+				message = getString(R.string.game_nowhere_available_knight_move);
+
 				break;
 
 			default:

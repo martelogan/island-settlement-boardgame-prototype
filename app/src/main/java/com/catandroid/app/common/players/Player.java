@@ -50,6 +50,7 @@ public class Player {
 	protected Vector<Integer> ownedCommunityIds, reachingVertexIds;
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myKnightIds;
+	private int defenderOfCatan = 0;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
@@ -567,13 +568,13 @@ public class Player {
 							&& terrainType != Hexagon.TerrainType.GOLD_FIELD) {
 						// collect resource for hex adjacent to city
 						resourceType = curHex.getResourceType();
-						addResources(resourceType, 2);
+						addResources(resourceType, 200);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(2) + " " + Resource.toRString(resourceType));
 					} else if(terrainType == Hexagon.TerrainType.GOLD_FIELD){
 						// collect 4 gold coins for gold hex adjacent to city at start
 						resourceType = curHex.getResourceType();
-						addResources(resourceType, 4);
+						addResources(resourceType, 400);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(4) + " " + Resource.toRString(resourceType));
 					}
@@ -749,6 +750,60 @@ public class Player {
 
 		// append to the turn log
 		appendAction(R.string.player_chase_pirate);
+
+		return true;
+	}
+
+	/**
+	 * Attempt to move a knight away from this vertex. Returns true on success
+	 *
+	 * @param vertex
+	 *            vertex of knight to move
+	 * @return
+	 */
+	public boolean removeKnightFrom(Vertex vertex) {
+
+		if (vertex == null || !canRemoveKnightFrom(vertex))
+		{
+			return false;
+		}
+
+		Knight toMove = vertex.getPlacedKnight();
+
+		if(!vertex.removeKnightFromHere(this)) {
+			return false;
+		}
+
+		// NOTE: knight will update board to intermediately moving the knight
+
+		//TODO: we will update the longest trade route when knight is actually moved
+
+		return true;
+	}
+
+	/**
+	 * Attempt to move a knight to this vertex. Returns true on success
+	 *
+	 * @param target
+	 *            target
+	 * @return
+	 */
+	public boolean moveKnightTo(Vertex target) {
+
+		if (target == null || !canMoveKnightTo(target))
+		{
+			return false;
+		}
+
+		Knight toMove = board.getCurrentlyMovingKnight();
+
+		if(toMove == null || !target.moveKnightToHere(this, toMove)) {
+			return false;
+		}
+
+		board.updateLongestTradeRoute();
+
+		// NOTE: calling method must update the board phase on success
 
 		return true;
 	}
@@ -976,6 +1031,57 @@ public class Player {
 	 */
 	public boolean canChasePirateFrom(Vertex vertex) {
 		return vertex.canChasePirateFromHere(this);
+	}
+
+	/**
+	 * Can you move at least one of your knights?
+	 *
+	 * @return
+	 */
+	public boolean canMoveSomeKnight() {
+		boolean canMove = false;
+		Knight curKnight;
+		Vertex curKnightVertexLocation;
+		for (int i = 0; i < myKnightIds.size(); i++) {
+			curKnight = getKnightAddedAtIndex(i);
+			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
+			if(curKnight.canMakeMove() && curKnightVertexLocation.canRemoveKnightFromHere(this)) {
+				canMove = true;
+				break;
+			}
+		}
+		return canMove;
+	}
+
+	/**
+	 * Can you move the player's knight away from this vertex?
+	 * @param vertex
+	 *            vertex from which to remove a knight
+	 * @return
+	 */
+	public boolean canRemoveKnightFrom(Vertex vertex) {
+		return vertex.canRemoveKnightFromHere(this);
+	}
+
+	/**
+	 * Can you place the currently moving knight at this vertex?
+	 *
+	 * @param vertex
+	 * @return
+	 */
+	public boolean canMoveKnightTo(Vertex vertex) {
+		if (vertex == null)
+		{
+			return false;
+		}
+
+		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+
+		if(!isMyKnight(currentlyMovingKnight)) {
+			return false;
+		}
+
+		return vertex.canMoveKnightToHere(this, currentlyMovingKnight);
 	}
 
 	/**
@@ -1393,6 +1499,7 @@ public class Player {
 		if(board.getMetropolisOwners()[2] == getPlayerNumber()){
 			points += 2;
 		}
+		points += defenderOfCatan;
 
 		return points;
 	}
@@ -1444,6 +1551,44 @@ public class Player {
 	 */
 	public Knight getKnightAddedAtIndex(int knightOrdinalIndex) {
 		return board.getKnightById(myKnightIds.get(knightOrdinalIndex));
+	}
+
+	/**
+	 * Does this knight belong to the player?
+	 * @param toCheck
+	 * 			knight for which to check ownership
+	 * @return true iff the toCheck belongs to this player
+	 */
+	public boolean isMyKnight(Knight toCheck) {
+		if (toCheck.getOwnerPlayer() != this) {
+			return false;
+		} else {
+			Knight curKnight;
+			for (int i = 0; i < myKnightIds.size(); i++) {
+				curKnight = getKnightAddedAtIndex(i);
+				if (curKnight == toCheck) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	 /* Pillage one city to a settlement
+	 * @return the player's nth hired knight
+	 */
+	public void pillageCity() {
+		board.pillageCity(playerNumber);
+		numOwnedCities--;
+		numOwnedSettlements++;
+	}
+
+	/**
+	 * Increment defender of catan
+	 * @return void
+	 */
+	public void wonDefenderOfCatan(){
+		defenderOfCatan++;
 	}
 
 //TODO: see how we can use this similar code for progress cards
@@ -2032,6 +2177,11 @@ public class Player {
 	 */
 	public Vector<ProgressCardType> getHand(){
 		return hand;
+	}
+
+
+	public int getDefenderOfCatan() {
+		return defenderOfCatan;
 	}
 
 	/**

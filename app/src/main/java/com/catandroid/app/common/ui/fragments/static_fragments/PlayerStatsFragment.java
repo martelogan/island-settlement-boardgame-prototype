@@ -113,6 +113,8 @@ public class PlayerStatsFragment extends Fragment {
 				message += "Politics Metropolis (2 points): 1/1\n";
 			}
 
+			message += "\nDefender Of Catan: " + player.getDefenderOfCatan();
+
 			message += "\n";
 
 			message += getString(R.string.status_best_road_length) + ": "

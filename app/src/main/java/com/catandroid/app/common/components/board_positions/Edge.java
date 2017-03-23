@@ -137,12 +137,13 @@ public class Edge {
 		}
 
 		// check for edgeUnits between each vertex
+		Vertex curVertex = null;
 		for (int i = 0; i < 2; i++) {
 			// the player has an edgeUnit to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).connectedToEdgeUnitOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
-					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
+			curVertex = board.getVertexById(vertexIds[i]);
+			if (curVertex.hasCommunityOf(player) || (curVertex.isConnectedToEdgeUnitOwnedBy(player)
+					&& !(curVertex.isOwnedByAnotherPlayer(player)))) {
 				return true;
 			}
 		}
@@ -161,14 +162,14 @@ public class Edge {
 		if (ownerPlayerNumber != -1 || this.isAvailableForShip() && !this.isBorderingSea()) {
 			return false;
 		}
-
+		Vertex curVertex = null;
 		// check for edgeUnits between each vertex
 		for (int i = 0; i < 2; i++) {
 			// the player has a road to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).connectedToRoadOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
-					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
+			curVertex = board.getVertexById(vertexIds[i]);
+			if (curVertex.hasCommunityOf(player) || (curVertex.isConnectedToRoadOwnedBy(player)
+					&& !(curVertex.isOwnedByAnotherPlayer(player)))) {
 				return true;
 			}
 		}
@@ -188,13 +189,14 @@ public class Edge {
 			return false;
 		}
 
+		Vertex curVertex = null;
 		// check for ships between each vertex
 		for (int i = 0; i < 2; i++) {
 			// the player has a ship to an unoccupied vertex
 			// or the player has an adjacent building
-			if (board.getVertexById(vertexIds[i]).connectedToShipOwnedBy(player) &&
-					!board.getVertexById(vertexIds[i]).hasVertexUnitPlacedHere()
-					|| board.getVertexById(vertexIds[i]).hasVertexUnitPlacedBy(player)) {
+			curVertex = board.getVertexById(vertexIds[i]);
+			if (curVertex.hasCommunityOf(player) || (curVertex.isConnectedToShipOwnedBy(player)
+					&& !(curVertex.isOwnedByAnotherPlayer(player)))) {
 				return true;
 			}
 		}
@@ -287,8 +289,8 @@ public class Edge {
 
 		// return true iff at least one end of edge is not connected to piece owned by player
 		Vertex v0 = getV0Clockwise(), v1 = getV1Clockwise();
-		return !(v0.getOwnerPlayer() == player || v0.connectedToShipOwnedBy(player, this))
-				|| !(v1.getOwnerPlayer() == player || v1.connectedToShipOwnedBy(player, this));
+		return !(v0.getOwnerPlayer() == player || v0.isConnectedToShipOwnedBy(player, this))
+				|| !(v1.getOwnerPlayer() == player || v1.isConnectedToShipOwnedBy(player, this));
 	}
 
 	public boolean canMoveShipToHere(Player player) {
@@ -317,7 +319,6 @@ public class Edge {
 		}
 
 		// move ship to this edge
-		//TODO: turn thing is dangerous
 		ownerPlayerNumber = player.getPlayerNumber();
 		curUnitType = SHIP;
 		return true;
