@@ -151,6 +151,25 @@ public class Knight extends OwnableUnit {
         return getCurrentVertexLocation().canChasePirateFromHere(getOwnerPlayer());
     }
 
+    public boolean canStartMoving() {
+        if (!canMakeMove() || hasMovedThisTurn()) {
+            return false;
+        }
+        return true;
+    }
+
+
+    public boolean canMoveTo(Vertex target) {
+        if (target.getCurUnitType() != Vertex.NONE || !canMakeMove() || hasMovedThisTurn()) {
+            return false;
+        }
+
+        //TODO: implement
+        Vertex myStartLocation = board.getStartLocationOfMovingKnight();
+        return target.canPlaceKnightHere(getOwnerPlayer())
+                && myStartLocation.hasTradeRouteTo(target, getOwnerPlayer());
+    }
+
     public boolean promote() {
         if (!canPromote()) {
             return false;
@@ -186,6 +205,17 @@ public class Knight extends OwnableUnit {
         board.setReturnPhase(board.getPhase());
         board.startPiratePhase();
         deactivate();
+        return true;
+    }
+
+    public boolean startMoving() {
+        if(!canStartMoving()) {
+            return false;
+        }
+        board.startMovingKnightPhase(this);
+        // WARNING: only remove vertex location after caching to board
+        curVertexLocationId = -1;
+        //NOTE: deactivation and other state change will follow successful movement
         return true;
     }
 

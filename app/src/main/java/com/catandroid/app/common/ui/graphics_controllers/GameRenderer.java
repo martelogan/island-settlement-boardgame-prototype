@@ -21,7 +21,8 @@ public class GameRenderer implements Renderer {
 	public enum Action {
 		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT, BUILD_ROAD,
 		BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER, CHASE_PIRATE,
-		MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
+		MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE,
+		MOVE_ROBBER, MOVE_PIRATE
 	}
 
 	private TextureManager texture;
@@ -250,6 +251,16 @@ public class GameRenderer implements Renderer {
 				else if (action == Action.CHASE_PIRATE && player.canChasePirateFrom(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+				}
+				else if(action == Action.MOVE_KNIGHT_1 && player.canRemoveKnightFrom(vertex)) {
+					Knight toHighlight = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+				}
+				else if(action == Action.MOVE_KNIGHT_2 && player.canMoveKnightTo(vertex)) {
+					Knight toHighlight = board.getCurrentlyMovingKnight();
+					if (toHighlight.canMoveTo(vertex)) {
+						selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+					}
 				}
 				if (selectableKnight != null || vertex.getCurUnitType() == Vertex.KNIGHT)
 				{
