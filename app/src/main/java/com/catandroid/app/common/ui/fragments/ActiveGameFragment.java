@@ -628,6 +628,38 @@ public class ActiveGameFragment extends Fragment {
 				fragmentTransaction.commit();
 				break;
 
+			case VIEW_BARBARIANS:
+				AlertDialog.Builder alertadd = new AlertDialog.Builder(getActivity());
+				LayoutInflater factory = LayoutInflater.from(getActivity());
+				final View view = factory.inflate(R.layout.barbarian_map, null);
+				switch(board.getBarbarianPosition()){
+					case 0:
+						view.findViewById(R.id.barbarian0).setVisibility(View.VISIBLE);
+						break;
+					case 1:
+						view.findViewById(R.id.barbarian1).setVisibility(View.VISIBLE);
+						break;
+					case 2:
+						view.findViewById(R.id.barbarian2).setVisibility(View.VISIBLE);
+						break;
+					case 3:
+						view.findViewById(R.id.barbarian3).setVisibility(View.VISIBLE);
+						break;
+					case 4:
+						view.findViewById(R.id.barbarian4).setVisibility(View.VISIBLE);
+						break;
+					case 5:
+						view.findViewById(R.id.barbarian5).setVisibility(View.VISIBLE);
+						break;
+					case 6:
+						view.findViewById(R.id.barbarian6).setVisibility(View.VISIBLE);
+						break;
+				}
+				alertadd.setView(view);
+
+				alertadd.show();
+				break;
+
 			case DICE_ROLL:
 
 				// enter build phase
@@ -684,12 +716,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case  BUILD_ROAD:
-				for (Edge edge : board.getEdges()) {
-					if (edge.canBuildRoad(player))
-					{
-						canAct = true;
-					}
-				}
+				canAct = player.canBuildSomeRoad();
 
 				if (!canAct) {
 					cantAct(Action.BUILD_ROAD);
@@ -709,12 +736,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case  BUILD_SHIP:
-				for (Edge edge : board.getEdges()) {
-					if (edge.canBuildShip(player))
-					{
-						canAct = true;
-					}
-				}
+				canAct = player.canBuildSomeShip();
 
 				if (!canAct) {
 					cantAct(Action.BUILD_SHIP);
@@ -735,20 +757,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case  MOVE_SHIP:
-				boolean hasEdgeToRemove = false, hasSomewhereToMove = false;
-				for (Edge edge : board.getEdges()) {
-					if (edge.canRemoveShipFromHere(player))
-					{
-						hasEdgeToRemove = true;
-					}
-					if (edge.canMoveShipToHere(player)) {
-						hasSomewhereToMove = true;
-					}
-					if (hasEdgeToRemove && hasSomewhereToMove) {
-						canAct = true;
-						break;
-					}
-				}
+				canAct = player.canMoveSomeShip();
 
 				if (!canAct) {
 					cantAct(Action.MOVE_SHIP_1);
@@ -762,10 +771,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case BUILD_SETTLEMENT:
-				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canBuild(player, Vertex.SETTLEMENT, false))
-						canAct = true;
-				}
+				canAct = player.canBuildSomeSettlement();
 
 				if (!canAct) {
 					cantAct(Action.BUILD_SETTLEMENT);
@@ -785,10 +791,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case BUILD_CITY:
-				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canBuild(player, Vertex.CITY, false))
-						canAct = true;
-				}
+				canAct = player.canBuildSomeCity();
 
 				if (!canAct) {
 					cantAct(Action.BUILD_CITY);
@@ -813,12 +816,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case BUILD_CITY_WALL:
-				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canBuild(player, Vertex.CITY_WALL, false))
-					{
-						canAct = true;
-					}
-				}
+				canAct = player.canBuildSomeCityWall();
 
 				if (!canAct) {
 					cantAct(Action.BUILD_CITY_WALL);
@@ -838,11 +836,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case HIRE_KNIGHT:
-				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canPlaceKnightHere(player)) {
-						canAct = true;
-					}
-				}
+				canAct = player.canHireSomeKnight();
 
 				if (!canAct) {
 					cantAct(Action.HIRE_KNIGHT);
@@ -863,11 +857,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case ACTIVATE_KNIGHT:
-				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canActivateKnightHere(player)) {
-						canAct = true;
-					}
-				}
+				canAct = player.canActivateSomeKnight();
 
 				if (!canAct) {
 					cantAct(Action.ACTIVATE_KNIGHT);
@@ -881,11 +871,7 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case PROMOTE_KNIGHT:
-				for (Vertex vertex : board.getVertices()) {
-					if (vertex.canPromoteKnightHere(player)) {
-						canAct = true;
-					}
-				}
+				canAct = player.canPromoteSomeKnight();
 
 				if (!canAct) {
 					cantAct(Action.PROMOTE_KNIGHT);
@@ -999,37 +985,6 @@ public class ActiveGameFragment extends Fragment {
 
 				showState(false);
 
-				break;
-			case VIEW_BARBARIANS:
-				AlertDialog.Builder alertadd = new AlertDialog.Builder(getActivity());
-				LayoutInflater factory = LayoutInflater.from(getActivity());
-				final View view = factory.inflate(R.layout.barbarian_map, null);
-				switch(board.getBarbarianPosition()){
-					case 0:
-						view.findViewById(R.id.barbarian0).setVisibility(View.VISIBLE);
-						break;
-					case 1:
-						view.findViewById(R.id.barbarian1).setVisibility(View.VISIBLE);
-						break;
-					case 2:
-						view.findViewById(R.id.barbarian2).setVisibility(View.VISIBLE);
-						break;
-					case 3:
-						view.findViewById(R.id.barbarian3).setVisibility(View.VISIBLE);
-						break;
-					case 4:
-						view.findViewById(R.id.barbarian4).setVisibility(View.VISIBLE);
-						break;
-					case 5:
-						view.findViewById(R.id.barbarian5).setVisibility(View.VISIBLE);
-						break;
-					case 6:
-						view.findViewById(R.id.barbarian6).setVisibility(View.VISIBLE);
-						break;
-				}
-				alertadd.setView(view);
-
-				alertadd.show();
 				break;
 
 			case END_TURN:
@@ -1256,40 +1211,40 @@ public class ActiveGameFragment extends Fragment {
                 view.addButton(UIButton.ButtonType.PLAY_PROGRESS_CARD);
             }
 
-			if (player.canAffordToBuildRoad())
+			if (player.canBuildSomeRoad())
             {
                 view.addButton(UIButton.ButtonType.BUILD_ROAD);
             }
 
-            if (player.canAffordToBuildShip())
+            if (player.canBuildSomeShip())
             {
 				view.addButton(UIButton.ButtonType.BUILD_SHIP);
 			}
 
-			if(!player.movedShipThisTurn()) {
+			if(player.canMoveSomeShip()) {
 				view.addButton(UIButton.ButtonType.MOVE_SHIP);
 			}
 
-			if (player.canAffordToBuildSettlement())
+			if (player.canBuildSomeSettlement())
             {
                 view.addButton(UIButton.ButtonType.BUILD_SETTLEMENT);
             }
 
-			if (player.canAffordToBuildCity())
+			if (player.canBuildSomeCity())
             {
                 view.addButton(UIButton.ButtonType.BUILD_CITY);
             }
-            if (player.canAffordToBuildCityWall())
+            if (player.canBuildSomeCityWall())
             {
 				view.addButton(ButtonType.BUILD_CITY_WALL);
 			}
-			if(player.canAffordToHireKnight()) {
+			if(player.canHireSomeKnight()) {
 				view.addButton(ButtonType.HIRE_KNIGHT);
 			}
-			if(player.canAffordToActivateKnight()) {
+			if(player.canActivateSomeKnight()) {
 				view.addButton(ButtonType.ACTIVATE_KNIGHT);
 			}
-			if(player.canAffordToPromoteKnight()) {
+			if(player.canPromoteSomeKnight()) {
 				view.addButton(ButtonType.PROMOTE_KNIGHT);
 			}
 			if(player.canChaseRobber()) {

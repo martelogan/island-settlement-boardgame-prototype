@@ -903,6 +903,129 @@ public class Player {
 	}
 
 	/**
+	 * Can you build some road?
+	 *
+	 * @return
+	 */
+	public boolean canBuildSomeRoad() {
+		if(!canAffordToBuildRoad()) {
+			return false;
+		}
+		boolean canBuild = false;
+		for (Edge edge : board.getEdges()) {
+			if (edge.canBuildRoad(this))
+			{
+				canBuild = true;
+				break;
+			}
+		}
+		return canBuild;
+	}
+
+	/**
+	 * Can you build some ship?
+	 *
+	 * @return
+	 */
+	public boolean canBuildSomeShip() {
+		if(!canAffordToBuildShip()) {
+			return false;
+		}
+		boolean canBuild = false;
+		for (Edge edge : board.getEdges()) {
+			if (edge.canBuildShip(this))
+			{
+				canBuild = true;
+				break;
+			}
+		}
+		return canBuild;
+	}
+
+	/**
+	 * Can you move at least one of your ships?
+	 *
+	 * @return
+	 */
+	public boolean canMoveSomeShip() {
+		if(movedShipThisTurn()) { // already moved a ship
+			return false;
+		}
+		boolean canMove = false, hasEdgeToRemove = false, hasSomewhereToMove = false;
+		for (Edge edge : board.getEdges()) {
+			if (edge.canRemoveShipFromHere(this))
+			{
+				hasEdgeToRemove = true;
+			}
+			if (edge.canMoveShipToHere(this)) {
+				hasSomewhereToMove = true;
+			}
+			if (hasEdgeToRemove && hasSomewhereToMove) {
+				canMove = true;
+				break;
+			}
+		}
+		return canMove;
+	}
+
+	/**
+	 * Can you build a city at some vertex?
+	 *
+	 * @return
+	 */
+	public boolean canBuildSomeSettlement() {
+		if(!canAffordToBuildSettlement()) {
+			return false;
+		}
+		boolean canBuild = false;
+		for (Vertex vertex : board.getVertices()) {
+			if (canBuildVertexUnit(vertex, Vertex.SETTLEMENT)) {
+				canBuild = true;
+				break;
+			}
+		}
+		return canBuild;
+	}
+
+	/**
+	 * Can you build a city at some vertex?
+	 *
+	 * @return
+	 */
+	public boolean canBuildSomeCity() {
+		if(!canAffordToBuildCity()) {
+			return false;
+		}
+		boolean canBuild = false;
+		for (Vertex vertex : board.getVertices()) {
+			if (canBuildVertexUnit(vertex, Vertex.CITY)) {
+				canBuild = true;
+				break;
+			}
+		}
+		return canBuild;
+	}
+
+	/**
+	 * Can you build a city wall at some vertex?
+	 *
+	 * @return
+	 */
+	public boolean canBuildSomeCityWall() {
+		if(!canAffordToBuildCityWall()) {
+			return false;
+		}
+		boolean canBuild = false;
+		for (Vertex vertex : board.getVertices()) {
+			if (canBuildVertexUnit(vertex, Vertex.CITY_WALL)) {
+				canBuild = true;
+				break;
+			}
+		}
+		return canBuild;
+	}
+
+	/**
 	 * Can you build on this vertex?
 	 *
 	 * @param vertex
@@ -929,6 +1052,27 @@ public class Player {
 	}
 
 	/**
+	 * Can you hire a knight to some vertex?
+	 *
+	 * @return
+	 */
+	public boolean canHireSomeKnight() {
+		if(!canAffordToHireKnight() || numOwnedBasicKnights >= MAX_BASIC_KNIGHTS
+				|| numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS) {
+			return false;
+		}
+		boolean canHire = false;
+		for (Vertex vertex : board.getVertices()) {
+			if (canHireKnightTo(vertex)) {
+				canHire = true;
+				break;
+			}
+		}
+		return canHire;
+	}
+
+
+	/**
 	 * Can you hire knight to this vertex?
 	 *
 	 * @param vertex
@@ -936,13 +1080,32 @@ public class Player {
 	 * @return
 	 */
 	public boolean canHireKnightTo(Vertex vertex) {
-		if (numOwnedBasicKnights >= MAX_BASIC_KNIGHTS
+		if (!canAffordToHireKnight() || numOwnedBasicKnights >= MAX_BASIC_KNIGHTS
 				|| numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS)
 		{
 			return false;
 		}
 
 		return vertex.canPlaceKnightHere(this);
+	}
+
+	/**
+	 * Can you activate at least one of your knights?
+	 *
+	 * @return
+	 */
+	public boolean canActivateSomeKnight() {
+		if(!canAffordToActivateKnight()) {
+			return false;
+		}
+		boolean canActivate = false;
+		for (Vertex vertex : board.getVertices()) {
+			if (canActivateKnightAt(vertex)) {
+				canActivate = true;
+				break;
+			}
+		}
+		return canActivate;
 	}
 
 	/**
@@ -953,7 +1116,29 @@ public class Player {
 	 * @return
 	 */
 	public boolean canActivateKnightAt(Vertex vertex) {
+		if(!canAffordToActivateKnight()) {
+			return false;
+		}
 		return vertex.canActivateKnightHere(this);
+	}
+
+	/**
+	 * Can you promote at least one of your knights?
+	 *
+	 * @return
+	 */
+	public boolean canPromoteSomeKnight() {
+		if(!canAffordToPromoteKnight() || numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS) {
+			return false;
+		}
+		boolean canPromote = false;
+		for (Vertex vertex : board.getVertices()) {
+			if (canPromoteKnightAt(vertex)) {
+				canPromote = true;
+				break;
+			}
+		}
+		return canPromote;
 	}
 
 	/**
@@ -964,7 +1149,7 @@ public class Player {
 	 * @return
 	 */
 	public boolean canPromoteKnightAt(Vertex vertex) {
-		if (numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS)
+		if (!canAffordToPromoteKnight() || numTotalOwnedKnights >= MAX_TOTAL_KNIGHTS)
 		{
 			return false;
 		}
@@ -1106,7 +1291,7 @@ public class Player {
 	 * @return
 	 */
 	public boolean canMoveShipTo(Edge edge) {
-		if (edge == null || shipWasMovedThisTurn)
+		if (edge == null || edge == board.getCurrentlyMovingShip() || shipWasMovedThisTurn)
 		{
 			return false;
 		}
@@ -1541,6 +1726,16 @@ public class Player {
 	public int getPoliticsLevel() {
 		return cityImprovementLevels[CityImprovement.toCityImprovementIndex(
 				CityImprovement.CityImprovementType.POLITICS)];
+	}
+
+	/**
+	 * Return player's nth constructed ship
+	 * @param shipOrdinalIndex
+	 * 			ordinal index of ship built by the player
+	 * @return the player's nth constructed ship
+	 */
+	public Edge getShipAddedAtIndex(int shipOrdinalIndex) {
+		return board.getEdgeById(shipIds.get(shipOrdinalIndex));
 	}
 
 	/**

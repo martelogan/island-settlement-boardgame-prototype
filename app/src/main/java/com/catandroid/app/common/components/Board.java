@@ -268,6 +268,19 @@ public class Board {
 	}
 
 	/**
+	 * Get a reference to the currently moving ship
+	 *
+	 * @return the currently moving ship (or null)
+	 */
+	public Edge getCurrentlyMovingShip() {
+		if (phase != Phase.MOVING_SHIP) {
+			return null;
+		}
+
+		return getEdgeById(tempEdgeIdMemory);
+	}
+
+	/**
 	 * Get a reference to the currently moving knight
 	 *
 	 * @return the currently moving knight (or null)

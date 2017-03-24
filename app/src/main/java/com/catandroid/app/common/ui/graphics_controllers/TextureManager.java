@@ -35,10 +35,10 @@ public class TextureManager {
     */
 	private enum TextureType {
 		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, CITY_WALL, 
+		HARBOR, RESOURCE, NUMBER_TOKEN, SHIP, ROAD, SETTLEMENT, CITY, CITY_WALL,
 		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
 		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
-		SHIP, BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
+		BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
         BASIC_KNIGHT_ACTIVE, STRONG_KNIGHT_ACTIVE, MIGHTY_KNIGHT_ACTIVE, BUTTON_BG, BUTTON
 	}
 
@@ -449,6 +449,30 @@ public class TextureManager {
         {
             textureType = TextureType.CITY_WALL;
         }
+        else if (vertex.getCurUnitType() == Vertex.TRADE_METROPOLIS)
+        {
+            textureType = TextureType.TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.POLITICS_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_POLITICS_METROPOLIS;
+        }
 
         Player.Color color;
         Player owner = vertex.getOwnerPlayer();
@@ -511,30 +535,6 @@ public class TextureManager {
         {
             textureType = getKnightTextureType(vertex.getPlacedKnight());
         }
-        else if (vertex.getCurUnitType() == Vertex.TRADE_METROPOLIS)
-        {
-            textureType = TextureType.TRADE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.SCIENCE_METROPOLIS)
-        {
-            textureType = TextureType.SCIENCE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.POLITICS_METROPOLIS)
-        {
-            textureType = TextureType.POLITICS_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS)
-        {
-            textureType = TextureType.WALLED_TRADE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS)
-        {
-            textureType = TextureType.WALLED_SCIENCE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS)
-        {
-            textureType = TextureType.WALLED_POLITICS_METROPOLIS;
-        }
 
         Player.Color color;
         Player owner = vertex.getOwnerPlayer();
@@ -562,10 +562,9 @@ public class TextureManager {
         }
     }
 
-
-    //TODO: fix this to differentiate between roads and ships
     private void renderEdge(Edge edge, GL10 gl, BoardGeometry boardGeometry, TextureType texture, float dx, float dy) {
-        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()), texture.ordinal());
+        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()),
+                TextureType.ROAD.ordinal());
         gl.glRotatef((float) (180 / Math.PI * Math.atan(dy / dx)), 0, 0, 1);
 
         square.get(hash(texture, 0)).render(gl);
@@ -598,50 +597,42 @@ public class TextureManager {
 
         gl.glPushMatrix();
 
-        // OLD METHOD (everything looks like a road)
-        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()), TextureType.ROAD.ordinal());
-        gl.glRotatef((float) (180 / Math.PI * Math.atan(dy / dx)), 0, 0, 1);
-
-        square.get(hash(TextureType.ROAD, 0)).render(gl);
-
-// FIXME: below attempt at rendering ships vs. roads caused strange OpenGL issues (noted below)
-// NEW ATTEMPT AT EDGE RENDERING
-//        int curEdgeUnitType = edge.getCurUnitType();
-//        if (curEdgeUnitType != Edge.NONE) { // has a type already
-//            switch(curEdgeUnitType) {
-//                case Edge.ROAD:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
-//                    break;
-//                case Edge.SHIP:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                    break;
-//            }
-//        }
-//        else { // render based on requested type (ie. during piece selection)
-//            switch(edgeUnitType) {
-//                case Edge.NONE: // ambiguous
-//                    if (edge.isAvailableForShip()) {
-//                        if(edge.isBorderingSea()) { // choice of road or ship
-//                            // just render it as a ship for now
-//                            //FIXME: strange OpenGL issues when road and ship rendered in same execution
-//                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                        }
-//                        else { // can only build a ship here
-//                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                        }
-//                    }
-//                    else { // can only build a road here
-//                        renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
-//                    }
-//                    break;
-//                case Edge.ROAD:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
-//                    break;
-//                case Edge.SHIP:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                    break;
-//            }
-//        }
+        // NEW ATTEMPT AT EDGE RENDERING
+        int curEdgeUnitType = edge.getCurUnitType();
+        if (curEdgeUnitType != Edge.NONE) { // has a type already
+            switch(curEdgeUnitType) {
+                case Edge.ROAD:
+                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                    break;
+                case Edge.SHIP:
+                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+                    break;
+            }
+        }
+        else { // render based on requested type (ie. during piece selection)
+            switch(edgeUnitType) {
+                case Edge.NONE: // ambiguous
+                    if (edge.isAvailableForShip()) {
+                        if(edge.isBorderingSea()) { // choice of road or ship
+                            // just render it as a road for now
+                            renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                        }
+                        else { // can only build a ship here
+                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+                        }
+                    }
+                    else { // can only build a road here
+                        renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                    }
+                    break;
+                case Edge.ROAD:
+                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                    break;
+                case Edge.SHIP:
+                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+                    break;
+            }
+        }
 
         gl.glPopMatrix();
 
@@ -709,6 +700,9 @@ public class TextureManager {
         if(textureType == TextureType.BUTTON || textureType == TextureType.BUTTON_BG) {
             // buttons should always be rendered at the topmost layer
             textureDepth = TextureType.CITY.ordinal() + 1;
+        }
+        else if(textureType == TextureType.SHIP || textureType == TextureType.ROAD) {
+            textureDepth = TextureType.ROAD.ordinal();
         }
         else if (textureType.ordinal() > TextureType.CITY.ordinal()) {
             // render most textures at the depth of a city
