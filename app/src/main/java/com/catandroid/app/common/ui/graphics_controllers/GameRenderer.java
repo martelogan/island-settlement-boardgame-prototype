@@ -28,7 +28,7 @@ public class GameRenderer implements Renderer {
 	private TextureManager texture;
 	private Board board;
 	private Player player;
-	private int lastRoll;
+	private int lastDiceRollSum;
 	private Action action;
 
 	private int width, height;
@@ -64,7 +64,7 @@ public class GameRenderer implements Renderer {
 		this.texture = texture;
 		this.board = board;
 		this.player = player;
-		this.lastRoll = lastRoll;
+		this.lastDiceRollSum = lastRoll;
 	}
 
 	public void setSize(DisplayMetrics screen, int width, int height) {
@@ -170,7 +170,7 @@ public class GameRenderer implements Renderer {
 			}
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
-				texture.drawActiveHex(board.getHexagonById(i), gl, boardGeometry, lastRoll);
+				texture.drawActiveHex(board.getHexagonById(i), gl, boardGeometry, lastDiceRollSum);
 			}
 			for (int i = 0; i < HEX_COUNT; i++)
 			{

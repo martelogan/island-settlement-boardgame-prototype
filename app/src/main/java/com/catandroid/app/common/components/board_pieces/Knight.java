@@ -164,7 +164,6 @@ public class Knight extends OwnableUnit {
             return false;
         }
 
-        //TODO: implement
         Vertex myStartLocation = board.getStartLocationOfMovingKnight();
         return target.canPlaceKnightHere(getOwnerPlayer())
                 && myStartLocation.hasTradeRouteTo(target, getOwnerPlayer());

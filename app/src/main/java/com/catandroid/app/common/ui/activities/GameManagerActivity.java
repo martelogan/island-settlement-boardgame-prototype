@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -50,7 +51,10 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.example.games.basegameutils.BaseGameUtils;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class GameManagerActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -353,7 +357,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		populate();
 
 		//SET THE NUMBER OF VICTORY POINTS
-		Spinner pointSpinner = (Spinner) findViewById(R.id.option_max_points);
+		final Spinner pointSpinner = (Spinner) findViewById(R.id.option_max_points);
 		ArrayAdapter<CharSequence> pointChoices = new ArrayAdapter<CharSequence>(
 				this, android.R.layout.simple_spinner_item);
 		pointChoices
@@ -382,7 +386,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		pointSpinner.setSelection(5);
 
 		//SET THE NUMBER OF PLAYERS
-		Spinner playerSpinner = (Spinner) findViewById(R.id.option_num_players);
+		final Spinner playerSpinner = (Spinner) findViewById(R.id.option_num_players);
 		ArrayAdapter<CharSequence> playerChoices = new ArrayAdapter<CharSequence>(
 				this, android.R.layout.simple_spinner_item);
 		playerChoices
@@ -395,7 +399,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		playerSpinner.setSelection(0);
 
 		//SET THE BOARD SIZE
-		Spinner boardSizeSpinner = (Spinner) findViewById(R.id.option_board_size);
+		final Spinner boardSizeSpinner = (Spinner) findViewById(R.id.option_board_size);
 		ArrayAdapter<CharSequence> boardSizeChoice = new ArrayAdapter<CharSequence>(
 				this, android.R.layout.simple_spinner_item);
 		boardSizeChoice
@@ -424,6 +428,28 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 
 		predefinedBoardSpinner.setAdapter(predefinedBoardChoice);
 		predefinedBoardSpinner.setSelection(0);
+
+		predefinedBoardSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+			{
+				if(position != 0){
+					boardSizeSpinner.setVisibility(View.GONE);
+					pointSpinner.setVisibility(View.GONE);
+					playerSpinner.setVisibility(View.GONE);
+					findViewById(R.id.auto_discard).setVisibility(View.GONE);
+
+				} else{
+					boardSizeSpinner.setVisibility(View.VISIBLE);
+					pointSpinner.setVisibility(View.VISIBLE);
+					playerSpinner.setVisibility(View.VISIBLE);
+					findViewById(R.id.auto_discard).setVisibility(View.VISIBLE);
+				}
+			}
+			public void onNothingSelected(AdapterView<?> parent)
+			{
+
+			}
+		});
 
 		final Button start = (Button) findViewById(R.id.start);
 		start.setOnClickListener(new OnClickListener() {
@@ -715,6 +741,8 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 		//@TODO ADD THE PRECREATED BOARD STATE
 		//set the board as new one or predefined based on choice
 		Board board;
+		String boardState;
+		Gson gson = new GsonBuilder().create();
 		switch(predefinedBoardSelected){
 			case 0:
 				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
@@ -722,38 +750,41 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				break;
 			case 1:
 				//Year of Plenty
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
+				boardState = loadJSONFromAsset("year_of_plenty.json");
+				board = gson.fromJson(boardState, Board.class);
+				board.reinitBoardOnDependents();
+				board.reinitPlayers(names, gameParticipantIds);
+				board.setActiveGameFragment(activeGameFragment);
 				break;
 			case 2:
 				//Progress Card Abundance
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
+				boardState = loadJSONFromAsset("progress_card_abundance.json");
+				board = gson.fromJson(boardState, Board.class);
+				board.reinitBoardOnDependents();
 				break;
 			case 3:
-				//Progress Card Abundance
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
+				//Metropolis Land
+				boardState = loadJSONFromAsset("metropolis_land.json");
+				board = gson.fromJson(boardState, Board.class);
+				board.reinitBoardOnDependents();
 				break;
 			case 4:
-				//Metropolis Land
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
+				//Protected by Knights
+				boardState = loadJSONFromAsset("protected_by_knights.json");
+				board = gson.fromJson(boardState, Board.class);
+				board.reinitBoardOnDependents();
 				break;
 			case 5:
-				//Protected by Knights
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
+				//Imminent Barbarian Attack!!
+				boardState = loadJSONFromAsset("imminent_barbarian_attack.json");
+				board = gson.fromJson(boardState, Board.class);
+				board.reinitBoardOnDependents();
 				break;
 			case 6:
-				//Imminent Barbarian Attack!!
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
-				break;
-			case 7:
 				//Winner is close!
-				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
-						autoDiscard, activeGameFragment);
+				boardState = loadJSONFromAsset("winner_is_close.json");
+				board = gson.fromJson(boardState, Board.class);
+				board.reinitBoardOnDependents();
 				break;
 			default:
 				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
@@ -763,7 +794,6 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 
 		activeGameFragment.setBoard(board);
 
-		Gson gson = new Gson();
 		String serializedBoard = gson.toJson(board);
 
 		catandroidTurn.currentBoard = board;
@@ -1059,5 +1089,21 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				setViewVisibility();
 				break;
 		}
+	}
+
+	public String loadJSONFromAsset(String board) {
+		String json = null;
+		try {
+			InputStream is = this.getAssets().open(board);
+			int size = is.available();
+			byte[] buffer = new byte[size];
+			is.read(buffer);
+			is.close();
+			json = new String(buffer, "UTF-8");
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			return null;
+		}
+		return json;
 	}
 }
