@@ -315,7 +315,7 @@ public class TextureManager {
 		add(TextureType.BUTTON, UIButton.ButtonType.CANCEL_ACTION.ordinal(),
 				R.drawable.button_cancel_action, res);
         add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY_WALL.ordinal(),
-                R.drawable.button_cancel_action, res);
+                R.drawable.button_build_wall, res);
         add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_CITY_IMPROVEMENT.ordinal(),
                 R.drawable.button_city_improvement, res);
         add(TextureType.BUTTON, UIButton.ButtonType.HIRE_KNIGHT.ordinal(),

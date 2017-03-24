@@ -698,7 +698,6 @@ public class Board {
 	}
 
 	public void resolveBarbarians(){
-		barbarianPosition += 7;
 		if(barbarianPosition >= 7){
 			//the barbarians attack!!
 			toast("The barbarians attack!");
@@ -1202,21 +1201,26 @@ public class Board {
 	/**
 	 * Pillage one city to a settlement
 	 *
-	 * @return void
+	 * @return true if we destroyed a wall, false if it was city
 	 */
-	public void pillageCity(int playerNumber)
+	public boolean pillageCity(int playerNumber)
 	{
 		//@TODO add city wall removal
 		for(int i = 0; i < vertices.length; i++){
-			boolean isPillageableCity = vertices[i].getCurUnitType() == Vertex.CITY
-					|| vertices[i].getCurUnitType() == Vertex.CITY_WALL;
+			boolean isPillageableCity = vertices[i].getCurUnitType() == Vertex.CITY;
+			boolean isPillageableWall = vertices[i].getCurUnitType() == Vertex.CITY_WALL;
 
 			if(vertices[i].getOwnerPlayer() != null && vertices[i].getOwnerPlayer().getPlayerNumber() == playerNumber
 					&& isPillageableCity){
 				vertices[i].setCurUnitType(Vertex.SETTLEMENT);
-				return;
+				return false;
+			} else if(vertices[i].getOwnerPlayer() != null && vertices[i].getOwnerPlayer().getPlayerNumber() == playerNumber
+					&& isPillageableWall){
+				vertices[i].setCurUnitType(Vertex.SETTLEMENT);
+				return true;
 			}
 		}
+		return false;
 	}
 
 	//TODO: adapt to fit ship requirements
@@ -1452,6 +1456,13 @@ public class Board {
 			knight.setBoard(this);
 		}
 	}
+
+	public void reinitPlayers(String[] names, ArrayList<String> ids){
+        for(int i = 0; i < players.length; i++){
+            players[i].setPlayerName(names[i]);
+            players[i].setGooglePlayParticipantId(ids.get(i));
+        }
+    }
 
 
 	public ProgressCard.ProgressCardType pickNewProgressCard(CityImprovement.CityImprovementType type){

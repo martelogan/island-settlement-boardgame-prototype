@@ -109,6 +109,7 @@ public class Player {
 		shipWasMovedThisTurn = false;
 		actionLog = "";
 		latestBuiltCommunityId = -1;
+		metropolisTypeToBuild = -1;
 
 		hand = new Vector<ProgressCardType>();
 
@@ -1378,6 +1379,13 @@ public class Player {
 	}
 
 	/**
+	 * Set the player's participant id
+	 */
+	public void setGooglePlayParticipantId(String googlePlayParticipantId) {
+		this.googlePlayParticipantId = googlePlayParticipantId;
+	}
+
+	/**
 	 * Determine if the player can afford to build an edge unit
 	 *
 	 * @return true if the player can afford to build a unit
@@ -1578,8 +1586,14 @@ public class Player {
 	 * @return the player's nth hired knight
 	 */
 	public void pillageCity() {
-		board.pillageCity(playerNumber);
-		numOwnedCities--;
+
+		boolean pillagedWall = board.pillageCity(playerNumber);
+		if(pillagedWall){
+			numOwnedCities--;
+			numOwnedCityWalls--;
+		} else{
+			numOwnedCities--;
+		}
 		numOwnedSettlements++;
 	}
 
