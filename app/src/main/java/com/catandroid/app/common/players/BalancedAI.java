@@ -208,11 +208,11 @@ public class BalancedAI extends Player implements AutomatedPlayer {
             return -1;
 
         Vertex from = road.getV0Clockwise();
-        if (from.getOwnerPlayer() == this || from.connectedToRoadOwnedBy(this) && buildRoad(road))
+        if (from.getOwnerPlayer() == this || from.isConnectedToRoadOwnedBy(this) && buildRoad(road))
             return road.getId();
 
         from = road.getV1Clockwise();
-        if (from.getOwnerPlayer() == this || from.connectedToRoadOwnedBy(this) && buildRoad(road))
+        if (from.getOwnerPlayer() == this || from.isConnectedToRoadOwnedBy(this) && buildRoad(road))
             return road.getId();
 
         return -1;
