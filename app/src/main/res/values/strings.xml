@@ -65,6 +65,7 @@
 	<string name="paper">paper</string>
 	<string name="coin">coin</string>
 	<string name="cloth">cloth</string>
+	<string name="fish">Fish</string>
 
     <!-- Knight knightRanks -->
     <string name="knight_basic">basic knight</string>
@@ -126,7 +127,7 @@
 	<string name="player_chase_pirate">Chased the pirate</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
-	<string name="player_received_card">Received a card</string>
+	<string name="player_received_card">Received a free progress card</string>
 	<string name="player_played_card">Played a %s card</string>
     <string name="player_longest_road">Has the longest road</string>
     <string name="player_stole_from">Stole from %s</string>
@@ -146,6 +147,9 @@
 	<string name="player_barbarians_lose">Catan Defended Successfully!</string>
 	<string name="player_barbarians_defender">%s was Defender of Catan!</string>
 	<string name="player_barbarians_tie">Players %s tied for defender of Catan!</string>
+	<string name="player_removed_robber">Removed the Robber from the board!</string>
+	<string name="player_removedPirate">Removed the Pirate from the board!</string>
+
 
 	<!-- PlayerStatsFragment screen -->
 	<string name="status">Status</string>
@@ -176,6 +180,7 @@
 	<string name="reference_tradeImprovement">Trade</string>
 	<string name="reference_scienceImprovement">Science</string>
 	<string name="reference_politicsImprovement">Politics</string>
+	<string name="reference_fishImprovement">Use Earned Fish</string>
 	<string name="reference_costs">Road:\n1 lumber, 1 brick\n
 		\nSettlement:\n1 lumber, 1
 		wool, 1 grain, 1 brick\n

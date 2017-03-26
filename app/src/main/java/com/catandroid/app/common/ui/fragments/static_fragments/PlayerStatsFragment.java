@@ -85,11 +85,12 @@ public class PlayerStatsFragment extends Fragment {
 				message += "\t\t" + getString(R.string.coin) + ": "
 						+ player.getResources(Resource.ResourceType.COIN) + "\n";
 				message += "\t\t" + getString(R.string.cloth) + ": "
-						+ player.getResources(Resource.ResourceType.CLOTH) + "\n";
+						+ player.getResources(Resource.ResourceType.CLOTH) + "\n\n";
+				message += getString(R.string.fish) + ": "
+						+ player.getNumFishOwned() + "\n";
 			}
 
-			//TODO: count of progress cards
-//			message += getString(R.string.status_progress_cards) + ": "
+			message += getString(R.string.status_progress_cards) + ": " + player.getNumProgressCards();
 
 			message += "\n";
 
@@ -125,9 +126,6 @@ public class PlayerStatsFragment extends Fragment {
 
 			message += "\n";
 
-			//TODO: show progress cards?
-//			if (showAll) {
-//			}
 
 			//show city improvement status
 			int[] playerCityImprovementLevels = player.getCityImprovementLevels();

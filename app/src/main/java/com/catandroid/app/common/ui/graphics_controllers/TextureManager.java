@@ -330,6 +330,8 @@ public class TextureManager {
                 R.drawable.button_chase_pirate, res);
         add(TextureType.BUTTON, UIButton.ButtonType.MOVE_KNIGHT.ordinal(), R.drawable.button_move_knight,
                 res);
+        add(TextureType.BUTTON, UIButton.ButtonType.USE_FISH.ordinal(), R.drawable.button_use_fish,
+                res);
 	}
 
     public void drawButton(UIButton button, GL10 gl) {
@@ -400,13 +402,13 @@ public class TextureManager {
         gl.glPopMatrix();
     }
 
-    public void drawRobber(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry) {
+    public void drawRobber(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry, boolean robberDisabled, boolean pirateDisabled) {
         gl.glPushMatrix();
 
         int id = hexagon.getId();
         gl.glTranslatef(boardGeometry.getHexagonX(id), boardGeometry.getHexagonY(id), 0);
 
-        if (hexagon.hasRobber() || hexagon.hasPirate())
+        if ((hexagon.hasRobber() && !robberDisabled) || (hexagon.hasPirate() && !pirateDisabled))
         {
             square.get(hash(TextureType.HEX_ROBBER, 0)).render(gl);
         }
