@@ -757,29 +757,14 @@ public class Vertex {
 
 	public void distributeResources(Resource.ResourceType resourceType) {
 
-		int numToGive = 0;
-
-		// determine how many resources to distribute
-		if(curUnitType == Vertex.SETTLEMENT){
-			numToGive = 100;
-		} else if(curUnitType == Vertex.CITY || curUnitType == Vertex.CITY_WALL){
-			numToGive = 200;
-		}
-
 		if (ownerPlayerNumber == -1)
 		{
 			return;
 		}
 
 		if (resourceType != null) {
-			// Gold gets two times more on distribution (2 for settlement, 4 for city)
-			if(resourceType == Resource.ResourceType.GOLD){
-				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
-				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
-			} else {
-				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
-				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
-			}
+			board.getPlayerById(ownerPlayerNumber).addResources(resourceType, curUnitType, true);
+			board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
 		}
 	}
 

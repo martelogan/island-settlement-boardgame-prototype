@@ -8,6 +8,7 @@ import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovem
 import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
 import com.catandroid.app.R;;
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.UseFishFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeProposedFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeRequestFragment;
 import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
@@ -698,17 +699,18 @@ public class ActiveGameFragment extends Fragment {
 				if(player.getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] >= 3
 						&& player.gotResourcesSinceLastTurn == false && roll != 7){
 
-					CharSequence[] items = new CharSequence[4];
+					CharSequence[] items = new CharSequence[5];
 					items[0] = "Lumber";
 					items[1] = "Wool";
 					items[2] = "Grain";
 					items[3] = "Brick";
+					items[4] = "Ore";
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 					builder.setTitle("Aqueduct: Choose your free resource!");
 					builder.setItems(items, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int item) {
-							board.getPlayerOfCurrentGameTurn().addResources(Resource.RESOURCE_TYPES[item], 1);
+							board.getPlayerOfCurrentGameTurn().addResources(Resource.RESOURCE_TYPES[item], 1, false);
 						}
 					});
 
@@ -991,6 +993,19 @@ public class ActiveGameFragment extends Fragment {
 
 				break;
 
+			case USE_FISH:
+				FragmentManager fishFragmentManager = getActivity().getSupportFragmentManager();
+				UseFishFragment fishFragment = new UseFishFragment();
+				fishFragment.setBoard(board);
+				fishFragment.setActiveGameFragment(this);
+
+				FragmentTransaction fishFragmentTransaction =  fishFragmentManager.beginTransaction();
+				fishFragmentTransaction.replace(R.id.fragment_container, fishFragment,fishFragment.getClass().getSimpleName());
+				fishFragmentTransaction.addToBackStack(fishFragment.getClass().getSimpleName());
+				fishFragmentTransaction.commit();
+
+				break;
+
 			case TRADE:
 
 				FragmentManager tradeFragmentManager = getActivity().getSupportFragmentManager();
@@ -1193,8 +1208,18 @@ public class ActiveGameFragment extends Fragment {
 			resultsTrade();
 		}
 
-		// TODO: remove/replace all references to resources
-//		resources.setValues(player);
+		if(!board.isMyPseudoTurn() && player.getFreeBuild()){
+			switch(player.getFreeBuildUnit()){
+				case 0:
+					buttonPress(ButtonType.BUILD_SHIP);
+					break;
+				case 1:
+					buttonPress(ButtonType.BUILD_ROAD);
+					break;
+				default:
+
+			}
+		}
 
 		Log.d("myTag", "end of showState");
 	}
@@ -1284,7 +1309,9 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canMoveSomeKnight()) {
 				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
-			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
+			if(player.getNumFishOwned() > 0){
+				view.addButton(ButtonType.USE_FISH);
+			}
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
 		}
 	}
@@ -1653,8 +1680,6 @@ public class ActiveGameFragment extends Fragment {
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		//TODO: why was this here?
-//		builder.setTitle(getString(R.string.to_remove_str));
 		builder.setTitle(getString(R.string.game_steal_title));
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {

@@ -1,5 +1,6 @@
 package com.catandroid.app.common.players;
 
+import java.util.Random;
 import java.util.Vector;
 
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.util.Log;
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Knight;
+import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.ProgressCard.ProgressCardType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
@@ -20,6 +22,8 @@ import com.catandroid.app.common.components.board_positions.Vertex;
 public class Player {
 
 	private static boolean FREE_BUILD = false;
+
+	private int freeBuildUnit = -1;
 
 	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
 
@@ -52,12 +56,12 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
+	private int numFishOwned = 100;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
 	private int[] cityImprovementLevels = {0, 0, 0};
 	private boolean[] harbors;
-	//TODO: should this be an integer?
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
 	private boolean usedCardThisTurn;
@@ -98,7 +102,6 @@ public class Player {
 		numOwnedSettlements = 0;
 		numOwnedCities = 0;
 		numOwnedCityWalls = 0;
-		hand = new Vector<>();
 		numTotalOwnedKnights = 0;
 		numOwnedBasicKnights = 0;
 		numOwnedStrongKnights = 0;
@@ -113,6 +116,7 @@ public class Player {
 		metropolisTypeToBuild = -1;
 
 		hand = new Vector<ProgressCardType>();
+        newCards = new Vector<ProgressCardType>();
 
 		ownedCommunityIds = new Vector<Integer>();
 		reachingVertexIds = new Vector<Integer>();
@@ -208,6 +212,22 @@ public class Player {
 		appendAction(R.string.player_ended_turn);
 	}
 
+	public static void setFreeBuild(boolean freeBuild) {
+		FREE_BUILD = freeBuild;
+	}
+
+	public boolean getFreeBuild() {
+		return FREE_BUILD;
+	}
+
+	public int getFreeBuildUnit() {
+		return freeBuildUnit;
+	}
+
+	public void setFreeBuildUnit(int freeBuildUnit) {
+		this.freeBuildUnit = freeBuildUnit;
+	}
+
 	/**
 	* Attempt to build a road on an edge. Returns true on success
 	*
@@ -223,7 +243,7 @@ public class Player {
 
 		// check resources
 		//TODO: progress card effect?
-		boolean free = board.isSetupPhase();
+		boolean free = board.isSetupPhase() || FREE_BUILD;
 		if (!free && !canAffordToBuildRoad())
 		{
 			return false;
@@ -237,6 +257,8 @@ public class Player {
 		if (!free) {
 			useResources(Resource.ResourceType.BRICK, 1);
 			useResources(Resource.ResourceType.LUMBER, 1);
+		} else {
+			FREE_BUILD = false;
 		}
 
 		appendAction(R.string.player_road);
@@ -281,7 +303,7 @@ public class Player {
 
 		// check resources
 		//TODO: progress card effect?
-		boolean free = board.isSetupPhase();
+		boolean free = board.isSetupPhase() || FREE_BUILD;
 		if (!free && !canAffordToBuildShip())
 		{
 			return false;
@@ -295,6 +317,8 @@ public class Player {
 		if (!free) {
 			useResources(Resource.ResourceType.LUMBER, 1);
 			useResources(Resource.ResourceType.WOOL, 1);
+		} else {
+			FREE_BUILD = false;
 		}
 
 		//TODO: longest trade route (extend with road)
@@ -571,13 +595,13 @@ public class Player {
 							&& terrainType != Hexagon.TerrainType.GOLD_FIELD) {
 						// collect resource for hex adjacent to city
 						resourceType = curHex.getResourceType();
-						addResources(resourceType, 200);
+						addResources(resourceType, Vertex.CITY, true);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(2) + " " + Resource.toRString(resourceType));
 					} else if(terrainType == Hexagon.TerrainType.GOLD_FIELD){
 						// collect 4 gold coins for gold hex adjacent to city at start
 						resourceType = curHex.getResourceType();
-						addResources(resourceType, 400);
+						addResources(resourceType, Vertex.CITY, true);
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(4) + " " + Resource.toRString(resourceType));
 					}
@@ -1548,14 +1572,21 @@ public class Player {
 
 	/**
 	 * Add resources to the player
-	 *
-	 * @param resourceType
+	 *  @param resourceType
 	 *            resourceType of resources to add
 	 * @param count
-	 *            number of that resource to add
+	 * 			count or vertexType if isProduction==true
+	 * @param isProduction
+	 * 			true if the resource added come from production from vertex unit
 	 */
-	public void addResources(Resource.ResourceType resourceType, int count) {
+	public void addResources(ResourceType resourceType, int count, boolean isProduction) {
+		if(!isProduction){
+			countPerResource[resourceType.ordinal()] += count;
+			return;
+		}
+
 		//distribute the commodities when its a city, city+wall, metropolis
+		boolean isSettlement = count == 1;
 		boolean isCity = (count == 2 || count == 3 || count == 4 || count == 4
 				|| count == 5 ||count == 6 || count == 7 || count == 8 || count == 9);
 		switch(resourceType) {
@@ -1563,44 +1594,51 @@ public class Player {
 				if(isCity){
 					countPerResource[Resource.toResourceIndex(ResourceType.PAPER)] += 1;
 					countPerResource[resourceType.ordinal()] += 1;
-				} else {
-					countPerResource[resourceType.ordinal()] += count;
+				} else if(isSettlement){
+					countPerResource[resourceType.ordinal()] += 1;
 				}
 				break;
 			case WOOL:
 				if(isCity){
-					//@TODO REMOVE
 					countPerResource[Resource.toResourceIndex(ResourceType.CLOTH)] += 1;
 					countPerResource[resourceType.ordinal()] += 1;
-				} else {
-					countPerResource[resourceType.ordinal()] += count;
+				} else if(isSettlement){
+					countPerResource[resourceType.ordinal()] += 1;
 				}
 				break;
 			case ORE:
 				if(isCity){
 					countPerResource[Resource.toResourceIndex(ResourceType.COIN)] += 1;
 					countPerResource[resourceType.ordinal()] += 1;
-				} else {
-					countPerResource[resourceType.ordinal()] += count;
+				} else if(isSettlement){
+					countPerResource[resourceType.ordinal()] += 1;
 				}
 				break;
 			case GRAIN:
-				countPerResource[resourceType.ordinal()] += count;
+				if(isCity){
+					countPerResource[resourceType.ordinal()] += 2;
+				} else if(isSettlement){
+					countPerResource[resourceType.ordinal()] += 1;
+				}
 				break;
 			case BRICK:
-				countPerResource[resourceType.ordinal()] += count;
+				if(isCity){
+					countPerResource[resourceType.ordinal()] += 2;
+				} else if(isSettlement){
+					countPerResource[resourceType.ordinal()] += 1;
+				}
 				break;
 			case GOLD:
-				countPerResource[resourceType.ordinal()] += count;
+				if(isCity){
+					countPerResource[resourceType.ordinal()] += 4;
+				} else if(isSettlement){
+					countPerResource[resourceType.ordinal()] += 2;
+				}
 				break;
 			case PAPER:
-				countPerResource[resourceType.ordinal()] += count;
-				break;
 			case COIN:
-				countPerResource[resourceType.ordinal()] += count;
-				break;
 			case CLOTH:
-				countPerResource[resourceType.ordinal()] += count;
+				//these tiles dont exist so dont do anything
 				break;
 			default:
 				break;
@@ -1693,7 +1731,7 @@ public class Player {
 	 */
 	public Resource.ResourceType steal(Player from, Resource.ResourceType resourceType) {
 		if (resourceType != null) {
-			addResources(resourceType, 1);
+			addResources(resourceType, 1, false);
 			appendAction(R.string.player_stole_from, from.getPlayerName());
 		}
 
@@ -1738,7 +1776,7 @@ public class Player {
 	 */
 	public void trade(Player player, Resource.ResourceType resourceType, int[] trade) {
 		//player is the person  that accepts the trade (loses resourceType, gains trade[]
-		addResources(resourceType, 1);
+		addResources(resourceType, 1, false);
 		player.useResources(resourceType, 1);
 
 		for (int i = 0; i < Resource.RESOURCE_TYPES.length; i++) {
@@ -1748,7 +1786,7 @@ public class Player {
 			}
 
 			useResources(Resource.RESOURCE_TYPES[i], trade[i]);
-			player.addResources(Resource.RESOURCE_TYPES[i], trade[i]);
+			player.addResources(Resource.RESOURCE_TYPES[i], trade[i], false);
 
 			for (int j = 0; j < trade[i]; j++) {
 				appendAction(R.string.player_traded_away, Resource
@@ -2025,6 +2063,33 @@ public class Player {
 		defenderOfCatan++;
 	}
 
+	/**
+	 * Increment the number of fish owned
+	 * by random 1-3 based on probabilities of game tokens
+	 */
+	public void gainFish(){
+		//0-10 inclusive = 1
+		//11-20 inclusive = 2
+		//21-28 inclusive = 3
+		//1-30
+		Random r = new Random();
+		int fishNum = r.nextInt(29);
+		if(fishNum <= 10){
+			numFishOwned+= 1;
+		} else if(fishNum <= 20){
+			numFishOwned+= 2;
+		} else if(fishNum <= 28){
+			numFishOwned+= 3;
+		} else{
+			if(board.playerNumBootOwner == -1){
+				board.playerNumBootOwner = playerNumber;
+			} else{
+				numFishOwned+= 1;
+			}
+		}
+
+	}
+
 //TODO: see how we can use this similar code for progress cards
 
 //	/**
@@ -2185,20 +2250,15 @@ public class Player {
 //				.toRString(resourceType2));
 //	}
 //
-// 	/**
-//	 * Get the number of development cards the player has
-//	 *
-//	 * @return the number of development cards the player has
-//	 */
-//	public int getNumProgressCards() {
-//		int count = 0;
-//		for (int i = 0; i < cards.length; i++)
-//		{
-//			count += cards[i];
-//		}
-//
-//		return count + newCards.size();
-//	}
+ 	/**
+	 * Get the number of development cards the player has
+	 *
+	 * @return the number of development cards the player has
+	 */
+	public int getNumProgressCards() {
+		newCards = new Vector<ProgressCardType>();
+		return hand.size() + newCards.size();
+	}
 
 	/**
 	 * Get the number of resources that are required to trade for 1 resource
@@ -2297,7 +2357,7 @@ public class Player {
 			// check for specific 2:1 harbor
 			if (hasHarbor(Resource.RESOURCE_TYPES[i])
 					&& getResources(Resource.RESOURCE_TYPES[i]) >= 2 && trade[i] >= 2) {
-				addResources(resourceType, 1);
+				addResources(resourceType, 1, false);
 				useResources(Resource.RESOURCE_TYPES[i], 2);
 				return true;
 			}
@@ -2312,7 +2372,7 @@ public class Player {
 			// deduct from number of resource cards needed
 			if (trade[i] >= value && number >= value) {
 				useResources(Resource.RESOURCE_TYPES[i], value);
-				addResources(resourceType, 1);
+				addResources(resourceType, 1, false);
 
 				appendAction(R.string.player_traded_for, Resource
 						.toRString(resourceType));
@@ -2604,6 +2664,12 @@ public class Player {
 		}
 	}
 
+	public ProgressCard.ProgressCardType gainProgressCard(CityImprovement.CityImprovementType type){
+		ProgressCard.ProgressCardType picked = board.pickNewProgressCard(type);
+		hand.add(picked);
+		return picked;
+	}
+
 	/**
 	 * Get the players hand
 	 *
@@ -2625,6 +2691,14 @@ public class Player {
 	 */
 	public int[] getCityImprovementLevels() {
 		return cityImprovementLevels;
+	}
+
+	public int getNumFishOwned() {
+		return numFishOwned;
+	}
+
+	public void setNumFishOwned(int numFishOwned) {
+		this.numFishOwned = numFishOwned;
 	}
 
 	/**

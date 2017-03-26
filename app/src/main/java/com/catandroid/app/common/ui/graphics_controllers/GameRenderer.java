@@ -175,7 +175,7 @@ public class GameRenderer implements Renderer {
 			// draw the number tokens, robber, pirate, and active hexes
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
-				texture.drawRobber(board.getHexagonById(i), gl, boardGeometry);
+				texture.drawRobber(board.getHexagonById(i), gl, boardGeometry, board.isRobberDisabled(), board.isPirateDisabled());
 			}
 			for (int i = 0; i < HEX_COUNT; i++)
 			{

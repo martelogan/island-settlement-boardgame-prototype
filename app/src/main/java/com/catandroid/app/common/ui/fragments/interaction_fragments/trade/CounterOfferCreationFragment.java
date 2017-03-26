@@ -222,9 +222,6 @@ public class CounterOfferCreationFragment extends Fragment {
 					trade[i] = Integer.parseInt((String) offer.getText(), 10);
 				}
 
-				//@TODO
-				//ADD THE LOGIC TO SEND MESSAGE FOR TRADE PROPOSAL
-
 				ArrayList<Integer> playerList = new ArrayList<Integer>();
 				for (int i = 0; i < board.getNumPlayers(); i++){
 					if(i != board.getPlayerOfCurrentGameTurn().getPlayerNumber()){

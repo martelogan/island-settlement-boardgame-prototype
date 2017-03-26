@@ -289,7 +289,7 @@ public class Hexagon {
 	 *            the current dice sum
 	 */
 	public void distributeResources(int diceRoll) {
-		if (diceRoll != this.numberToken.getTokenNum() || hasRobber()) {
+		if (diceRoll != this.numberToken.getTokenNum() || (hasRobber() && !board.isRobberDisabled())) {
 			return;
 		}
 

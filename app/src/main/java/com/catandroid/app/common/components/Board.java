@@ -131,6 +131,12 @@ public class Board {
 
 	private boolean autoDiscard;
 
+	public int playerNumBootOwner = -1;
+
+	boolean pirateDisabled = false;
+
+	boolean robberDisabled = false;
+
 	/**
 	 * Create new board layout
 	 * 
@@ -345,7 +351,7 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = 3;
+		int diceRollNumber = 7;
 //		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
@@ -378,6 +384,8 @@ public class Board {
 
 		if (diceRollNumber == 7) {
 			// reduce each players to 7 cards
+			robberDisabled = false;
+			pirateDisabled = false;
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
 				int walls = getPlayerById(i).getNumOwnedCityWalls();
@@ -1108,15 +1116,19 @@ public class Board {
 		return knights;
 	}
 
-	/**
-	 * Get a progress card
-	 *
-	 * @return the type of progress card or null if that stack is empty
-	 */
-	public ProgressCard.ProgressCardType getRandomProgressCard() {
-		//TODO: implement progress cards
-		ProgressCard.ProgressCardType card = null;
-		return card;
+	public boolean isPirateDisabled() {
+		return pirateDisabled;
+	}
+
+	public void setPirateDisabled(boolean pirateDisabled) {
+		this.pirateDisabled = pirateDisabled;
+	}
+	public boolean isRobberDisabled() {
+		return robberDisabled;
+	}
+
+	public void setRobberDisabled(boolean robberDisabled) {
+		this.robberDisabled = robberDisabled;
 	}
 
 	public void startChooseRobberPiratePhase() {
@@ -1284,7 +1296,6 @@ public class Board {
 	 */
 	public boolean pillageCity(int playerNumber)
 	{
-		//@TODO add city wall removal
 		for(int i = 0; i < vertices.length; i++){
 			boolean isPillageableCity = vertices[i].getCurUnitType() == Vertex.CITY;
 			boolean isPillageableWall = vertices[i].getCurUnitType() == Vertex.CITY_WALL;
@@ -1574,6 +1585,18 @@ public class Board {
 			default:
 				break;
 		}
+	}
+
+	public boolean progressCardStackEmpty(CityImprovement.CityImprovementType type){
+		switch(type){
+			case TRADE:
+				return tradeDeck.isEmpty();
+			case POLITICS:
+				return politicsDeck.isEmpty();
+			case SCIENCE:
+				return scienceDeck.isEmpty();
+		}
+		return true;
 	}
 
 	public void progressCardInit(){
