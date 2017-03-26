@@ -16,7 +16,7 @@ public class CostsReferenceFragment extends Fragment {
 
 	private static final int[] LAYOUTS = { R.layout.development_costs};
 
-	private static final int[] NAMES = { R.string.development_costs};
+	private static final int[] NAMES = { R.string.costs_reference_title};
 
 	private View[] views;
 
@@ -29,7 +29,7 @@ public class CostsReferenceFragment extends Fragment {
 		//super.onCreate(state);
 
 		//getActivity().setContentView(R.layout.costs_reference);
-		getActivity().setTitle(getString(R.string.reference));
+		getActivity().setTitle(getString(R.string.costs_reference));
 		getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
 
 		//LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -38,13 +38,15 @@ public class CostsReferenceFragment extends Fragment {
 		views = new View[LAYOUTS.length];
 		
 		for (int i = 0; i < LAYOUTS.length; i++)
+		{
 			views[i] = inflater.inflate(LAYOUTS[i], null);
+		}
 		
-		ViewPager viewPager = (ViewPager) view.findViewById(R.id.reference);
+		ViewPager viewPager = (ViewPager) view.findViewById(R.id.costs_reference);
 		viewPager.setAdapter(new ReferenceTabAdapter());
 		viewPager.setCurrentItem(1);
 
-		Log.d("myTag", "about to return costs view");
+		Log.d("costsView", "about to return costs view");
 		return view;
 	}
 	@Override

@@ -3,6 +3,7 @@ package com.catandroid.app.common.players;
 import java.util.Vector;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
@@ -49,7 +50,7 @@ public class Player {
 	protected int numOwnedMightyKnights;
 	protected Vector<Integer> ownedCommunityIds, reachingVertexIds;
 	protected Vector<Integer> roadIds, shipIds;
-	protected Vector<Integer> myKnightIds;
+	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
@@ -117,7 +118,8 @@ public class Player {
 		reachingVertexIds = new Vector<Integer>();
 		roadIds = new Vector<Integer>();
 		shipIds = new Vector<Integer>();
-        myKnightIds = new Vector<Integer>();
+        myActiveKnightIds = new Vector<Integer>();
+		myOffDutyKnightIds = new Vector<Integer>();
 
 		countPerResource = new int[Resource.RESOURCE_TYPES.length];
 		harbors = new boolean[Resource.ResourceType.values().length];
@@ -605,10 +607,15 @@ public class Player {
 			return false;
 		}
 
-		Knight hiredKnight = board.getNextAvailableKnight();
-		hiredKnight.setOwnerPlayerNumber(playerNumber);
+		Knight hiredKnight = getOffDutyKnightOfRank(Knight.KnightRank.BASIC_KNIGHT);
 
-		if (!vertex.placeKnight(this, hiredKnight))
+		if (hiredKnight == null) {
+			// get a completely new knight
+			hiredKnight = board.getNextAvailableKnight();
+			hiredKnight.setOwnerPlayerNumber(playerNumber);
+		}
+
+		if (!vertex.placeNewKnight(this, hiredKnight))
 		{
 			return false;
 		}
@@ -617,7 +624,7 @@ public class Player {
 		useResources(ResourceType.WOOL, 1);
 		useResources(ResourceType.ORE, 1);
 		// update our knights
-		myKnightIds.add(hiredKnight.getId());
+		myActiveKnightIds.add(hiredKnight.getId());
 		numOwnedBasicKnights += 1;
 		numTotalOwnedKnights += 1;
 		// knight may have blocked a trade route
@@ -695,9 +702,13 @@ public class Player {
 			case STRONG_KNIGHT:
 				numOwnedBasicKnights -= 1;
 				numOwnedStrongKnights += 1;
+				demoteOffDutyKnightOfRank(Knight.KnightRank.STRONG_KNIGHT);
+				break;
 			case MIGHTY_KNIGHT:
 				numOwnedStrongKnights -= 1;
 				numOwnedMightyKnights += 1;
+				demoteOffDutyKnightOfRank(Knight.KnightRank.STRONG_KNIGHT);
+				break;
 		}
 		numTotalOwnedKnights += 1;
 
@@ -783,22 +794,22 @@ public class Player {
 	}
 
 	/**
-	 * Attempt to move a knight to this vertex. Returns true on success
+	 * Attempt to move a knight peacefully to this vertex. Returns true on success
 	 *
 	 * @param target
 	 *            target
 	 * @return
 	 */
-	public boolean moveKnightTo(Vertex target) {
+	public boolean moveKnightPeacefullyTo(Vertex target) {
 
-		if (target == null || !canMoveKnightTo(target))
+		if (target == null || !canMoveKnightTo(target, true))
 		{
 			return false;
 		}
 
 		Knight toMove = board.getCurrentlyMovingKnight();
 
-		if(toMove == null || !target.moveKnightToHere(this, toMove)) {
+		if(toMove == null || !target.moveKnightPeacefullyToHere(this, toMove)) {
 			return false;
 		}
 
@@ -806,8 +817,176 @@ public class Player {
 
 		// NOTE: calling method must update the board phase on success
 
+		appendAction(R.string.player_move_knight);
+
 		return true;
 	}
+
+	/**
+	 * Attempt to displace a knight at this vertex. Returns true on success
+	 *
+	 * @param target
+	 *            target
+	 * @return
+	 */
+	public boolean displaceKnightAt(Vertex target) {
+
+		if (target == null || !canDisplaceKnightAt(target) ||
+				target.getCurUnitType() != Vertex.KNIGHT)
+		{
+			return false;
+		}
+
+		Knight toDisplace = target.getPlacedKnight();
+
+		if(toDisplace.getOwnerPlayer() == this) {
+			return false;
+		}
+
+		Knight toMove = board.getCurrentlyMovingKnight();
+
+		if(toMove == null || !toMove.canDisplace(toDisplace)) {
+			return false;
+		}
+
+		if(!target.displaceKnightFromHere(this, toMove)) {
+			return false;
+		}
+
+		board.updateLongestTradeRoute();
+
+		//TODO: is this safe?
+		// clear temporary memory and intermediately return to player turn phase
+		board.nextPhase();
+
+		boolean displacedKnightHasSomewhereToRelocate = false;
+		for (Vertex candidateRelocation : board.getVertices()) {
+			if(toDisplace.canDisplaceKnightTo(candidateRelocation)) {
+				displacedKnightHasSomewhereToRelocate = true;
+				break;
+			}
+		}
+
+		if (displacedKnightHasSomewhereToRelocate) {
+			// pass the turn on to the victim of knight displacement
+			board.startKnightDisplacementPhase(toDisplace);
+		} else {
+			toDisplace.displaceFromPost();
+			toDisplace.getOwnerPlayer().takeKnightOffActiveDuty(toDisplace);
+		}
+
+		appendAction(R.string.player_displace_knight);
+
+		return true;
+	}
+
+	/**
+	 * Attempt to move a knight peacefully to this vertex FOLLOWING DISPLACEMENT.
+	 * Returns true on success
+	 *
+	 * @param target
+	 *            target
+	 * @return
+	 */
+	public boolean displaceKnightTo(Vertex target) {
+
+		if (target == null || !canDisplaceKnightTo(target))
+		{
+			return false;
+		}
+
+		Knight toMove = board.getCurrentlyMovingKnight();
+
+		if(toMove == null || !target.displaceKnightToHere(this, toMove)) {
+			return false;
+		}
+
+		board.updateLongestTradeRoute();
+
+		return true;
+	}
+
+	/**
+	 * Attempt to remove a knight from activeIds and place to offDutyIds
+	 *
+	 * @param toDischarge
+	 *            knight to remove from active duty
+	 * @return
+	 */
+	public boolean takeKnightOffActiveDuty(Knight toDischarge) {
+		toDischarge.deactivate();
+		// update active knight ids
+		myActiveKnightIds.removeElement(toDischarge.getId());
+		switch(toDischarge.getKnightRank()) {
+			case BASIC_KNIGHT:
+				numOwnedBasicKnights -= 1;
+				break;
+			case STRONG_KNIGHT:
+				numOwnedStrongKnights -= 1;
+				break;
+			case MIGHTY_KNIGHT:
+				numOwnedMightyKnights -= 1;
+				break;
+		}
+		numTotalOwnedKnights -= 1;
+		// update off-duty knight ids
+		myOffDutyKnightIds.add(toDischarge.getId());
+		return true;
+	}
+
+	/**
+	 * Attempt to get an off-duty knight of the requested rank
+	 *
+	 * @param rankNeeded
+	 *            knight rank needed
+	 * @return
+	 */
+	public Knight getOffDutyKnightOfRank(Knight.KnightRank rankNeeded) {
+		Knight curKnight;
+		for (int i = 0; i < myOffDutyKnightIds.size(); i++) {
+			curKnight = board.getKnightById(myOffDutyKnightIds.get(i));
+			if(curKnight.getKnightRank() == rankNeeded) {
+				Integer curKnightId = curKnight.getId();
+				myOffDutyKnightIds.removeElement(curKnightId);
+				myActiveKnightIds.add(curKnightId);
+				switch(rankNeeded) {
+					case BASIC_KNIGHT:
+						numOwnedBasicKnights += 1;
+						break;
+					case STRONG_KNIGHT:
+						numOwnedStrongKnights += 1;
+						break;
+					case MIGHTY_KNIGHT:
+						numOwnedMightyKnights += 1;
+						break;
+				}
+				numTotalOwnedKnights += 1;
+				return curKnight;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Demote a knight of the requested rank for being off-duty too long
+	 * (some upstart warrior has taken their old rank)
+	 *
+	 * @param rankToDemote
+	 *            knight rank to demote
+	 * @return
+	 */
+	public Knight demoteOffDutyKnightOfRank(Knight.KnightRank rankToDemote) {
+		Knight curKnight;
+		for (int i = 0; i < myOffDutyKnightIds.size(); i++) {
+			curKnight = board.getKnightById(myOffDutyKnightIds.get(i));
+			if(curKnight.getKnightRank() == rankToDemote) {
+				curKnight.demote();
+				return curKnight;
+			}
+		}
+		return null;
+	}
+
 
 	/**
 	 * Can you build an edge unit on this edge?
@@ -1087,7 +1266,7 @@ public class Player {
 			return false;
 		}
 
-		return vertex.canPlaceKnightHere(this);
+		return vertex.canPlaceNewKnightHere(this);
 	}
 
 	/**
@@ -1167,7 +1346,7 @@ public class Player {
 		boolean canChase = false;
 		Knight curKnight;
 		Vertex curKnightVertexLocation;
-		for (int i = 0; i < myKnightIds.size(); i++) {
+		for (int i = 0; i < myActiveKnightIds.size(); i++) {
 			curKnight = getKnightAddedAtIndex(i);
 			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
 			if(curKnight.canMakeMove() && curKnightVertexLocation.isAdjacentToRobber()) {
@@ -1187,7 +1366,7 @@ public class Player {
 		boolean canChase = false;
 		Knight curKnight;
 		Vertex curKnightVertexLocation;
-		for (int i = 0; i < myKnightIds.size(); i++) {
+		for (int i = 0; i < myActiveKnightIds.size(); i++) {
 			curKnight = getKnightAddedAtIndex(i);
 			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
 			if(curKnight.canMakeMove() && curKnightVertexLocation.isAdjacentToPirate()) {
@@ -1228,7 +1407,7 @@ public class Player {
 		boolean canMove = false;
 		Knight curKnight;
 		Vertex curKnightVertexLocation;
-		for (int i = 0; i < myKnightIds.size(); i++) {
+		for (int i = 0; i < myActiveKnightIds.size(); i++) {
 			curKnight = getKnightAddedAtIndex(i);
 			curKnightVertexLocation = curKnight.getCurrentVertexLocation();
 			if(curKnight.canMakeMove() && curKnightVertexLocation.canRemoveKnightFromHere(this)) {
@@ -1255,7 +1434,7 @@ public class Player {
 	 * @param vertex
 	 * @return
 	 */
-	public boolean canMoveKnightTo(Vertex vertex) {
+	public boolean canMoveKnightTo(Vertex vertex, boolean isPeaceful) {
 		if (vertex == null)
 		{
 			return false;
@@ -1267,7 +1446,53 @@ public class Player {
 			return false;
 		}
 
-		return vertex.canMoveKnightToHere(this, currentlyMovingKnight);
+		return vertex.canMoveKnightToHere(this, currentlyMovingKnight, isPeaceful);
+	}
+
+	/**
+	 * Can you place the currently moving knight at this vertex without displacement?
+	 *
+	 * @param vertex
+	 * @return
+	 */
+	public boolean canDisplaceKnightTo(Vertex vertex) {
+		if (vertex == null)
+		{
+			return false;
+		}
+
+		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+
+		if(!isMyKnight(currentlyMovingKnight)) {
+			return false;
+		}
+
+		if(vertex.getId() == 54) {
+			Log.d("test","here");
+		}
+
+		return vertex.canDisplaceKnightToHere(this, currentlyMovingKnight);
+	}
+
+	/**
+	 * Can the currently moving knight displace a knight at this vertex?
+	 *
+	 * @param vertex
+	 * @return
+	 */
+	public boolean canDisplaceKnightAt(Vertex vertex) {
+		if (vertex == null)
+		{
+			return false;
+		}
+
+		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+
+		if(!isMyKnight(currentlyMovingKnight)) {
+			return false;
+		}
+
+		return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
 	}
 
 	/**
@@ -1753,7 +1978,7 @@ public class Player {
 	 * @return the player's nth hired knight
 	 */
 	public Knight getKnightAddedAtIndex(int knightOrdinalIndex) {
-		return board.getKnightById(myKnightIds.get(knightOrdinalIndex));
+		return board.getKnightById(myActiveKnightIds.get(knightOrdinalIndex));
 	}
 
 	/**
@@ -1767,7 +1992,7 @@ public class Player {
 			return false;
 		} else {
 			Knight curKnight;
-			for (int i = 0; i < myKnightIds.size(); i++) {
+			for (int i = 0; i < myActiveKnightIds.size(); i++) {
 				curKnight = getKnightAddedAtIndex(i);
 				if (curKnight == toCheck) {
 					return true;

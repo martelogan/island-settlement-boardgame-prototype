@@ -31,7 +31,7 @@ public class Board {
 
 	private ArrayList<String> gameParticipantIds;
 
-    public final static int[] COUNT_PER_DICE_SUM = { 0, 0, 2, 3, 3, 3, 3, 0, 3, 3, 3, 3, 2 };
+    public final static int[] COUNT_PER_DICE_SUM = { 0, 0, 1, 2, 2, 3, 3, 0, 3, 3, 2, 2, 1 };
 
 	private final HashMap<Hexagon.TerrainType, Integer> terrainTypeToCountMap;
 	private HashMap<Hexagon.TerrainType, Integer> initTerrainTypeToCountMap(int boardSize)
@@ -67,8 +67,9 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,
-		BUILD_METROPOLIS, CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
+		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
+		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
 		DEFENDER_OF_CATAN, DONE
 	}
 
@@ -123,7 +124,8 @@ public class Board {
 			longestTradeRouteLength, maxPoints, lastDiceRollNumber;
 	private Integer longestTradeRouteOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
-    private int tempEdgeIdMemory = -1, tempVertexIdMemory = -1, tempKnightIdMemory = -1;
+    private int tempEdgeIdMemory = -1, tempVertexIdMemory = -1,
+			tempKnightIdMemory = -1, tempPlayerNumberMemory = -1;
 
 	private int[] metropolisOwners = {-1, -1, -1};
 
@@ -239,17 +241,32 @@ public class Board {
 	}
 
 	/**
-	 * Get a reference to the current player
+	 * Get a reference to the player for current game turn
 	 * 
-	 * @return the current player
+	 * @return the player of the current game turn
 	 */
-	public Player getCurrentPlayer() {
+	public Player getPlayerOfCurrentGameTurn() {
 		if (players == null)
 		{
 			return null;
 		}
 
 		return players[curPlayerNumber];
+	}
+
+
+	/**
+	 * Get a reference to the player looking at screen
+	 *
+	 * @return the player currently looking at device
+	 */
+	public Player getActiveFragmentPlayer() {
+		if (players == null)
+		{
+			return null;
+		}
+
+		return getPlayerFromParticipantId(activeGameFragment.myParticipantId);
 	}
 
 	/**
@@ -286,11 +303,24 @@ public class Board {
 	 * @return the currently moving knight (or null)
 	 */
 	public Knight getCurrentlyMovingKnight() {
-		if (phase != Phase.MOVING_KNIGHT) {
+		if (phase != Phase.MOVING_KNIGHT && phase != Phase.DISPLACING_KNIGHT) {
 			return null;
 		}
 
 		return getKnightById(tempKnightIdMemory);
+	}
+
+	/**
+	 * Get a reference to the player that needs to move their displaced knight
+	 *
+	 * @return the player that needs to move their displaced knight
+	 */
+	public Player getPlayerToDisplaceKnight() {
+		if (phase != Phase.DISPLACING_KNIGHT) {
+			return null;
+		}
+
+		return getPlayerById(tempPlayerNumberMemory);
 	}
 
 	/**
@@ -299,7 +329,7 @@ public class Board {
 	 * @return previous location of the currently moving knight
 	 */
 	public Vertex getStartLocationOfMovingKnight() {
-		if (phase != Phase.MOVING_KNIGHT) {
+		if (phase != Phase.MOVING_KNIGHT && phase != Phase.DISPLACING_KNIGHT) {
 			return null;
 		}
 
@@ -562,6 +592,17 @@ public class Board {
 				// TODO: what else when ending knight movement?
 				phase = returnPhase;
 				tempKnightIdMemory = -1;
+				tempVertexIdMemory = -1;
+				break;
+			case DISPLACING_KNIGHT:
+				// TODO: what else when ending knight displacement?
+				phase = returnPhase;
+				tempKnightIdMemory = -1;
+				tempVertexIdMemory = -1;
+				tempPlayerNumberMemory = -1;
+				// pass the turn back to the active turn player
+				activeGameFragment.mListener.endTurn(
+						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				break;
 			case PROGRESS_CARD_STEP_1:
 				phase = Phase.PROGRESS_CARD_STEP_2;
@@ -586,11 +627,11 @@ public class Board {
 						activeGameFragment.mListener.endTurn(gameParticipantIds.get(nextPlayerToRespondNum),false);
 
 					} else {
-						startTradeResponsedPhase();
+						startTradeRespondedPhase();
 					}
 
 				} else {
-					startTradeResponsedPhase();
+					startTradeRespondedPhase();
 				}
 				break;
 			case TRADE_RESPONDED:
@@ -600,7 +641,7 @@ public class Board {
 				break;
 			case BUILD_METROPOLIS:
 				phase = Phase.PLAYER_TURN;
-				getCurrentPlayer().metropolisTypeToBuild = -1;
+				getPlayerOfCurrentGameTurn().metropolisTypeToBuild = -1;
 				break;
 			case DEFENDER_OF_CATAN:
 				//pass to the next player according to stack
@@ -668,7 +709,7 @@ public class Board {
 	 */
 	public void cancelMovingShipPhase() {
 		Edge prevShipLocation = getEdgeById(tempEdgeIdMemory);
-		prevShipLocation.moveShipToHere(getCurrentPlayer());
+		prevShipLocation.moveShipToHere(getPlayerOfCurrentGameTurn());
 		nextPhase();
 	}
 
@@ -676,7 +717,6 @@ public class Board {
 	 * Enter moving knight phase
 	 */
 	public void startMovingKnightPhase(Knight toMove) {
-		//TODO: what else when moving knight?
 		returnPhase = phase;
 		phase = Phase.MOVING_KNIGHT;
 		tempKnightIdMemory = toMove.getId();
@@ -703,11 +743,35 @@ public class Board {
 	}
 
 	/**
-	 * Enter the trade Responsed phase
+	 * Enter the knight displacement phase
 	 */
-	public void startTradeResponsedPhase() {
+	public void startKnightDisplacementPhase(Knight toDisplace) {
+		//TODO: what else when moving knight?
+		// set return phase to the player turn of current active player
+		returnPhase = phase;
+		phase = Phase.DISPLACING_KNIGHT;
+		tempKnightIdMemory = toDisplace.getId();
+		tempVertexIdMemory = toDisplace.getCurrentVertexLocation().getId();
+		Player displacedKnightOwner = toDisplace.getOwnerPlayer();
+		tempPlayerNumberMemory = displacedKnightOwner.getPlayerNumber();
+		toDisplace.displaceFromPost();
+		if(displacedKnightOwner.isBot()) {
+			runAITurn();
+		}
+		else {
+			activeGameFragment.mListener.endTurn(
+					displacedKnightOwner.getGooglePlayParticipantId(), false);
+		}
+		toast("Your turn will resume when your opponent moves the displaced knight! Check back later.");
+	}
+
+	/**
+	 * Enter the trade Responded phase
+	 */
+	public void startTradeRespondedPhase() {
 		this.setPhase(Phase.TRADE_RESPONDED);
-		activeGameFragment.mListener.endTurn(getPlayerById(tradeProposal.getTradeCreatorPlayerId()).getGooglePlayParticipantId(), false);
+		activeGameFragment.mListener.endTurn(getPlayerById(
+				tradeProposal.getTradeCreatorPlayerId()).getGooglePlayParticipantId(), false);
 	}
 
 	public void resolveBarbarians(){
@@ -872,6 +936,8 @@ public class Board {
 	public boolean isMovingKnightPhase() {
 		return (phase == Phase.MOVING_KNIGHT);
 	}
+
+	public boolean isKnightDisplacementPhase() { return (phase == Phase.DISPLACING_KNIGHT);}
 
 	public boolean isProgressPhase() {
 		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
@@ -1370,6 +1436,8 @@ public class Board {
                 return R.string.phase_move_ship;
 			case MOVING_KNIGHT:
 				return R.string.phase_move_knight;
+			case DISPLACING_KNIGHT:
+				return R.string.phase_displacing_knight;
 			case PROGRESS_CARD_STEP_1:
 				// TODO: progress card step 1
 				return 0;
@@ -1398,8 +1466,8 @@ public class Board {
 	}
 
 	public boolean itsMyTurn(String myParticipantId){
-		String s = this.getCurrentPlayer().getGooglePlayParticipantId();
-		return (this.getCurrentPlayer().getGooglePlayParticipantId().equals(myParticipantId));
+		String s = this.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId();
+		return (this.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId().equals(myParticipantId));
 	}
 
 	/**
@@ -1602,6 +1670,8 @@ public class Board {
 	}
 
 	public boolean isMyPseudoTurn(){
+		//TODO: is this dangerous for complete onlooker players?
+
 		//check if the trade proposal is currently proposed to me (my Pseudo turn)
 		if(tradeProposal != null) {
 			return (getPlayerById(
@@ -1612,10 +1682,15 @@ public class Board {
 			return true;
 		}
         else if(phase == Phase.CHOOSE_ROBBER_PIRATE &&
-                !getPlayerById(curPlayerNumber).getGooglePlayParticipantId().equals(
+                !getPlayerOfCurrentGameTurn().getGooglePlayParticipantId().equals(
                         activeGameFragment.myParticipantId)) {
             return true;
         }
+        else if(phase == Phase.DISPLACING_KNIGHT &&
+				getPlayerToDisplaceKnight().getGooglePlayParticipantId().equals(
+						activeGameFragment.myParticipantId)) {
+			return true;
+		}
 		return false;
 	}
 

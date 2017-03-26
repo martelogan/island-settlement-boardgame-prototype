@@ -38,7 +38,7 @@ public class PlayerStatsFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		//super.onCreate(state);
 		
-		getActivity().setTitle(getString(R.string.status));
+		getActivity().setTitle(getString(R.string.player_status));
 
 		if (board == null) {
 			//finish();
@@ -65,7 +65,7 @@ public class PlayerStatsFragment extends Fragment {
 
 			String message = "\n";
 
-			message += getString(R.string.status_resources) + ": "
+			message += getString(R.string.player_status_resources) + ": "
 					+ player.getTotalNumOwnedResources() + "\n";
 			if(showAll) {
 				message += "\t\t" + getString(R.string.wool) + ": "
@@ -93,16 +93,22 @@ public class PlayerStatsFragment extends Fragment {
 
 			message += "\n";
 
-			message += getString(R.string.status_settlements) + ": "
+			message += getString(R.string.player_status_total_settlements) + ": "
 					+ player.getNumOwnedSettlements() + " / " + Player.MAX_SETTLEMENTS + "\n";
-			message += getString(R.string.status_cities) + ": "
+			message += getString(R.string.player_status_total_cities) + ": "
 					+ player.getNumOwnedCities() + " / " + Player.MAX_CITIES + "\n";
-			message += getString(R.string.status_roads) + ": "
+			message += getString(R.string.player_status_total_roads) + ": "
 					+ player.getNumRoads() + " / " + Player.MAX_ROADS + "\n";
-			message += getString(R.string.status_ships) + ": "
+			message += getString(R.string.player_status_total_ships) + ": "
 					+ player.getNumShips() + " / " + Player.MAX_SHIPS+ "\n";
-			message += getString(R.string.reference_city_wall) + ": "
+			message += getString(R.string.player_status_total_city_walls) + ": "
 					+ player.getNumOwnedCityWalls() + " / " + Player.MAX_CITY_WALLS + "\n";
+			message += getString(R.string.player_status_total_basic_knights) + ": "
+					+ player.getNumOwnedBasicKnights() + " / " + Player.MAX_BASIC_KNIGHTS + "\n";
+			message += getString(R.string.player_status_total_strong_knights) + ": "
+					+ player.getNumOwnedStrongKnights() + " / " + Player.MAX_STRONG_KNIGHTS + "\n";
+			message += getString(R.string.player_status_total_mighty_knights) + ": "
+					+ player.getNumOwnedMightyKnights() + " / " + Player.MAX_MIGHTY_KNIGHTS+ "\n";
 			if(board.getMetropolisOwners()[0] == player.getPlayerNumber()){
 				message += "Trade Metropolis (2 points): 1/1\n";
 			}
@@ -117,11 +123,11 @@ public class PlayerStatsFragment extends Fragment {
 
 			message += "\n";
 
-			message += getString(R.string.status_best_road_length) + ": "
+			message += getString(R.string.player_status_best_road_length) + ": "
 					+ player.getMyLongestTradeRouteLength() + "\n";
 			if (player == board.getLongestTradeRouteOwner())
-				message += getString(R.string.status_has_longest_road) + ": "
-						+ "2 " + getString(R.string.status_points_str) + "\n";
+				message += getString(R.string.player_status_has_longest_road) + ": "
+						+ "2 " + getString(R.string.player_status_points_str) + "\n";
 
 			message += "\n";
 
@@ -141,7 +147,7 @@ public class PlayerStatsFragment extends Fragment {
 
 			boolean hasHarbor = false;
 			if (player.hasHarbor(null)) {
-				message += "3:1 " + getString(R.string.status_harbor) + "\n";
+				message += "3:1 " + getString(R.string.player_status_harbor) + "\n";
 				hasHarbor = true;
 			}
 
@@ -150,7 +156,7 @@ public class PlayerStatsFragment extends Fragment {
 						&& Resource.RESOURCE_TYPES[j] != Resource.ResourceType.GOLD) {
 					message += getString(Resource
 							.toRString(Resource.RESOURCE_TYPES[j]))
-							+ " " + getString(R.string.status_harbor) + "\n";
+							+ " " + getString(R.string.player_status_harbor) + "\n";
 					hasHarbor = true;
 				}
 			}
@@ -159,20 +165,20 @@ public class PlayerStatsFragment extends Fragment {
 				message += "\n";
 
 			String turn = player.getActionLog();
-			if (player == board.getCurrentPlayer() && turn != "")
+			if (player == board.getPlayerOfCurrentGameTurn() && turn != "")
 			{
-				message += getString(R.string.status_this_turn) + ":\n" + turn;
+				message += getString(R.string.player_status_this_turn) + ":\n" + turn;
 			}
 			else if (turn != "")
 			{
-				message += getString(R.string.status_last_turn) + ":\n" + turn;
+				message += getString(R.string.player_status_last_turn) + ":\n" + turn;
 			}
 
 			TextView text = (TextView) views[i].findViewById(R.id.status_text);
 			text.setText(message);
 
 			TextView point = (TextView) views[i].findViewById(R.id.status_points);
-			point.setText(getString(R.string.status_victory_points) + ": "
+			point.setText(getString(R.string.player_status_victory_points) + ": "
 					+ points + " / " + board.getMaxPoints());
 
 			ProgressBar progress = (ProgressBar) views[i].findViewById(R.id.status_progress);
@@ -184,11 +190,11 @@ public class PlayerStatsFragment extends Fragment {
 
 		ViewPager viewPager = (ViewPager) view.findViewById(R.id.status);
 		viewPager.setAdapter(new StatusTabAdapter());
-		viewPager.setCurrentItem(board.getCurrentPlayer().getPlayerNumber());
+		viewPager.setCurrentItem(board.getPlayerOfCurrentGameTurn().getPlayerNumber());
 		
 		PagerTitleStrip titleStrip = (PagerTitleStrip) view.findViewById(R.id.status_title_strip);
 		titleStrip.setBackgroundColor(TextureManager.darken(TextureManager.getColor(
-				board.getPlayerById(board.getCurrentPlayer().getPlayerNumber()).getColor()), 0.35));
+				board.getPlayerById(board.getPlayerOfCurrentGameTurn().getPlayerNumber()).getColor()), 0.35));
 		
 		viewPager.setOnPageChangeListener(new OnPageChangeListener() {
 			@Override
