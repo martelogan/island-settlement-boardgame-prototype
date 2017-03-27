@@ -26,6 +26,13 @@
             android:textAppearance="?android:attr/textAppearanceMedium" >
         </TextView>
 
+            <Spinner
+                android:id="@+id/option_predefined_board"
+                android:layout_width="fill_parent"
+                android:layout_height="50dp"
+                android:prompt="@string/option_predefined_board" >
+            </Spinner>
+
         <Spinner
             android:id="@+id/option_max_points"
             android:layout_width="fill_parent"
@@ -47,12 +54,7 @@
             android:prompt="@string/option_victory_points_to_win" >
         </Spinner>
 
-        <Spinner
-            android:id="@+id/option_predefined_board"
-            android:layout_width="fill_parent"
-            android:layout_height="50dp"
-            android:prompt="@string/option_predefined_board" >
-        </Spinner>
+
 
         <CheckBox
             android:id="@+id/auto_discard"

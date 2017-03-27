@@ -77,7 +77,7 @@ public class DiscardResourcesFragment extends Fragment {
 			return null;
 		}
 
-		getActivity().setTitle(String.format(getString(R.string.discard_reason), board.getCurrentPlayer().getPlayerName()));
+		getActivity().setTitle(String.format(getString(R.string.discard_reason), board.getPlayerOfCurrentGameTurn().getPlayerName()));
 
 		String instructionText = getString(R.string.discard_instruction);
 		TextView instruction = (TextView) discardView.findViewById(R.id.discard_instruction);
@@ -167,11 +167,11 @@ public class DiscardResourcesFragment extends Fragment {
 				}
 
 				//finish();
-				if(board.hasPlayersYetToDiscard()){
-					activeGameFragment.mListener.endTurn(board.checkNextPlayerToDiscard().getGooglePlayParticipantId(), false);
+				if(board.hasPlayersYetToAct()){
+					activeGameFragment.mListener.endTurn(board.checkNextPlayerToAct().getGooglePlayParticipantId(), false);
 				} else {
 					//pass it back to the person that rolled
-					activeGameFragment.mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+					activeGameFragment.mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				}
 				getActivity().getSupportFragmentManager().popBackStack();
 			}

@@ -292,11 +292,19 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 	}
 
 	private boolean click(int x, int y) {
-		Player player = board.getCurrentPlayer();
+		boolean executingPsuedoTurnAction =
+				(board.isMyPseudoTurn() && renderer.isPsuedoTurnAction());
+		Player player;
+		if (executingPsuedoTurnAction) {
+			player = getActivePlayer();
+		} else {
+			player = board.getPlayerOfCurrentGameTurn();
+		}
 		BoardGeometry boardGeometry = renderer.getGeometry();
 		GameRenderer.Action action = renderer.getAction();
 
-		if (!player.isHuman() || !board.itsMyTurn(myParticipantId))
+		if (!player.isHuman() ||
+				(!board.itsMyTurn(myParticipantId) && !(executingPsuedoTurnAction)))
 		{
 			return false;
 		}
@@ -322,6 +330,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 			case PROMOTE_KNIGHT:
 			case CHASE_ROBBER:
 			case CHASE_PIRATE:
+			case MOVE_KNIGHT_1:
+			case MOVE_KNIGHT_2:
+			case MOVE_DISPLACED_KNIGHT:
 				// select a vertex
 				select = boardGeometry.getNearestVertex(x, y);
 				break;
@@ -371,5 +382,9 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		}
 
 		return released;
+	}
+
+	public Player getActivePlayer() {
+		return board.getPlayerFromParticipantId(game.myParticipantId);
 	}
 }

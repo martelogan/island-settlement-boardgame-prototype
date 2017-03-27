@@ -19,15 +19,16 @@ import com.catandroid.app.common.ui.resources.Square;
 public class GameRenderer implements Renderer {
 
 	public enum Action {
-		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT, BUILD_ROAD,
-		BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER, CHASE_PIRATE,
-		MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
+		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT,
+		BUILD_ROAD,	BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER,
+		CHASE_PIRATE, MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_DISPLACED_KNIGHT,
+        MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
 	}
 
 	private TextureManager texture;
 	private Board board;
-	private Player player;
-	private int lastRoll;
+	private Player activeTurnPlayer;
+	private int lastDiceRollSum;
 	private Action action;
 
 	private int width, height;
@@ -44,6 +45,15 @@ public class GameRenderer implements Renderer {
 
 	private Square background;
 	private GameView view;
+
+	public boolean isPsuedoTurnAction() {
+		switch(action) {
+			case MOVE_DISPLACED_KNIGHT:
+				return true;
+			default:
+				return false;
+		}
+	}
 
 	public GameRenderer(GameView gameView, BoardGeometry boardGeometry) {
 		view = gameView;
@@ -62,8 +72,8 @@ public class GameRenderer implements Renderer {
 	public void setState(Board board, Player player, TextureManager texture, int lastRoll) {
 		this.texture = texture;
 		this.board = board;
-		this.player = player;
-		this.lastRoll = lastRoll;
+		this.activeTurnPlayer = player;
+		this.lastDiceRollSum = lastRoll;
 	}
 
 	public void setSize(DisplayMetrics screen, int width, int height) {
@@ -165,11 +175,11 @@ public class GameRenderer implements Renderer {
 			// draw the number tokens, robber, pirate, and active hexes
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
-				texture.drawRobber(board.getHexagonById(i), gl, boardGeometry);
+				texture.drawRobber(board.getHexagonById(i), gl, boardGeometry, board.isRobberDisabled(), board.isPirateDisabled());
 			}
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
-				texture.drawActiveHex(board.getHexagonById(i), gl, boardGeometry, lastRoll);
+				texture.drawActiveHex(board.getHexagonById(i), gl, boardGeometry, lastDiceRollSum);
 			}
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
@@ -187,26 +197,26 @@ public class GameRenderer implements Renderer {
 				Edge edge = board.getEdgeById(i);
 				boolean selectable = false;
 				int edgeUnitType = Edge.NONE;
-				if(player == null) {
+				if(activeTurnPlayer == null) {
 					selectable = false;
 				}
 				else if(action == Action.BUILD_EDGE_UNIT) {
-					selectable = player.canBuildEdgeUnit(edge);
+					selectable = activeTurnPlayer.canBuildEdgeUnit(edge);
 				}
 				else if(action == Action.BUILD_ROAD) {
-					selectable = player.canBuildRoad(edge);
+					selectable = activeTurnPlayer.canBuildRoad(edge);
 					edgeUnitType = Edge.ROAD;
 				}
 				else if(action == Action.BUILD_SHIP) {
-					selectable = player.canBuildShip(edge);
+					selectable = activeTurnPlayer.canBuildShip(edge);
 					edgeUnitType = Edge.SHIP;
 				}
 				else if(action == Action.MOVE_SHIP_1) {
-					selectable = player.canRemoveShipFrom(edge);
+					selectable = activeTurnPlayer.canRemoveShipFrom(edge);
 					edgeUnitType = Edge.SHIP;
 				}
 				else if(action == Action.MOVE_SHIP_2) {
-					selectable = player.canMoveShipTo(edge);
+					selectable = activeTurnPlayer.canMoveShipTo(edge);
 					edgeUnitType = Edge.SHIP;
 				}
 				if (selectable || edge.getOwnerPlayer() != null)
@@ -218,39 +228,59 @@ public class GameRenderer implements Renderer {
 			// draw vertices
 			for (int i = 0; i < VERTEX_COUNT; i++) {
                 Vertex vertex = board.getVertexById(i);
-                boolean settlement = player != null && action == Action.BUILD_SETTLEMENT
-                        && player.canBuildVertexUnit(vertex, Vertex.SETTLEMENT);
-                boolean city = player != null && action == Action.BUILD_CITY
-                        && player.canBuildVertexUnit(vertex, Vertex.CITY);
-				boolean cityWall = player != null && action == Action.BUILD_CITY_WALL
-						&& player.canBuildVertexUnit(vertex, Vertex.CITY_WALL);
-				boolean metropolis = player != null && action == Action.BUILD_METROPOLIS
-						&& player.canBuildVertexUnit(vertex, board.getCurrentPlayer().metropolisTypeToBuild);
+                boolean settlement = activeTurnPlayer != null && action == Action.BUILD_SETTLEMENT
+                        && activeTurnPlayer.canBuildVertexUnit(vertex, Vertex.SETTLEMENT);
+                boolean city = activeTurnPlayer != null && action == Action.BUILD_CITY
+                        && activeTurnPlayer.canBuildVertexUnit(vertex, Vertex.CITY);
+				boolean cityWall = activeTurnPlayer != null && action == Action.BUILD_CITY_WALL
+						&& activeTurnPlayer.canBuildVertexUnit(vertex, Vertex.CITY_WALL);
+				boolean metropolis = activeTurnPlayer != null && action == Action.BUILD_METROPOLIS
+						&& activeTurnPlayer.canBuildVertexUnit(vertex, board.getPlayerOfCurrentGameTurn().metropolisTypeToBuild);
 
 				// TODO: many cases where we may want to hi-light a knight
 				Knight selectableKnight = null;
-				if(player == null) {
+				if(activeTurnPlayer == null && !isPsuedoTurnAction()) {
 					selectableKnight = null;
 				}
-				else if(action == Action.HIRE_KNIGHT && player.canHireKnightTo(vertex)) {
+				else if(action == Action.HIRE_KNIGHT && activeTurnPlayer.canHireKnightTo(vertex)) {
 					selectableKnight = new Knight(Knight.KnightRank.BASIC_KNIGHT, false);
 				}
-				else if (action == Action.ACTIVATE_KNIGHT && player.canActivateKnightAt(vertex)) {
+				else if (action == Action.ACTIVATE_KNIGHT && activeTurnPlayer.canActivateKnightAt(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 				}
-				else if (action == Action.PROMOTE_KNIGHT && player.canPromoteKnightAt(vertex)) {
+				else if (action == Action.PROMOTE_KNIGHT && activeTurnPlayer.canPromoteKnightAt(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 				}
-				else if (action == Action.CHASE_ROBBER && player.canChaseRobberFrom(vertex)) {
+				else if (action == Action.CHASE_ROBBER && activeTurnPlayer.canChaseRobberFrom(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 				}
-				else if (action == Action.CHASE_PIRATE && player.canChasePirateFrom(vertex)) {
+				else if (action == Action.CHASE_PIRATE && activeTurnPlayer.canChasePirateFrom(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 				}
+				else if(action == Action.MOVE_KNIGHT_1 && activeTurnPlayer.canRemoveKnightFrom(vertex)) {
+					Knight toHighlight = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+				}
+				else if(action == Action.MOVE_KNIGHT_2
+						&& activeTurnPlayer.canMoveKnightTo(vertex, false)) {
+					Knight toHighlight = board.getCurrentlyMovingKnight();
+					if (toHighlight.canMoveTo(vertex, false)) {
+						selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+					}
+				}
+                else if(action == Action.MOVE_DISPLACED_KNIGHT && board.isMyPseudoTurn()) {
+                    Player player = view.getActivePlayer();
+                    if (player.canDisplaceKnightTo(vertex)) {
+                        Knight toHighlight = board.getCurrentlyMovingKnight();
+                        if (toHighlight.canDisplaceKnightTo(vertex)) {
+                            selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+                        }
+                    }
+                }
 				if (selectableKnight != null || vertex.getCurUnitType() == Vertex.KNIGHT)
 				{
 					texture.drawKnight(vertex, selectableKnight, gl, boardGeometry);

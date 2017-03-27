@@ -35,10 +35,10 @@ public class TextureManager {
     */
 	private enum TextureType {
 		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, ROAD, SETTLEMENT, CITY, CITY_WALL, 
+		HARBOR, RESOURCE, NUMBER_TOKEN, SHIP, ROAD, SETTLEMENT, CITY, CITY_WALL,
 		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
 		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
-		SHIP, BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
+		BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
         BASIC_KNIGHT_ACTIVE, STRONG_KNIGHT_ACTIVE, MIGHTY_KNIGHT_ACTIVE, BUTTON_BG, BUTTON
 	}
 
@@ -123,10 +123,10 @@ public class TextureManager {
         //@TODO ADD PNG RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.CITY_WALL, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.CITY_WALL, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.CITY_WALL, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.CITY_WALL, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.CITY_WALL, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.CITY_WALL, Player.Color.RED.ordinal(), R.drawable.walled_city_r, res);
+        add(TextureType.CITY_WALL, Player.Color.BLUE.ordinal(), R.drawable.walled_city_b, res);
+        add(TextureType.CITY_WALL, Player.Color.GREEN.ordinal(), R.drawable.walled_city_grn, res);
+        add(TextureType.CITY_WALL, Player.Color.YELLOW.ordinal(), R.drawable.walled_city_y,
                 res);
 
         //load large inactive basic knight textures
@@ -193,60 +193,60 @@ public class TextureManager {
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.trade_metropolis_r, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.trade_metropolis_b, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.trade_metropolis_grn, res);
+        add(TextureType.TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.trade_metropolis_y,
                 res);
 
         //load large SCIENCEmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.science_metropolis_r, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.science_metropolis_b, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.science_metropolis_grn, res);
+        add(TextureType.SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.science_metropolis_y,
                 res);
 
         //load large POLITICSmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.politics_metropolis_r, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.politics_metropolis_b, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.politics_metropolis_grn, res);
+        add(TextureType.POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.politics_metropolis_y,
                 res);
 
         //load large WALLED_TRADEmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.walled_trade_metropolis_r, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.walled_trade_metropolis_b, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.walled_trade_metropolis_grn, res);
+        add(TextureType.WALLED_TRADE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.walled_trade_metropolis_y,
                 res);
 
         //load large WALLED_SCIENCEmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.walled_science_metropolis_r, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.walled_science_metropolis_b, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.walled_science_metropolis_grn, res);
+        add(TextureType.WALLED_SCIENCE_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.walled_science_metropolis_y,
                 res);
 
         //load large WALLED_POLITICSmetropolis textures
         //@TODO ADD RESOURCES FOR BUILD_CITY_WALL
         add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.SELECTING.ordinal(), R.drawable.city_grey,
                 res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.city_r, res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.city_b, res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.city_grn, res);
-        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.city_y,
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.RED.ordinal(), R.drawable.walled_politics_metropolis_r, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.BLUE.ordinal(), R.drawable.walled_politics_metropolis_b, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.GREEN.ordinal(), R.drawable.walled_politics_metropolis_grn, res);
+        add(TextureType.WALLED_POLITICS_METROPOLIS, Player.Color.YELLOW.ordinal(), R.drawable.walled_politics_metropolis_y,
                 res);
 
         // load robber texture
@@ -292,6 +292,8 @@ public class TextureManager {
 				R.drawable.button_pressed, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.PLAYER_STATUS.ordinal(),
 				R.drawable.button_player_stats, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
+                R.drawable.button_barbarian_progress, res);
 		add(TextureType.BUTTON, UIButton.ButtonType.DICE_ROLL.ordinal(), R.drawable.button_roll_dice,
 				res);
 		add(TextureType.BUTTON, UIButton.ButtonType.BUILD_ROAD.ordinal(), R.drawable.button_build_road,
@@ -313,7 +315,7 @@ public class TextureManager {
 		add(TextureType.BUTTON, UIButton.ButtonType.CANCEL_ACTION.ordinal(),
 				R.drawable.button_cancel_action, res);
         add(TextureType.BUTTON, UIButton.ButtonType.BUILD_CITY_WALL.ordinal(),
-                R.drawable.button_cancel_action, res);
+                R.drawable.button_build_wall, res);
         add(TextureType.BUTTON, UIButton.ButtonType.PURCHASE_CITY_IMPROVEMENT.ordinal(),
                 R.drawable.button_city_improvement, res);
         add(TextureType.BUTTON, UIButton.ButtonType.HIRE_KNIGHT.ordinal(),
@@ -326,8 +328,10 @@ public class TextureManager {
                 R.drawable.button_chase_robber, res);
         add(TextureType.BUTTON, UIButton.ButtonType.CHASE_PIRATE.ordinal(),
                 R.drawable.button_chase_pirate, res);
-        add(TextureType.BUTTON, UIButton.ButtonType.VIEW_BARBARIANS.ordinal(),
-                R.drawable.button_barbarian_progress, res);
+        add(TextureType.BUTTON, UIButton.ButtonType.MOVE_KNIGHT.ordinal(), R.drawable.button_move_knight,
+                res);
+        add(TextureType.BUTTON, UIButton.ButtonType.USE_FISH.ordinal(), R.drawable.button_use_fish,
+                res);
 	}
 
     public void drawButton(UIButton button, GL10 gl) {
@@ -398,13 +402,13 @@ public class TextureManager {
         gl.glPopMatrix();
     }
 
-    public void drawRobber(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry) {
+    public void drawRobber(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry, boolean robberDisabled, boolean pirateDisabled) {
         gl.glPushMatrix();
 
         int id = hexagon.getId();
         gl.glTranslatef(boardGeometry.getHexagonX(id), boardGeometry.getHexagonY(id), 0);
 
-        if (hexagon.hasRobber() || hexagon.hasPirate())
+        if ((hexagon.hasRobber() && !robberDisabled) || (hexagon.hasPirate() && !pirateDisabled))
         {
             square.get(hash(TextureType.HEX_ROBBER, 0)).render(gl);
         }
@@ -446,6 +450,30 @@ public class TextureManager {
         else if (vertex.getCurUnitType() == Vertex.CITY_WALL)
         {
             textureType = TextureType.CITY_WALL;
+        }
+        else if (vertex.getCurUnitType() == Vertex.TRADE_METROPOLIS)
+        {
+            textureType = TextureType.TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.POLITICS_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_TRADE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_SCIENCE_METROPOLIS;
+        }
+        else if (vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS)
+        {
+            textureType = TextureType.WALLED_POLITICS_METROPOLIS;
         }
 
         Player.Color color;
@@ -509,30 +537,6 @@ public class TextureManager {
         {
             textureType = getKnightTextureType(vertex.getPlacedKnight());
         }
-        else if (vertex.getCurUnitType() == Vertex.TRADE_METROPOLIS)
-        {
-            textureType = TextureType.TRADE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.SCIENCE_METROPOLIS)
-        {
-            textureType = TextureType.SCIENCE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.POLITICS_METROPOLIS)
-        {
-            textureType = TextureType.POLITICS_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS)
-        {
-            textureType = TextureType.WALLED_TRADE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS)
-        {
-            textureType = TextureType.WALLED_SCIENCE_METROPOLIS;
-        }
-        else if (vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS)
-        {
-            textureType = TextureType.WALLED_POLITICS_METROPOLIS;
-        }
 
         Player.Color color;
         Player owner = vertex.getOwnerPlayer();
@@ -560,10 +564,9 @@ public class TextureManager {
         }
     }
 
-
-    //TODO: fix this to differentiate between roads and ships
     private void renderEdge(Edge edge, GL10 gl, BoardGeometry boardGeometry, TextureType texture, float dx, float dy) {
-        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()), texture.ordinal());
+        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()),
+                TextureType.ROAD.ordinal());
         gl.glRotatef((float) (180 / Math.PI * Math.atan(dy / dx)), 0, 0, 1);
 
         square.get(hash(texture, 0)).render(gl);
@@ -596,50 +599,42 @@ public class TextureManager {
 
         gl.glPushMatrix();
 
-        // OLD METHOD (everything looks like a road)
-        gl.glTranslatef(boardGeometry.getEdgeX(edge.getId()), boardGeometry.getEdgeY(edge.getId()), TextureType.ROAD.ordinal());
-        gl.glRotatef((float) (180 / Math.PI * Math.atan(dy / dx)), 0, 0, 1);
-
-        square.get(hash(TextureType.ROAD, 0)).render(gl);
-
-// FIXME: below attempt at rendering ships vs. roads caused strange OpenGL issues (noted below)
-// NEW ATTEMPT AT EDGE RENDERING
-//        int curEdgeUnitType = edge.getCurUnitType();
-//        if (curEdgeUnitType != Edge.NONE) { // has a type already
-//            switch(curEdgeUnitType) {
-//                case Edge.ROAD:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
-//                    break;
-//                case Edge.SHIP:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                    break;
-//            }
-//        }
-//        else { // render based on requested type (ie. during piece selection)
-//            switch(edgeUnitType) {
-//                case Edge.NONE: // ambiguous
-//                    if (edge.isAvailableForShip()) {
-//                        if(edge.isBorderingSea()) { // choice of road or ship
-//                            // just render it as a ship for now
-//                            //FIXME: strange OpenGL issues when road and ship rendered in same execution
-//                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                        }
-//                        else { // can only build a ship here
-//                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                        }
-//                    }
-//                    else { // can only build a road here
-//                        renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
-//                    }
-//                    break;
-//                case Edge.ROAD:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
-//                    break;
-//                case Edge.SHIP:
-//                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
-//                    break;
-//            }
-//        }
+        // NEW ATTEMPT AT EDGE RENDERING
+        int curEdgeUnitType = edge.getCurUnitType();
+        if (curEdgeUnitType != Edge.NONE) { // has a type already
+            switch(curEdgeUnitType) {
+                case Edge.ROAD:
+                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                    break;
+                case Edge.SHIP:
+                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+                    break;
+            }
+        }
+        else { // render based on requested type (ie. during piece selection)
+            switch(edgeUnitType) {
+                case Edge.NONE: // ambiguous
+                    if (edge.isAvailableForShip()) {
+                        if(edge.isBorderingSea()) { // choice of road or ship
+                            // just render it as a road for now
+                            renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                        }
+                        else { // can only build a ship here
+                            renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+                        }
+                    }
+                    else { // can only build a road here
+                        renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                    }
+                    break;
+                case Edge.ROAD:
+                    renderEdge(edge, gl, boardGeometry, TextureType.ROAD, dx, dy);
+                    break;
+                case Edge.SHIP:
+                    renderEdge(edge, gl, boardGeometry, TextureType.SHIP, dx, dy);
+                    break;
+            }
+        }
 
         gl.glPopMatrix();
 
@@ -707,6 +702,9 @@ public class TextureManager {
         if(textureType == TextureType.BUTTON || textureType == TextureType.BUTTON_BG) {
             // buttons should always be rendered at the topmost layer
             textureDepth = TextureType.CITY.ordinal() + 1;
+        }
+        else if(textureType == TextureType.SHIP || textureType == TextureType.ROAD) {
+            textureDepth = TextureType.ROAD.ordinal();
         }
         else if (textureType.ordinal() > TextureType.CITY.ordinal()) {
             // render most textures at the depth of a city
