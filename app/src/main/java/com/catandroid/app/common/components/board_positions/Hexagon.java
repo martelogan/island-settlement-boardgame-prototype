@@ -6,7 +6,10 @@ import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.utilities.hex_grid_utils.AxialHexLocation;
 import com.catandroid.app.common.players.Player;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class Hexagon {
@@ -24,7 +27,13 @@ public class Hexagon {
 	public enum TerrainType {
 		FOREST, PASTURE, FIELDS, HILLS, MOUNTAINS, DESERT, FISH_LAKE, SEA, GOLD_FIELD
 	}
+	private static final Integer[] FISHING_LAKE_NUMBERS = new Integer[] {4, 5, 6, 8, 9, 10};
+	private static final Set<Integer> FISHING_LAKE_NUMBERS_SET =
+			new HashSet<Integer>(Arrays.asList(FISHING_LAKE_NUMBERS));
 
+	public static Set<Integer> getFishingLakeNumbersSet() {
+		return FISHING_LAKE_NUMBERS_SET;
+	}
 	/**
 	 * Initialize the hexagon with a resource resourceType and numberToken number
 	 *
@@ -282,6 +291,24 @@ public class Hexagon {
 		for (int i = 0; i < 6; i++)
 		{
 			board.getVertexById(vertexIds[i]).distributeResources(resourceProduced.getResourceType());
+		}
+	}
+
+	/**
+	 * Distribute fish from this hexagon
+	 *
+	 * @param diceRoll
+	 *            the current dice sum
+	 */
+	public void distributeFish(int diceRoll) {
+		if (!(FISHING_LAKE_NUMBERS_SET.contains(diceRoll)
+				|| FishingGround.getFishingGroundNumbersSet().contains(diceRoll))) {
+			return;
+		}
+
+		for (int i = 0; i < 6; i++)
+		{
+			board.getVertexById(vertexIds[i]).distributeFish(diceRoll);
 		}
 	}
 

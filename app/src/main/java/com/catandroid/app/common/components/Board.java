@@ -420,10 +420,11 @@ public class Board {
 			// enter ChooseRobberPiratePhase
 			startChooseRobberPiratePhase();
 		} else {
-			// distribute resources
+			// distribute resources and fish
 			for (int i = 0; i < hexagons.length; i++)
 			{
 				hexagons[i].distributeResources(diceRollNumber);
+				hexagons[i].distributeFish(diceRollNumber);
 			}
 		}
 
@@ -1323,7 +1324,7 @@ public class Board {
 	{
 		for(int i = 0; i < vertices.length; i++){
 			boolean isPillageableCity = vertices[i].getCurUnitType() == Vertex.CITY;
-			boolean isPillageableWall = vertices[i].getCurUnitType() == Vertex.CITY_WALL;
+			boolean isPillageableWall = vertices[i].getCurUnitType() == Vertex.WALLED_CITY;
 
 			if(vertices[i].getOwnerPlayer() != null && vertices[i].getOwnerPlayer().getPlayerNumber() == playerNumber
 					&& isPillageableCity){

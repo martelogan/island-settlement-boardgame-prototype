@@ -241,7 +241,7 @@ public class GameRenderer implements Renderer {
                 boolean city = activeTurnPlayer != null && action == Action.BUILD_CITY
                         && activeTurnPlayer.canBuildVertexUnit(vertex, Vertex.CITY);
 				boolean cityWall = activeTurnPlayer != null && action == Action.BUILD_CITY_WALL
-						&& activeTurnPlayer.canBuildVertexUnit(vertex, Vertex.CITY_WALL);
+						&& activeTurnPlayer.canBuildVertexUnit(vertex, Vertex.WALLED_CITY);
 				boolean metropolis = activeTurnPlayer != null && action == Action.BUILD_METROPOLIS
 						&& activeTurnPlayer.canBuildVertexUnit(vertex, board.getPlayerOfCurrentGameTurn().metropolisTypeToBuild);
 

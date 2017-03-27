@@ -487,7 +487,7 @@ public class TextureManager {
         {
             textureType = TextureType.SETTLEMENT;
         }
-        else if (vertex.getCurUnitType() == Vertex.CITY_WALL)
+        else if (vertex.getCurUnitType() == Vertex.WALLED_CITY)
         {
             textureType = TextureType.CITY_WALL;
         }

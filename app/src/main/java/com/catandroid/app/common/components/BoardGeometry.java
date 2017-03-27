@@ -610,7 +610,8 @@ public class BoardGeometry {
         for (int i = 0, j = 0; i < fishingGrounds.length; i+=2, j++) {
             while (j < randomPortEdges.size()) { // find a candidate port edge
                 candidatePortEdge1 = randomPortEdges.get(j);
-                if (forbiddenPortEdges.contains(candidatePortEdge1)) { // iterate until valid
+                if (forbiddenPortEdges.contains(candidatePortEdge1)
+                        || candidatePortEdge1.isBorderingFishLake()) { // iterate until valid
                     j++;
                     continue;
                 }
@@ -730,7 +731,8 @@ public class BoardGeometry {
                         candidatePortHexLocation, hexIdMap)};
 
         for (Edge considering : toConsider) {
-            if(considering == null || !allPortEdges.contains(considering)) {
+            if(considering == null || !allPortEdges.contains(considering)
+                    || considering.isBorderingFishLake()) {
                 // exclude invalid candidate for a port
                 continue;
             }

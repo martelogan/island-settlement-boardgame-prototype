@@ -161,16 +161,16 @@
 	<string name="player_status_this_turn">This turn</string>
 	<string name="player_status_last_turn">Last turn</string>
 	<string name="player_status_resources">Resources</string>
-	<string name="player_status_total_settlements">Total Settlements (1 point each)</string>
-	<string name="player_status_total_cities">Total Cities (2 points each)</string>
-	<string name="player_status_total_roads">Total roads</string>
-	<string name="player_status_total_ships">Total ships</string>
-	<string name="player_status_total_city_walls">Total city walls</string>
-	<string name="player_status_total_basic_knights">Total basic knights</string>
-	<string name="player_status_total_strong_knights">Total strong knights</string>
-	<string name="player_status_total_mighty_knights">Total mighty knights</string>
-	<string name="player_status_best_road_length">Your longest road length</string>
-	<string name="player_status_has_longest_road">Longest road</string>
+	<string name="player_status_total_settlements">Settlements (1 point each)</string>
+	<string name="player_status_total_cities">Cities (2 points each)</string>
+	<string name="player_status_total_roads">Roads</string>
+	<string name="player_status_total_ships">Ships</string>
+	<string name="player_status_total_city_walls">City walls</string>
+	<string name="player_status_total_basic_knights">Basic knights</string>
+	<string name="player_status_total_strong_knights">Strong knights</string>
+	<string name="player_status_total_mighty_knights">Mighty knights</string>
+	<string name="player_status_best_trade_route_length">Your longest trade route length</string>
+	<string name="player_status_has_longest_trade_route">Longest trade route</string>
 	<string name="player_status_progress_cards">Progress cards</string>
 	<string name="player_status_harbor">harbor</string>
 

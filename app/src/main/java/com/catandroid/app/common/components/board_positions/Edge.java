@@ -20,8 +20,7 @@ public class Edge {
 	private int neighborHexId = -1;
     private int portHexId = -1;
 	private int portHexDirect = -1;
-    private int myHarborId = -
-			1;
+    private int myHarborId = -1;
 	private int myFishingGroundId = -1;
 	private boolean isBorderingSea = false;
 	private boolean isBlockedByPirate = false;
@@ -235,6 +234,22 @@ public class Edge {
 
 	public boolean isBorderingSea() {
 		return isBorderingSea;
+	}
+
+	public boolean isBorderingFishLake() {
+		Hexagon originhex, neighborHex;
+		originhex = getOriginHex();
+		neighborHex = getNeighborHex();
+		if(originhex != null
+				&& originhex.getTerrainType() == Hexagon.TerrainType.FISH_LAKE) {
+			return true;
+		}
+		else if(neighborHex != null
+				&& neighborHex.getTerrainType() == Hexagon.TerrainType.FISH_LAKE) {
+			return true;
+		}
+
+		return false;
 	}
 
 
@@ -559,8 +574,11 @@ public class Edge {
 		return true;
 	}
 
+
+	//FIXME: WARNING...trade route logic is only half-working (considers roads only + minor bug)
+
 	/**
-	 * Get the longest road length through this edge
+	 * Get the longest trade route length through this edge
 	 * 
 	 * @param player
 	 *            player to measure for

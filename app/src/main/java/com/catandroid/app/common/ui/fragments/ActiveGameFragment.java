@@ -419,7 +419,7 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			vertexUnitType = Vertex.CITY_WALL;
+			vertexUnitType = Vertex.WALLED_CITY;
 		}
 		else if(action == Action.BUILD_METROPOLIS)
 		{
@@ -443,7 +443,7 @@ public class ActiveGameFragment extends Fragment {
 		switch(vertexUnitType) {
 			case Vertex.SETTLEMENT:
 			case Vertex.CITY:
-			case Vertex.CITY_WALL:
+			case Vertex.WALLED_CITY:
 			    // selecting buildable vertex unit
 				if (player.buildVertexUnit(vertex, vertexUnitType)) {
 					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
@@ -1309,7 +1309,7 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canMoveSomeKnight()) {
 				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
-			if(player.getNumFishOwned() > 0){
+			if(player.getNumOwnedFish() > 0){
 				view.addButton(ButtonType.USE_FISH);
 			}
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
