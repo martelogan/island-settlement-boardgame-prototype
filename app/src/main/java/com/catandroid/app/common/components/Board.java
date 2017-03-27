@@ -1295,27 +1295,27 @@ public class Board {
 		politicsDeck = new ArrayList<>();
 
 		//@TODO for testing purposes ONLY
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
+		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
+		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
+		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
+		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
+		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
+		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
 
 
 		//@TODO Implement all these progress cards

@@ -31,8 +31,8 @@ public class ProgressCard extends InventoryItem {
                 return R.string.deserter;
             case WEDDING:
                 return R.string.wedding;
-            case SPY:
-                return R.string.spy;
+            case WARLORD:
+                return R.string.warlord;
             case MASTER_MERCHANT:
                 return R.string.master_merchant;
             default:
@@ -62,8 +62,8 @@ public class ProgressCard extends InventoryItem {
                 return R.string.deserter_description;
             case WEDDING:
                 return R.string.wedding_description;
-            case SPY:
-                return R.string.spy_description;
+            case WARLORD:
+                return R.string.warlord_description;
             case MASTER_MERCHANT:
                 return R.string.master_merchant_description;
             default:

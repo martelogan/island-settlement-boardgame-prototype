@@ -27,14 +27,12 @@ public class Player {
 	public static final int MAX_CITY_WALLS = 3;
 	public static final int MAX_ROADS = 15;
 	public static final int MAX_SHIPS = 15;
-<<<<<<< HEAD
-=======
+
 	public static final int MAX_BASIC_KNIGHTS = 2;
 	public static final int MAX_STRONG_KNIGHTS = 2;
 	public static final int MAX_MIGHTY_KNIGHTS = 2;
 	public static final int MAX_TOTAL_KNIGHTS = 6;
 
->>>>>>> master
 	public static final int[] ROAD_COST = { 1, 0, 0, 1, 0, 0 };
 	public static final int[] SETTLEMENT_COST = { 1, 1, 1, 1, 0, 0 };
 	public static final int[] CITY_COST = { 0, 0, 2, 0, 3, 0 };
