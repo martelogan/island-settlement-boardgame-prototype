@@ -209,20 +209,6 @@ public class Hexagon {
 	}
 
 	/**
-	 * Set an edge of the hexagon
-	 *
-	 * @param direction
-	 *            the direction of the edge on the hexagon
-	 * @param edgeId
-	 * 			  id of the edge to set
-	 * @return
-	 */
-	public void setEdgeById(int edgeId, int direction) {
-		board.getEdgeById(edgeId).setOriginHexDirect(direction);
-		edgeIds[direction] = edgeId;
-	}
-
-	/**
 	 * Get integer representation of the number token
 	 * currently placed on this hexagon
 	 *

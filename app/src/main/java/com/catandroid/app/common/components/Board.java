@@ -8,6 +8,7 @@ import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.FishingGround;
 import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
@@ -100,6 +101,7 @@ public class Board {
 	private int numPlayers;
 	private int numTotalPlayableKnights;
 	private Harbor[] harbors;
+    private FishingGround[] fishingGrounds;
 	private Stack<Integer> playerIdsYetToAct;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
@@ -208,9 +210,13 @@ public class Board {
 		edges = BoardUtils.generateEdges(this, boardGeometry.getEdgeCount());
 		hexagons = BoardUtils.initRandomHexes(this);
 		harbors = BoardUtils.initRandomHarbors(this, boardGeometry.getHarborCount());
+		Integer[] fishingGroundNumbers = {4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10};
+		fishingGrounds = BoardUtils.generateFishingGrounds(this,
+				fishingGroundNumbers);
 
 		// populate board map with starting parameters
-		boardGeometry.populateBoard(hexagons, vertices, edges, harbors, hexIdMap);
+		boardGeometry.populateBoard(hexagons, vertices, edges,
+				harbors, fishingGrounds, hexIdMap);
 
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
@@ -1031,9 +1037,27 @@ public class Board {
 	 */
 	public Harbor getHarborById(int harborId) {
 		if (harborId < 0 || harborId >= boardGeometry.getHarborCount())
+		{
 			return null;
+		}
 
 		return harbors[harborId];
+	}
+
+	/**
+	 * Get a given fishing ground by id
+	 *
+	 * @param fishingGroundId
+	 *            the id of the fishing ground
+	 * @return the fishing ground with fishingGroundId(or null)
+	 */
+	public FishingGround getFishingGroundById(int fishingGroundId) {
+		if (fishingGroundId < 0 || fishingGroundId >= boardGeometry.getFishingGroundCount())
+		{
+			return null;
+		}
+
+		return fishingGrounds[fishingGroundId];
 	}
 
 	/**
@@ -1540,6 +1564,9 @@ public class Board {
 		}
 		for (Harbor harbor : harbors) {
 			harbor.setBoard(this);
+		}
+		for (FishingGround fishingGround : fishingGrounds) {
+			fishingGround.setBoard(this);
 		}
 		for (Player player : players) {
 			player.setBoard(this);

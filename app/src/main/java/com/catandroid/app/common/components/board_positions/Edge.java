@@ -20,7 +20,9 @@ public class Edge {
 	private int neighborHexId = -1;
     private int portHexId = -1;
 	private int portHexDirect = -1;
-    private int myHarborId = -1;
+    private int myHarborId = -
+			1;
+	private int myFishingGroundId = -1;
 	private boolean isBorderingSea = false;
 	private boolean isBlockedByPirate = false;
 	private transient Board board;
@@ -422,6 +424,22 @@ public class Edge {
 	}
 
 	/**
+	 * Get the marginal X sign of the port hexagon direction
+	 * @return the marginal X sign of the port hexagon direction
+	 */
+	public int getPortHexDirectXsign() {
+		return Hexagon.getVDirectXsign(this.portHexDirect);
+	}
+
+	/**
+	 * Get the marginal Y sign of the port hexagon direction
+	 * @return the marginal Y sign of the port hexagon direction
+	 */
+	public int getPortHexDirectYsign() {
+		return Hexagon.getVDirectYsign(this.portHexDirect);
+	}
+
+	/**
 	 * Set the neighbor hexagon
 	 * @param h
 	 *            the hex to set
@@ -455,8 +473,19 @@ public class Edge {
 	 * @return
 	 */
 	public void setMyHarbor(Harbor harbor) {
-		harbor.setEdgeById(this.getId());
+		harbor.setEdge(this);
 		this.myHarborId = harbor.getId();
+	}
+
+	/**
+	 * Set a fishing ground on this edge
+	 * @param fishingGround
+	 *            the fishing ground to set
+	 * @return
+	 */
+	public void setMyFishingGround(FishingGround fishingGround) {
+		fishingGround.setEdge(this);
+		this.myFishingGroundId = fishingGround.getId();
 	}
 
     /**

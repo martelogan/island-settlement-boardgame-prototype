@@ -1,7 +1,9 @@
 package com.catandroid.app.common.components.utilities;
 
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.components.board_pieces.NumberToken;
 import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.FishingGround;
 import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_pieces.Resource;
@@ -111,6 +113,45 @@ public class BoardUtils
         }
 
         return harbors;
+    }
+
+    public static FishingGround[] initRandomFishingGrounds(Board board, int fishingGroundCount) {
+
+        // mark all fishing grounds as initially unassigned
+        FishingGround[] fishingGrounds = new FishingGround[fishingGroundCount];
+        boolean[] usedFishingGround = new boolean[fishingGroundCount];
+        for (int i = 0; i < fishingGroundCount; i++)
+        {
+            usedFishingGround[i] = false;
+        }
+
+        Integer[] fishingGroundNumbers = {4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10};
+
+        // for each fishing ground type (two per number token: 4, 5, 6, 8, 9, 10)
+        for (int i = 0; i < fishingGroundCount; i++) {
+            NumberToken curNumberToken = new NumberToken(fishingGroundNumbers[i]);
+            while (true) {
+                // pick a random unassigned harbor
+                int pick = (int) (Math.random() * fishingGroundCount);
+                if (!usedFishingGround[pick]) {
+                    fishingGrounds[pick] = new FishingGround(board, curNumberToken, pick);
+                    usedFishingGround[pick] = true;
+                    break;
+                }
+            }
+        }
+
+        return fishingGrounds;
+    }
+
+    public static FishingGround[] generateFishingGrounds(Board board, Integer[] fishingGroundNumbers) {
+        FishingGround[] fishingGrounds = new FishingGround[fishingGroundNumbers.length];
+        for (int i = 0; i < fishingGrounds.length; i++) {
+            fishingGrounds[i] = new FishingGround(board,
+                    new NumberToken(fishingGroundNumbers[i]), i);
+        }
+
+        return fishingGrounds;
     }
 
     /**

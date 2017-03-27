@@ -38,6 +38,7 @@ public class GameRenderer implements Renderer {
 	private int EDGE_COUNT;
 	private int VERTEX_COUNT;
 	private int HARBOR_COUNT;
+	private int FISHING_GROUND_COUNT;
 
 	private static final float[] backgroundColors = { 0, 0.227f, 0.521f, 1,
 			0.262f, 0.698f, 0.878f, 1, 0, 0.384f, 0.600f, 1, 0.471f, 0.875f,
@@ -64,6 +65,7 @@ public class GameRenderer implements Renderer {
 			this.VERTEX_COUNT = boardGeometry.getVertexCount();
 			this.EDGE_COUNT = boardGeometry.getEdgeCount();
 			this.HARBOR_COUNT = boardGeometry.getHarborCount();
+			this.FISHING_GROUND_COUNT = boardGeometry.getFishingGroundCount();
 		}
 
 		action = Action.NONE;
@@ -190,6 +192,12 @@ public class GameRenderer implements Renderer {
 			for (int i = 0; i < HARBOR_COUNT; i++)
 			{
 				texture.drawHarbor(board.getHarborById(i), gl, boardGeometry);
+			}
+
+			// draw fishing grounds
+			for (int i = 0; i < FISHING_GROUND_COUNT; i++)
+			{
+				texture.drawFishingGround(board.getFishingGroundById(i), gl, boardGeometry);
 			}
 
 			// draw edges

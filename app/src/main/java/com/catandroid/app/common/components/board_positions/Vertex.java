@@ -38,6 +38,7 @@ public class Vertex {
 	private int[] edgeIds = {-1, -1, -1};
 	private int[] hexagonIds = {-1, -1, -1};
 	private int[] harborIds = {-1, -1};
+    private int[] fishingGroundIds = {-1, -1};
 
 	private transient Board board;
 
@@ -110,6 +111,23 @@ public class Vertex {
 				harborIds[i] =harbor.getId();
 				return;
 			} else if (harborIds[i] == harbor.getId()) {
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Associate a fishing ground with the vertex
+	 *
+	 * @param fishingGround
+	 *            the fishing ground to add (ignored if already associated)
+	 */
+	public void addFishingGround(FishingGround fishingGround) {
+		for (int i = 0; i < 3; i++) {
+			if (fishingGroundIds[i] == -1) {
+				fishingGroundIds[i] = fishingGround.getId();
+				return;
+			} else if (fishingGroundIds[i] == fishingGround.getId()) {
 				return;
 			}
 		}
@@ -1327,6 +1345,13 @@ public class Vertex {
 		myHarbors[0] = board.getHarborById(harborIds[0]);
 		myHarbors[0] = board.getHarborById(harborIds[1]);
 		return myHarbors;
+	}
+
+	public FishingGround[] getFishingGrounds() {
+		FishingGround[] myFishingGrounds = new FishingGround[2];
+		myFishingGrounds[0] = board.getFishingGroundById(fishingGroundIds[0]);
+		myFishingGrounds[0] = board.getFishingGroundById(fishingGroundIds[1]);
+		return myFishingGrounds;
 	}
 
 	/**
