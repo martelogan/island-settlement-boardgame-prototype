@@ -378,7 +378,8 @@ public class BalancedAI extends Player implements AutomatedPlayer {
 
     protected int hexagonValue(Hexagon hexagon, int[] factors) {
         if (factors != null && hexagon.getTerrainType() != Hexagon.TerrainType.DESERT
-                && hexagon.getTerrainType() != Hexagon.TerrainType.SEA) {
+                && hexagon.getTerrainType() != Hexagon.TerrainType.SEA
+                && hexagon.getTerrainType() != Hexagon.TerrainType.FISH_LAKE) {
             return factors[hexagon.getResourceType().ordinal()] * hexagon.getNumberTokenAsObject().getTotalWaysToSum();
         }
         else {

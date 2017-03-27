@@ -22,7 +22,7 @@ public class Hexagon {
 	private transient Board board;
 
 	public enum TerrainType {
-		FOREST, PASTURE, FIELDS, HILLS, MOUNTAINS, DESERT, SEA, GOLD_FIELD
+		FOREST, PASTURE, FIELDS, HILLS, MOUNTAINS, DESERT, FISH_LAKE, SEA, GOLD_FIELD
 	}
 
 	/**

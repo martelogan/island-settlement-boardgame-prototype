@@ -592,7 +592,8 @@ public class Player {
 					terrainType = curHex.getTerrainType();
 					if (terrainType != Hexagon.TerrainType.DESERT
 							&& terrainType != Hexagon.TerrainType.SEA
-							&& terrainType != Hexagon.TerrainType.GOLD_FIELD) {
+							&& terrainType != Hexagon.TerrainType.GOLD_FIELD
+							&& terrainType != Hexagon.TerrainType.FISH_LAKE) {
 						// collect resource for hex adjacent to city
 						resourceType = curHex.getResourceType();
 						addResources(resourceType, Vertex.CITY, true);

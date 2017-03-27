@@ -39,7 +39,8 @@ public class Board {
 	{
 		HashMap<Hexagon.TerrainType, Integer> terrainTypeToCountMap =
 				new HashMap<Hexagon.TerrainType, Integer>();
-		terrainTypeToCountMap.put(Hexagon.TerrainType.DESERT, 2);
+		terrainTypeToCountMap.put(Hexagon.TerrainType.FISH_LAKE, 1);
+		terrainTypeToCountMap.put(Hexagon.TerrainType.DESERT, 1);
 		terrainTypeToCountMap.put(Hexagon.TerrainType.GOLD_FIELD, 2);
 		terrainTypeToCountMap.put(Hexagon.TerrainType.HILLS, 3);
 		terrainTypeToCountMap.put(Hexagon.TerrainType.FOREST, 4);

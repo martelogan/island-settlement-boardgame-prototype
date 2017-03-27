@@ -77,6 +77,8 @@ public class TextureManager {
 		add(TextureType.HEX_COAST, 0, R.drawable.hex_coast, res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.DESERT.ordinal(), R.drawable.hex_desert,
 				res);
+        add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.FISH_LAKE.ordinal(), R.drawable.hex_fish_lake,
+                res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.PASTURE.ordinal(), R.drawable.hex_wool, res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.FIELDS.ordinal(), R.drawable.hex_grain, res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.FOREST.ordinal(), R.drawable.hex_lumber,

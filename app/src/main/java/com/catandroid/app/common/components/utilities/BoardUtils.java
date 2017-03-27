@@ -58,6 +58,9 @@ public class BoardUtils
                                 isPirateSet = true;
                             }
                         }
+                        if(terrainType == Hexagon.TerrainType.FISH_LAKE) {
+                            hexagons[index].placeNumberToken(7);
+                        }
 
                         break;
                     }
@@ -245,7 +248,8 @@ public class BoardUtils
                 terrainType = curHex.getTerrainType();
                 if (pick >= 0 && curHex.getNumberTokenAsInt() > 0 || pick >= 0
                         && (terrainType == Hexagon.TerrainType.DESERT ||
-                        terrainType == Hexagon.TerrainType.SEA)) {
+                        terrainType == Hexagon.TerrainType.SEA
+                        || terrainType == Hexagon.TerrainType.FISH_LAKE)) {
                     pick = -1;
                 }
             }
@@ -264,7 +268,8 @@ public class BoardUtils
             // skip hexagons that already have a tokenNum number
             if (curHex.getNumberTokenAsInt() > 0 ||
                     (terrainType == Hexagon.TerrainType.DESERT ||
-                            terrainType == Hexagon.TerrainType.SEA)) {
+                            terrainType == Hexagon.TerrainType.SEA
+                    || terrainType == Hexagon.TerrainType.FISH_LAKE)) {
                 continue;
             }
 
