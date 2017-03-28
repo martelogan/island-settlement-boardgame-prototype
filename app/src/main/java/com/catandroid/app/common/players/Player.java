@@ -56,7 +56,7 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
-	private int numFishOwned = 100;
+	private int numFishOwned = 0;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
@@ -224,8 +224,14 @@ public class Player {
 		return freeBuildUnit;
 	}
 
-	public void setFreeBuildUnit(int freeBuildUnit) {
-		this.freeBuildUnit = freeBuildUnit;
+	/**
+	 * Set the free buildable
+	 *
+	 * @param freeBuildVertexUnit
+	 * @return
+	 */
+	public void setFreeBuildUnit(int freeBuildVertexUnit) {
+		this.freeBuildUnit = freeBuildVertexUnit;
 	}
 
 	/**
@@ -1955,6 +1961,9 @@ public class Player {
 		if(board.getMetropolisOwners()[2] == getPlayerNumber()){
 			points += 2;
 		}
+		if(board.getMerchantOwner() == getPlayerNumber()){
+			points += 1;
+		}
 		points += defenderOfCatan;
 
 		return points;
@@ -2073,7 +2082,7 @@ public class Player {
 		//21-28 inclusive = 3
 		//1-30
 		Random r = new Random();
-		int fishNum = r.nextInt(29);
+		int fishNum = r.nextInt(30);
 		if(fishNum <= 10){
 			numFishOwned+= 1;
 		} else if(fishNum <= 20){

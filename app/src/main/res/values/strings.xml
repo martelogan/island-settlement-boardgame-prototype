@@ -133,6 +133,7 @@
 	<string name="player_played_card">Played a %s card</string>
     <string name="player_longest_road">Has the longest road</string>
     <string name="player_stole_from">Stole from %s</string>
+	<string name="player_gave_boot">Gave boot to %s</string>
 	<string name="player_received_resource">Received %s</string>
 	<string name="player_received_x_resources" formatted="false">Received %s resources</string>
     <string name="player_discarded">Discarded %s</string>
@@ -255,6 +256,7 @@
 	<string name="game_road_ship_title">Build a road or ship?</string>
 	<string name="game_defended_catan">Defended Catan! Pick Card.</string>
 	<string name="game_defended_catan_wait_pick_card">Waiting On Others to Pick Card!</string>
+	<string name="game_place_merchant">Place Merchant</string>
 	<string name="game_build_road">Build a road</string>
 	<string name="game_build_ship">Build a ship</string>
     <string name="game_move_ship">Ship to move?</string>
@@ -271,9 +273,11 @@
 	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
 	<string name="game_cant_promote_knight_str">Can\'t promote knight</string>
 	<string name="game_move_knight">Knight to move?</string>
+	<string name="game_cant_move_merchant">Can\'t move merchant</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
+	<string name="game_merchant_sea">The ocean is no place for a merchant!</string>
 	<string name="game_cant_move_pirate">Can\'t move pirate</string>
 	<string name="game_pirate_same">You must move the pirate to a new location</string>
 	<string name="game_pirate_land">The land is no place for a pirate!</string>

@@ -343,6 +343,7 @@ public class ActiveGameFragment extends Fragment {
 		switch (action) {
 			case MOVE_ROBBER:
 			case MOVE_PIRATE:
+            case PLACE_MERCHANT:
 				select(action, board.getHexagonById(id));
 				break;
 
@@ -405,6 +406,23 @@ public class ActiveGameFragment extends Fragment {
 				showState(false);
 			}
 		}
+		else if(action == Action.PLACE_MERCHANT) {
+            boolean ownsBuildableOnHex = hexagon.getPlayers().contains(board.getActiveFragmentPlayer());
+            if (hexagon.getTerrainType() == Hexagon.TerrainType.SEA) {
+                popup(getString(R.string.game_cant_move_merchant),
+                        getString(R.string.game_merchant_sea));
+            }
+            else if(!ownsBuildableOnHex){
+                popup("Can't Place Merchant",
+                        "You don't own a City/Settlement on that Hexagon");
+            }
+            else {
+                board.setCurMerchantHex(hexagon);
+                board.setMerchantOwner(board.getActiveFragmentPlayer().getPlayerNumber());
+				board.nextPhase();
+                showState(false);
+            }
+        }
 	}
 
 	private void select(Action action, Vertex vertex) {
@@ -1132,6 +1150,9 @@ public class ActiveGameFragment extends Fragment {
 		if (board.isSetupSettlement())
 		{
 			action = Action.BUILD_SETTLEMENT;
+			popup("Current Game", "Number players: " + board.getNumPlayers() + "\n" +
+					"VP to win: " + board.getMaxPoints() + "\n\nTo reject, quit game and reject invite.");
+
 		}
 		else if (board.isSetupCity())
 		{
@@ -1164,6 +1185,9 @@ public class ActiveGameFragment extends Fragment {
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
+        else if(board.isPlaceMerchantPhase()){
+            action = Action.PLACE_MERCHANT;
+        }
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -1249,6 +1273,8 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
+        } else if (board.isPlaceMerchantPhase()) {
+            // do nothing
 		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS
 				&& action != Action.MOVE_DISPLACED_KNIGHT) {
 			// cancel the action
@@ -1990,6 +2016,9 @@ public class ActiveGameFragment extends Fragment {
 		//@TODO
 		//add merchant placement logic
 		toast("Played the merchant");
+        getActivity().setTitle("Place Merchant");
+        board.setPhase(Board.Phase.PLACE_MERCHANT);
+		showState(true);
 	}
 
 	private void confirmDisplaceKnightDialog(Vertex vertex) {

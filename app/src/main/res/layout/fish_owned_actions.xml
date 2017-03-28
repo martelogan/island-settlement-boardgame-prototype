@@ -10,9 +10,19 @@
         android:orientation="vertical"
         android:padding="10dip" >
 
+        <Button
+            android:id="@+id/giveBoot"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="Give Away Boot"
+            android:enabled="false"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="20dp"
             android:text="@string/reference_fishImprovement"
             android:textSize="24sp" >
         </TextView>

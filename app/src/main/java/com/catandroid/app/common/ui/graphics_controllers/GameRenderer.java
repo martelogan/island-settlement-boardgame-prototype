@@ -22,7 +22,7 @@ public class GameRenderer implements Renderer {
 		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT,
 		BUILD_ROAD,	BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER,
 		CHASE_PIRATE, MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_DISPLACED_KNIGHT,
-        MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE
+        MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE, PLACE_MERCHANT
 	}
 
 	private TextureManager texture;
@@ -172,19 +172,22 @@ public class GameRenderer implements Renderer {
 				texture.drawHexTerrain(board.getHexagonById(i), gl, boardGeometry);
 			}
 
-			// draw the number tokens, robber, pirate, and active hexes
+			//draw the number tokens, robber, pirate, and active hexes
 			for (int i = 0; i < HEX_COUNT; i++)
 			{
 				texture.drawRobber(board.getHexagonById(i), gl, boardGeometry, board.isRobberDisabled(), board.isPirateDisabled());
-			}
-			for (int i = 0; i < HEX_COUNT; i++)
-			{
+				texture.drawMerchant(board.getHexagonById(i), gl, boardGeometry);
 				texture.drawActiveHex(board.getHexagonById(i), gl, boardGeometry, lastDiceRollSum);
-			}
-			for (int i = 0; i < HEX_COUNT; i++)
-			{
 				texture.drawNumTokenOnHex(board.getHexagonById(i), gl, boardGeometry);
 			}
+//			for (int i = 0; i < HEX_COUNT; i++)
+//			{
+//				texture.drawActiveHex(board.getHexagonById(i), gl, boardGeometry, lastDiceRollSum);
+//			}
+//			for (int i = 0; i < HEX_COUNT; i++)
+//			{
+//				texture.drawNumTokenOnHex(board.getHexagonById(i), gl, boardGeometry);
+//			}
 
 			// draw harbors
 			for (int i = 0; i < HARBOR_COUNT; i++)

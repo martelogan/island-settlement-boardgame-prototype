@@ -317,6 +317,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 
 			case MOVE_ROBBER:
 			case MOVE_PIRATE:
+			case PLACE_MERCHANT:
 				// select a hexagon
 				select = boardGeometry.getNearestHexagon(x, y);
 				break;

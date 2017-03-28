@@ -34,7 +34,7 @@ public class TextureManager {
     * button just on top (layer CITY + 1) and all remaining png's at the city layer
     */
 	private enum TextureType {
-		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
+		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE, HEX_MERCHANT,
 		HARBOR, RESOURCE, NUMBER_TOKEN, SHIP, ROAD, SETTLEMENT, CITY, CITY_WALL,
 		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
 		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
@@ -252,6 +252,9 @@ public class TextureManager {
         // load robber texture
         add(TextureType.HEX_ROBBER, 0, R.drawable.hex_robber, res);
 
+        // load merchant texture
+        add(TextureType.HEX_MERCHANT, 0, R.drawable.hex_merchant, res);
+
         // load harbor textures
         add(TextureType.HARBOR, Harbor.Position.NORTH.ordinal(),
                 R.drawable.harbor_north, res);
@@ -411,6 +414,20 @@ public class TextureManager {
         if ((hexagon.hasRobber() && !robberDisabled) || (hexagon.hasPirate() && !pirateDisabled))
         {
             square.get(hash(TextureType.HEX_ROBBER, 0)).render(gl);
+        }
+
+        gl.glPopMatrix();
+    }
+
+    public void drawMerchant(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry) {
+        gl.glPushMatrix();
+
+        int id = hexagon.getId();
+        gl.glTranslatef(boardGeometry.getHexagonX(id), boardGeometry.getHexagonY(id), 0);
+
+        if (hexagon.hasMerchant())
+        {
+            square.get(hash(TextureType.HEX_MERCHANT, 0)).render(gl);
         }
 
         gl.glPopMatrix();

@@ -65,6 +65,10 @@ public class PlayerStatsFragment extends Fragment {
 
 			String message = "\n";
 
+			if(board.playerNumBootOwner == player.getPlayerNumber()){
+				message += "Has the boot! (+1 VP required to win)\n\n";
+			}
+
 			message += getString(R.string.player_status_resources) + ": "
 					+ player.getTotalNumOwnedResources() + "\n";
 			if(showAll) {
@@ -144,6 +148,11 @@ public class PlayerStatsFragment extends Fragment {
 			message += "Science Improvement Level: " + playerScienceLevel + "\n";
 			message += "Politics Improvement Level: " + playerPoliticsLevel + "\n\n";
 
+			if(board.getMerchantOwner() == player.getPlayerNumber()){
+
+				message += "Owns Merchant (1 VP): " + getString(Resource.toRString(board.getMerchantType())) + " harbour\n\n";
+			}
+
 			boolean hasHarbor = false;
 			if (player.hasHarbor(null)) {
 				message += "3:1 " + getString(R.string.player_status_harbor) + "\n";
@@ -177,11 +186,13 @@ public class PlayerStatsFragment extends Fragment {
 			text.setText(message);
 
 			TextView point = (TextView) views[i].findViewById(R.id.status_points);
+			int bootOwner = 0;
+			if(board.playerNumBootOwner == player.getPlayerNumber()) bootOwner = 1;
 			point.setText(getString(R.string.player_status_victory_points) + ": "
-					+ points + " / " + board.getMaxPoints());
+					+ points + " / " + (board.getMaxPoints() + bootOwner));
 
 			ProgressBar progress = (ProgressBar) views[i].findViewById(R.id.status_progress);
-			progress.setMax(board.getMaxPoints());
+			progress.setMax(board.getMaxPoints() + bootOwner);
 			progress.setProgress(points);
 		}
 
