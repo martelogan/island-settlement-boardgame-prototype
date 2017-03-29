@@ -279,6 +279,10 @@ public class TradeRequestFragment extends Fragment {
 	return tradeView;
 	}
 
+	public void forceTradeCommercialHarbor() {
+
+	}
+
 	private void checkAmounts(View tradeView) {
 		Resource.ResourceType resourceType = Resource.RESOURCE_TYPES[selected];
 		int types = 0;

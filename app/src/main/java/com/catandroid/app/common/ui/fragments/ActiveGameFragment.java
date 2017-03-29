@@ -4,6 +4,7 @@ import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.players.AutomatedPlayer;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
 import com.catandroid.app.R;;
@@ -576,7 +577,7 @@ public class ActiveGameFragment extends Fragment {
 //
 //					showState(false);
 //				}
-				else {
+				else {toast("Played the Saboteur");
 					showState(false);
 				}
 			}
@@ -1966,6 +1967,27 @@ public class ActiveGameFragment extends Fragment {
 												case MERCHANT:
 													playMerchant();
 													break;
+												case ALCHEMIST:
+													playAlchemist();
+													break;
+												case BISHOP:
+													playBishop();
+													break;
+												case INTRIGUE:
+													playIntrigue();
+													break;
+												case SABOTEUR:
+													playSaboteur();
+													break;
+												case SPY:
+													playSpy();
+													break;
+												case COMMERCIAL_HARBOR:
+													playCommercialHarbor();
+													break;
+												case MERCHANT_FLEET:
+													playMerchantFleet();
+													break;
 												default:
 													break;
 											}
@@ -1989,12 +2011,13 @@ public class ActiveGameFragment extends Fragment {
 	private void playMerchant(){
 		//@TODO
 		//add merchant placement logic
+
 		toast("Played the merchant");
 	}
 
 	private void confirmDisplaceKnightDialog(Vertex vertex) {
 
-		if(vertex.getCurUnitType() != Vertex.KNIGHT) {
+		if (vertex.getCurUnitType() != Vertex.KNIGHT) {
 			return;
 		}
 
@@ -2013,7 +2036,7 @@ public class ActiveGameFragment extends Fragment {
 
 				if (item == cancel) {
 					dialog.dismiss();
-				} else if (item == confirm){
+				} else if (item == confirm) {
 					dialog.dismiss();
 					if (board.getPlayerOfCurrentGameTurn().displaceKnightAt(displacementTarget)) {
 						// finish moving the knight
@@ -2025,6 +2048,93 @@ public class ActiveGameFragment extends Fragment {
 		});
 
 		builder.create().show();
+	}
+
+	private void playAlchemist(){
+		//@TODO
+		//add merchant placement logic
+
+		toast("Played the Alchemist");
+	}
+
+	private void playBishop(){
+		//@TODO
+		//add merchant placement logic
+		board.setReturnPhase(board.getPhase());
+		board.startRobberPhase();
+		showState(false);
+		board.nextPhase();
+		toast("Played the Bishop");
+	}
+
+	private void playIntrigue(){
+		//@TODO
+		//add merchant placement logic
+		toast("Played the Intrigue");
+	}
+
+	@Override
+	public String toString() {
+		return super.toString();
+	}
+
+	private void playSaboteur(){
+		//@TODO
+		//add Saboteur placement logic
+		Player currentPlayer = board.getPlayerOfCurrentGameTurn();
+		Player opponentPlayer;
+		int currentPlayerVictoryPoints = currentPlayer.getVictoryPoints();
+		for (int i = 0; i < board.getNumPlayers(); i++) {
+			opponentPlayer = board.getPlayerById(i);
+			if (currentPlayer.getPlayerNumber() == opponentPlayer.getPlayerNumber()) {
+				continue;
+			} else {
+				if (currentPlayerVictoryPoints <= opponentPlayer.getVictoryPoints()) {
+					int cards = opponentPlayer.getResourceCount();
+					int extra = cards / 2;
+					if (board.getAutoDiscad()) {
+						for (int j = 0; j < extra; j++) {
+							opponentPlayer.discard(null);
+						}
+					} else if (opponentPlayer.isBot()) {
+						// instruct the ai to discard_resources
+						AutomatedPlayer bot = (AutomatedPlayer) opponentPlayer;
+						bot.discard(extra);
+					} else if (opponentPlayer.isHuman()) {
+						// queue human players to discard_resources
+						board.getPlayerIdsYetToAct().add(opponentPlayer.getPlayerNumber());
+					}
+				}
+			}
+		}
+
+		toast("Played the Saboteur");
+
+		// Something to consider about how to pass the turn around.
+		if(!board.getPlayerIdsYetToAct().isEmpty()) {
+			mListener.endTurn(
+					board.getPlayerById(currentPlayer.getPlayerNumber()).getGooglePlayParticipantId(), false);
+		}
+
+	}
+
+	private void playSpy(){
+		//@TODO
+		//add merchant placement logic
+		toast("Played the Spy");
+	}
+
+	private void playCommercialHarbor(){
+		//@TODO
+		//add merchant placement logic
+
+		toast("Played the Commercial Harbor");
+	}
+
+	private void playMerchantFleet(){
+		//@TODO
+		//add merchant placement logic
+		toast("Played the Merchant Fleet");
 	}
 
 	private void confirmChaseRobberDialog() {

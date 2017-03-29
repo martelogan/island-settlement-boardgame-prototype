@@ -302,9 +302,10 @@
 
 	<!-- Progress Cards -->
 	<string name="merchant">Merchant</string>
+	<string name="bishop">Bishop</string>
 
 	<!-- Progress Card Description -->
 	<string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
-
+	<string name="bishop_description">String holder</string>
 
 </resources>

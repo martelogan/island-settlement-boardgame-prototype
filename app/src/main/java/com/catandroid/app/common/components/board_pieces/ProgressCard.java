@@ -19,6 +19,8 @@ public class ProgressCard extends InventoryItem {
         switch (card) {
             case MERCHANT:
                 return R.string.merchant;
+            case BISHOP:
+                return R.string.bishop;
             default:
                 return R.string.empty_string;
         }
@@ -34,6 +36,8 @@ public class ProgressCard extends InventoryItem {
         switch (card) {
             case MERCHANT:
                 return R.string.merchant_description;
+            case BISHOP:
+                return R.string.bishop_description;
             default:
                 return R.string.empty_string;
         }

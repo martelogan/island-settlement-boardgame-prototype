@@ -246,6 +246,13 @@ public class Board {
 		return numPlayers;
 	}
 
+	public boolean getAutoDiscad() {
+		return autoDiscard;
+	}
+
+	public Stack<Integer> getPlayerIdsYetToAct() {
+		return playerIdsYetToAct;
+	}
 	/**
 	 * Get a reference to the player for current game turn
 	 * 
@@ -614,12 +621,15 @@ public class Board {
 				break;
 			case PROGRESS_CARD_STEP_1:
 				phase = Phase.PROGRESS_CARD_STEP_2;
+				toast("Passing to Prog_Card_Step_2");
 				break;
 			case PROGRESS_CARD_STEP_2:
 				phase = returnPhase;
+				toast("Return phase");
 				break;
 			case MOVING_ROBBER:
 				phase = returnPhase;
+				toast("Return phase");
 				break;
 			case MOVING_PIRATE:
 				phase = returnPhase;
@@ -1606,27 +1616,27 @@ public class Board {
 		politicsDeck = new ArrayList<>();
 
 		//@TODO for testing purposes ONLY
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
 		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
 		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
 
 
 		//@TODO Implement all these progress cards

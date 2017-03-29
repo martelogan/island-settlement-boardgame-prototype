@@ -1959,7 +1959,6 @@ public class Player {
 
 		return points;
 	}
-
 	/**
 	 * Return player's current total privateVictoryPointsCount points
 	 *
@@ -1997,6 +1996,7 @@ public class Player {
 	public int getPoliticsLevel() {
 		return cityImprovementLevels[CityImprovement.toCityImprovementIndex(
 				CityImprovement.CityImprovementType.POLITICS)];
+
 	}
 
 	/**
