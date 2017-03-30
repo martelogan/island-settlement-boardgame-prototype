@@ -6,7 +6,10 @@ import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.utilities.hex_grid_utils.AxialHexLocation;
 import com.catandroid.app.common.players.Player;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class Hexagon {
@@ -17,14 +20,20 @@ public class Hexagon {
 	private int[] vertexIds = {-1, -1, -1, -1, -1, -1};
 	private int[] edgeIds = {-1, -1, -1, -1, -1, -1};
 	private AxialHexLocation coord;
-	private boolean hasRobber = false, hasPirate = false;
+	private boolean hasRobber = false, hasPirate = false, hasMerchant = false;
 	private int id;
 	private transient Board board;
 
 	public enum TerrainType {
-		FOREST, PASTURE, FIELDS, HILLS, MOUNTAINS, DESERT, SEA, GOLD_FIELD
+		FOREST, PASTURE, FIELDS, HILLS, MOUNTAINS, DESERT, FISH_LAKE, SEA, GOLD_FIELD
 	}
+	private static final Integer[] FISHING_LAKE_NUMBERS = new Integer[] {2,3,11,12};
+	private static final Set<Integer> FISHING_LAKE_NUMBERS_SET =
+			new HashSet<Integer>(Arrays.asList(FISHING_LAKE_NUMBERS));
 
+	public static Set<Integer> getFishingLakeNumbersSet() {
+		return FISHING_LAKE_NUMBERS_SET;
+	}
 	/**
 	 * Initialize the hexagon with a resource resourceType and numberToken number
 	 *
@@ -209,20 +218,6 @@ public class Hexagon {
 	}
 
 	/**
-	 * Set an edge of the hexagon
-	 *
-	 * @param direction
-	 *            the direction of the edge on the hexagon
-	 * @param edgeId
-	 * 			  id of the edge to set
-	 * @return
-	 */
-	public void setEdgeById(int edgeId, int direction) {
-		board.getEdgeById(edgeId).setOriginHexDirect(direction);
-		edgeIds[direction] = edgeId;
-	}
-
-	/**
 	 * Get integer representation of the number token
 	 * currently placed on this hexagon
 	 *
@@ -296,6 +291,24 @@ public class Hexagon {
 		for (int i = 0; i < 6; i++)
 		{
 			board.getVertexById(vertexIds[i]).distributeResources(resourceProduced.getResourceType());
+		}
+	}
+
+	/**
+	 * Distribute fish from this hexagon
+	 *
+	 * @param diceRoll
+	 *            the current dice sum
+	 */
+	public void distributeFish(int diceRoll) {
+		if (!(FISHING_LAKE_NUMBERS_SET.contains(diceRoll)
+				|| FishingGround.getFishingGroundNumbersSet().contains(diceRoll))) {
+			return;
+		}
+
+		for (int i = 0; i < 6; i++)
+		{
+			board.getVertexById(vertexIds[i]).distributeFish(diceRoll);
 		}
 	}
 
@@ -396,6 +409,19 @@ public class Hexagon {
 	}
 
 	/**
+	 * Set the robber on this hexagon
+	 *
+	 * @return true if the hexagon now has the robber
+	 */
+	public boolean setMerchant() {
+		if (this.terrainType != TerrainType.SEA) {
+			this.hasMerchant = true;
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Set the pirate on this hexagon
 	 *
 	 * @return true if the hexagon now has the pirate
@@ -445,6 +471,19 @@ public class Hexagon {
 		// robber is not on this hex
 		return false;
 	}
+	/**
+	 * Remove the merchant from this hexagon
+	 *
+	 * @return true iff merchant was indeed removed
+	 */
+	public boolean removeMerchant() {
+		if (this.hasMerchant) {
+			this.hasMerchant = false;
+			return true;
+		}
+		// robber is not on this hex
+		return false;
+	}
 
 	/**
 	 * Remove the pirate from this hexagon
@@ -482,6 +521,15 @@ public class Hexagon {
 	 */
 	public boolean hasRobber() {
 		return (this.hasRobber);
+	}
+
+	/**
+	 * Check if the hexagon has the merchant
+	 *
+	 * @return true iff the hexagon has the merchant
+	 */
+	public boolean hasMerchant() {
+		return (this.hasMerchant);
 	}
 
 	/**

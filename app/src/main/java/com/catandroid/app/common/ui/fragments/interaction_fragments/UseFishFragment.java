@@ -16,6 +16,8 @@ import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
 
@@ -47,7 +49,7 @@ public class UseFishFragment extends Fragment {
 
 		currentPlayer = board.getPlayerFromParticipantId(activeGameFragment.myParticipantId);
 
-		numFishOWned = currentPlayer.getNumFishOwned();
+		numFishOWned = currentPlayer.getNumOwnedFish();
 
 
 		getActivity().setTitle("Fish");
@@ -56,6 +58,55 @@ public class UseFishFragment extends Fragment {
 		View view = inflater.inflate(R.layout.fish_owned_actions, null, false);
 
 		setShopViewVisibility(view);
+
+		if(board.playerNumBootOwner == currentPlayer.getPlayerNumber()){
+			Button boot = (Button) view.findViewById(R.id.giveBoot);
+			boot.setEnabled(true);
+			boot.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					//TODO add check if noone has resources
+					boolean someoneToGiveBoot = false;
+					//choose player to steal from
+					CharSequence[] items = new CharSequence[(board.getNumPlayers()-1)];
+					final int[] toGiveTo = new int[board.getNumPlayers()-1];
+					int current = 0;
+					for(int i = 0; i < board.getNumPlayers(); i++){
+						if(i != currentPlayer.getPlayerNumber()){
+							items[current] = board.getPlayerById(i).getPlayerName();
+							toGiveTo[current] = i;
+							current++;
+							if(board.getPlayerById(i).getVictoryPoints() >= currentPlayer.getVictoryPoints()) someoneToGiveBoot = true;
+						}
+					}
+
+					if(!someoneToGiveBoot){
+						toast("Nobody to give boot to!");
+						return;
+					}
+					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					builder.setTitle("Choose Player to give the boot");
+					builder.setItems(items, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int item) {
+							if(board.getPlayerById(toGiveTo[item]).getVictoryPoints() >= currentPlayer.getVictoryPoints()){
+								board.playerNumBootOwner = board.getPlayerById(toGiveTo[item]).getPlayerNumber();
+								getFragmentManager().popBackStack();
+								toast("Gave boot to: "
+										+ board.getPlayerById(toGiveTo[item]).getPlayerName());
+								currentPlayer.appendAction(R.string.player_gave_boot,board.getPlayerById(toGiveTo[item]).getPlayerName() );
+							} else{
+								toast("This player has less VP than you, choose other player!");
+							}
+
+						}
+					});
+
+					AlertDialog chooseFreeResourceDialog = builder.create();
+					chooseFreeResourceDialog.setCancelable(true);
+					chooseFreeResourceDialog.show();
+				}
+			});
+
+		}
 
 		return view;
 	}
@@ -82,18 +133,23 @@ public class UseFishFragment extends Fragment {
 
 		if(numFishOWned >= 2){
 			owned2 = (Button) fish_owned_actions.findViewById(R.id.buyFish2);
+			owned2.setEnabled(true);
 		}
 		if(numFishOWned >= 3){
 			owned3 = (Button) fish_owned_actions.findViewById(R.id.buyFish3);
+			owned3.setEnabled(true);
 		}
 		if(numFishOWned >= 4){
 			owned4 = (Button) fish_owned_actions.findViewById(R.id.buyFish4);
+			owned4.setEnabled(true);
 		}
 		if(numFishOWned >= 5){
 			owned5 = (Button) fish_owned_actions.findViewById(R.id.buyFish5);
+			owned5.setEnabled(true);
 		}
 		if(numFishOWned >= 7){
 			owned7 = (Button) fish_owned_actions.findViewById(R.id.buyFish7);
+			owned7.setEnabled(true);
 		}
 
 
@@ -116,14 +172,14 @@ public class UseFishFragment extends Fragment {
 								getFragmentManager().popBackStack();
 								toast("Removed the Pirate");
 								currentPlayer.appendAction(R.string.player_removedPirate);
-								currentPlayer.setNumFishOwned(numFishOWned-2);
+								currentPlayer.setNumOwnedFish(numFishOWned-2);
 							} else{
 								//robber
 								board.setRobberDisabled(true);
 								getFragmentManager().popBackStack();
 								toast("Removed the Robber");
 								currentPlayer.appendAction(R.string.player_removed_robber);
-								currentPlayer.setNumFishOwned(numFishOWned-2);
+								currentPlayer.setNumOwnedFish(numFishOWned-2);
 							}
 						}
 					});
@@ -164,7 +220,7 @@ public class UseFishFragment extends Fragment {
 							if(board.getPlayerById(toStealFrom[item]).getResourceCount() > 0){
 								Resource.ResourceType stolen = currentPlayer.steal(board.getPlayerById(toStealFrom[item]));
 								getFragmentManager().popBackStack();
-								currentPlayer.setNumFishOwned(numFishOWned-3);
+								currentPlayer.setNumOwnedFish(numFishOWned-3);
 								toast(getString(R.string.game_stole_str) + " "
 										+ getActivity().getString(Resource.toRString(stolen))
 										+ " " + getString(R.string.game_from_str) + " "
@@ -199,7 +255,7 @@ public class UseFishFragment extends Fragment {
 						public void onClick(DialogInterface dialog, int item) {
 							currentPlayer.addResources(Resource.RESOURCE_TYPES[item],1, false);
 							getFragmentManager().popBackStack();
-							currentPlayer.setNumFishOwned(numFishOWned-4);
+							currentPlayer.setNumOwnedFish(numFishOWned-4);
 							currentPlayer.appendAction(R.string.player_received_resource, Resource.toRString(Resource.RESOURCE_TYPES[item]));
 							toast("Received " + getString(Resource.toRString(Resource.RESOURCE_TYPES[item])));
 						}
@@ -227,10 +283,10 @@ public class UseFishFragment extends Fragment {
 							currentPlayer.setFreeBuild(true);
 							if(item == 0){
 								if(currentPlayer.canBuildSomeShip()){
-									currentPlayer.setFreeBuildUnit(0);
+									currentPlayer.setFreeBuildUnit(Edge.SHIP);
 									getFragmentManager().popBackStack();
 									currentPlayer.appendAction(R.string.player_ship);
-									currentPlayer.setNumFishOwned(numFishOWned-5);
+									currentPlayer.setNumOwnedFish(numFishOWned-5);
 
 								} else {
 									toast("No place to build ship");
@@ -239,10 +295,10 @@ public class UseFishFragment extends Fragment {
 							} else{
 								if(currentPlayer.canBuildSomeRoad()){
 
-									currentPlayer.setFreeBuildUnit(1);
+									currentPlayer.setFreeBuildUnit(Edge.ROAD);
 									getFragmentManager().popBackStack();
 									currentPlayer.appendAction(R.string.player_road);
-									currentPlayer.setNumFishOwned(numFishOWned-5);
+									currentPlayer.setNumOwnedFish(numFishOWned-5);
 								} else {
 									toast("No places to build road!");
 									currentPlayer.setFreeBuild(false);
@@ -278,7 +334,7 @@ public class UseFishFragment extends Fragment {
 								getFragmentManager().popBackStack();
 								currentPlayer.appendAction(R.string.player_received_card);
 								toast("Received: " + getString(ProgressCard.getCardStringResource(gained)));
-								currentPlayer.setNumFishOwned(numFishOWned-7);
+								currentPlayer.setNumOwnedFish(numFishOWned-7);
 
 							} else{
 								toast("No more cards available in that deck!");

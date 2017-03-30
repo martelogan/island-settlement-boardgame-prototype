@@ -3,6 +3,7 @@ package com.catandroid.app.common.components;
 import android.util.Log;
 
 import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.FishingGround;
 import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
@@ -25,7 +26,8 @@ public class BoardGeometry {
 	// DEFAULT GEOMETRY CONSTANTS (regular board)
     private static HexPoint HEX_POINT_SCALE = HexGridLayout.size_default;
 	private int BOARD_SIZE = 0, ZOOM_SCALE = 250, HEX_COUNT = 61,
-			EDGE_COUNT = 210, VERTEX_COUNT = 150, HARBOR_COUNT = 9;
+			EDGE_COUNT = 210, VERTEX_COUNT = 150,
+			HARBOR_COUNT = 9, FISHING_GROUND_COUNT = 12;
 
 	/* NOTE: For a perfectly-centered hexagon
 	with centered hexagonal number K, the map
@@ -44,7 +46,8 @@ public class BoardGeometry {
 	// GEOMETRIC OVERLAY
 	private float[] HEXAGONS_X, HEXAGONS_Y, VERTICES_X, VERTICES_Y,
 			EDGES_X, EDGES_Y;
-	private int[] HARBOR_EDGE_IDS, HARBOR_HEX_IDS;
+	private int[] HARBOR_EDGE_IDS, HARBOR_HEX_IDS,
+            FISHING_GROUND_EDGE_IDS, FISHING_GROUND_HEX_IDS;
 
 	// GRAPHICAL RESOURCE SIZES
 	private static final float MAX_PAN = 2.5f;
@@ -80,6 +83,8 @@ public class BoardGeometry {
 		EDGES_Y = new float[EDGE_COUNT];
 		HARBOR_EDGE_IDS = new int[HARBOR_COUNT];
 		HARBOR_HEX_IDS = new int[HARBOR_COUNT];
+        FISHING_GROUND_EDGE_IDS = new int[FISHING_GROUND_COUNT];
+        FISHING_GROUND_HEX_IDS = new int[FISHING_GROUND_COUNT];
 	}
 
 	public void setCurFocus(int w, int h) {
@@ -115,6 +120,10 @@ public class BoardGeometry {
 
 	public int getHarborCount() {
 		return HARBOR_COUNT;
+	}
+
+	public int getFishingGroundCount() {
+		return FISHING_GROUND_COUNT;
 	}
 
 	public int getWidth() {
@@ -173,17 +182,39 @@ public class BoardGeometry {
 		return HEXAGONS_Y[HARBOR_HEX_IDS[index]];
 	}
 
-	public float getHarborIconX(int index, Edge e) {
-		float edgeX = EDGES_X[HARBOR_EDGE_IDS[index]];
-		int sign = e.isBorderingSea() ? e.getDirectTowardsSea_X() : e.getOriginHexDirectXsign();
-		return edgeX + 0.28f * ((float) Math.abs(HEX_POINT_SCALE.x)) * (sign);
-	}
+    public float getFishingGroundX(int index) {
+        return HEXAGONS_X[FISHING_GROUND_HEX_IDS[index]];
+    }
 
-	public float getHarborIconY(int index, Edge e) {
-		float edgeY = EDGES_Y[HARBOR_EDGE_IDS[index]];
-		int sign = e.isBorderingSea() ? e.getDirectTowardsSea_Y() : e.getOriginHexDirectYsign();
-		return edgeY + 0.28f * ((float) Math.abs(HEX_POINT_SCALE.y)) * (sign);
-	}
+    public float getFishingGroundY(int index) {
+        return HEXAGONS_Y[FISHING_GROUND_HEX_IDS[index]];
+    }
+
+	public float getHarborIconX(int index, Edge e) {
+        float edgeX = EDGES_X[HARBOR_EDGE_IDS[index]];
+        int sign = e.isBorderingSea() ? e.getDirectTowardsSea_X() : e.getOriginHexDirectXsign();
+        return edgeX + 0.28f * ((float) Math.abs(HEX_POINT_SCALE.x)) * (sign);
+    }
+
+    public float getHarborIconY(int index, Edge e) {
+        float edgeY = EDGES_Y[HARBOR_EDGE_IDS[index]];
+        int sign = e.isBorderingSea() ? e.getDirectTowardsSea_Y() : e.getOriginHexDirectYsign();
+        return edgeY + 0.28f * ((float) Math.abs(HEX_POINT_SCALE.y)) * (sign);
+    }
+
+    public float getFishingGroundIconX(int index, Edge e) {
+        float edgeX = EDGES_X[FISHING_GROUND_EDGE_IDS[index]];
+        // FIXME: something doesn't work using port hex here...not set properly at board extremes?
+        int sign = e.isBorderingSea() ? e.getDirectTowardsSea_X() : e.getOriginHexDirectXsign();
+        return edgeX + 0.33f * ((float) Math.abs(HEX_POINT_SCALE.x)) * (sign);
+    }
+
+    public float getFishingGroundIconY(int index, Edge e) {
+        float edgeY = EDGES_Y[FISHING_GROUND_EDGE_IDS[index]];
+        // FIXME: something doesn't work using port hex here...not set properly at board extremes?
+        int sign = e.isBorderingSea() ? e.getDirectTowardsSea_Y() : e.getOriginHexDirectYsign();
+        return edgeY + 0.33f * ((float) Math.abs(HEX_POINT_SCALE.y)) * (sign);
+    }
 
 	public float getZoom() {
 		return zoom;
@@ -197,9 +228,13 @@ public class BoardGeometry {
 		zoom = z;
 
 		if (zoom > maxZoom)
-			zoom = maxZoom;
+        {
+            zoom = maxZoom;
+        }
 		else if (zoom < minZoom)
-			zoom = minZoom;
+        {
+            zoom = minZoom;
+        }
 
 		translate(0, 0);
 	}
@@ -280,7 +315,8 @@ public class BoardGeometry {
 	// BOARD POPULATION LOGIC
 
 	void populateBoard(Hexagon[] hexagons, Vertex[] vertices,
-					   Edge[] edges, Harbor[] harbors, HashMap<Long, Integer> hexIdMap)  {
+					   Edge[] edges, Harbor[] harbors, FishingGround[] fishingGrounds,
+					   HashMap<Long, Integer> hexIdMap)  {
 
 		// edges available to neighbour harbors
 		HashSet<Edge> portEdges = new HashSet<Edge>();
@@ -400,7 +436,9 @@ public class BoardGeometry {
 			Log.w("BOARD_GEOMETRY_WARNING","Some hexes were not hashed!");
 		}
 
-        placeHarbors(hexIdMap, hexagons, harbors, portEdges);
+        HashSet<Edge> forbiddenPortEdges = placeHarbors(hexIdMap, hexagons, harbors, portEdges);
+
+        placeFishingGrounds(hexIdMap, hexagons, fishingGrounds, portEdges, forbiddenPortEdges);
 
  		initCartesianCoordinates(hexagons, vertices, edges);
 
@@ -460,15 +498,15 @@ public class BoardGeometry {
         curHex.setVertex(clockwiseV1, (vDirect + 1) % 6);
     }
 
-    private void placeHarbors(HashMap<Long, Integer> hexIdMap, Hexagon[] hexagons,
-                              Harbor[] harbors, HashSet<Edge> portEdges) {
+    private HashSet<Edge> placeHarbors(HashMap<Long, Integer> hexIdMap, Hexagon[] hexagons,
+                                            Harbor[] harbors, HashSet<Edge> portEdges) {
 
         // shuffled array of edges
         ArrayList<Edge> randomPortEdges = new ArrayList<Edge>(portEdges);
         Collections.shuffle(randomPortEdges);
 
         // associate vertices with harbors
-		Integer tempHexId = null;
+        Integer tempHexId = null;
         Harbor harbor;
         Edge candidatePortEdge = null;
         Hexagon candidatePortHex = null, curNeighborHex = null;
@@ -489,9 +527,9 @@ public class BoardGeometry {
                     neighborLocation =
                             AxialHexLocation.axialNeighbor(
                                     candidatePortHexLocation, candidatePortEdge.getPortHexDirect());
-					tempHexId = hexIdMap.get(
-							HashingUtils.perfectHash(neighborLocation));
-					Hexagon seaHex = tempHexId != null ? hexagons[tempHexId] : null;
+                    tempHexId = hexIdMap.get(
+                            HashingUtils.perfectHash(neighborLocation));
+                    Hexagon seaHex = tempHexId != null ? hexagons[tempHexId] : null;
                     Edge curEdge = null;
                     for (int k = 0; k < 6; k++) { // remove candidacy of other edges on sea hex
                         curEdge = seaHex.getEdge(k);
@@ -513,9 +551,9 @@ public class BoardGeometry {
                     neighborDirect = (candidatePortEdge.getOriginHexDirect() + 1) % 6;
                     neighborLocation =
                             AxialHexLocation.axialNeighbor(candidatePortHexLocation, neighborDirect);
-					tempHexId = hexIdMap.get(
-							HashingUtils.perfectHash(neighborLocation));
-					curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
+                    tempHexId = hexIdMap.get(
+                            HashingUtils.perfectHash(neighborLocation));
+                    curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                     if (curNeighborHex != null) {
                         forbiddenNeighborEdgeDirect =
                                 (AxialHexLocation.complementAxialDirection(neighborDirect) + 1) % 6;
@@ -525,9 +563,9 @@ public class BoardGeometry {
                     neighborDirect = (((((candidatePortEdge.getOriginHexDirect() - 1) % 6) + 6) % 6));
                     neighborLocation =
                             AxialHexLocation.axialNeighbor(candidatePortHexLocation, neighborDirect);
-					tempHexId = hexIdMap.get(
-							HashingUtils.perfectHash(neighborLocation));
-					curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
+                    tempHexId = hexIdMap.get(
+                            HashingUtils.perfectHash(neighborLocation));
+                    curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
                     if (curNeighborHex != null) {
                         forbiddenNeighborEdgeDirect =
                                 ((((AxialHexLocation.complementAxialDirection(neighborDirect) - 1)
@@ -552,6 +590,165 @@ public class BoardGeometry {
             HARBOR_EDGE_IDS[i] = candidatePortEdge.getId();
             HARBOR_HEX_IDS[i] = candidatePortEdge.getPortHexId();
         }
+        return forbiddenPortEdges;
+    }
+
+    private void placeFishingGrounds(HashMap<Long, Integer> hexIdMap, Hexagon[] hexagons,
+                                       FishingGround[] fishingGrounds, HashSet<Edge> portEdges,
+                                     HashSet<Edge> forbiddenPortEdges) {
+
+        // shuffled array of edges
+        ArrayList<Edge> randomPortEdges = new ArrayList<Edge>(portEdges);
+        Collections.shuffle(randomPortEdges);
+
+        // associate vertices with fishingGrounds
+        FishingGround fishingGround;
+        Edge candidatePortEdge1 = null, candidatePortEdge2 = null;
+        Hexagon candidatePortHex = null;
+        AxialHexLocation candidatePortHexLocation;
+        int edgeIndexOnHex;
+        for (int i = 0, j = 0; i < fishingGrounds.length; i+=2, j++) {
+            while (j < randomPortEdges.size()) { // find a candidate port edge
+                candidatePortEdge1 = randomPortEdges.get(j);
+                if (forbiddenPortEdges.contains(candidatePortEdge1)
+                        || candidatePortEdge1.isBorderingFishLake()) { // iterate until valid
+                    j++;
+                    continue;
+                }
+                candidatePortHex = candidatePortEdge1.getPortHex();
+                candidatePortHexLocation = candidatePortHex.getCoord();
+                boolean atExtremesOfGameBoard = !candidatePortEdge1.isBorderingSea();
+                if (atExtremesOfGameBoard) {
+                    if (candidatePortHex.getTerrainType() == Hexagon.TerrainType.SEA) {
+                        // don't allow fishingGrounds in the middle of the ocean
+                        forbiddenPortEdges.add(candidatePortEdge1);
+                        continue;
+                    }
+                }
+                candidatePortEdge2 = getAdjacentFishingGroundEdge(atExtremesOfGameBoard,
+                        candidatePortEdge1, candidatePortHex, hexagons,
+                        candidatePortHexLocation, hexIdMap, forbiddenPortEdges, portEdges);
+                if (candidatePortEdge2 == null) {
+                    // candidatePortEdge1 can't host a fishing ground...
+                    j++;
+                    continue;
+                }
+                // we can use these edges for a fishing ground
+                forbiddenPortEdges.add(candidatePortEdge1);
+                forbiddenPortEdges.add(candidatePortEdge2);
+                break;
+            }
+            if (j > randomPortEdges.size()) {
+                Log.e("BOARD_GEOMETRY_ERROR", "insufficient port edges");
+                break;
+            }
+            // set fishing ground on candidatePortEdge1
+            fishingGround = fishingGrounds[i];
+            edgeIndexOnHex = candidatePortHex.findEdgeDirect(candidatePortEdge1);
+            fishingGround.setPosition(FishingGround.vdirectToPosition(edgeIndexOnHex));
+            candidatePortEdge1.setMyFishingGround(fishingGround);
+            candidatePortEdge1.getV0Clockwise().addFishingGround(fishingGround);
+            candidatePortEdge1.getV1Clockwise().addFishingGround(fishingGround);
+            FISHING_GROUND_EDGE_IDS[i] = candidatePortEdge1.getId();
+            FISHING_GROUND_HEX_IDS[i] = candidatePortEdge1.getPortHexId();
+            // set fishing ground on candidatePortEdge2
+            fishingGround = fishingGrounds[i + 1];
+            edgeIndexOnHex = candidatePortEdge2.getPortHex().findEdgeDirect(candidatePortEdge2);
+            fishingGround.setPosition(FishingGround.vdirectToPosition(edgeIndexOnHex));
+            candidatePortEdge2.setMyFishingGround(fishingGround);
+            candidatePortEdge2.getV0Clockwise() .addFishingGround(fishingGround);
+            candidatePortEdge2.getV1Clockwise().addFishingGround(fishingGround);
+            FISHING_GROUND_EDGE_IDS[i + 1] = candidatePortEdge2.getId();
+            FISHING_GROUND_HEX_IDS[i + 1] = candidatePortEdge2.getPortHexId();
+        }
+    }
+
+    private Edge getAdjacentClockwiseEdge(Edge edge, Hexagon relativeHex) {
+        int edgeDirectOnRelativeHex, adjacentEdgeDirectOnRelativeHex;
+        edgeDirectOnRelativeHex = relativeHex.findEdgeDirect(edge);
+        adjacentEdgeDirectOnRelativeHex = (edgeDirectOnRelativeHex + 1) % 6;
+        return relativeHex.getEdge(adjacentEdgeDirectOnRelativeHex);
+    }
+
+    private Edge getAdjacentCounterClockwiseEdge(Edge edge, Hexagon relativeHex) {
+        int edgeDirectOnRelativeHex, adjacentEdgeDirectOnRelativeHex;
+        edgeDirectOnRelativeHex = relativeHex.findEdgeDirect(edge);
+        adjacentEdgeDirectOnRelativeHex = ((((edgeDirectOnRelativeHex - 1) % 6) + 6) % 6);
+        return relativeHex.getEdge(adjacentEdgeDirectOnRelativeHex);
+    }
+
+    private Edge getOverlappingPortOfClockwiseNeighbor(Edge edge, Hexagon[] hexagons,
+                                                       AxialHexLocation relativeHexLocation,
+                                                       HashMap<Long, Integer> hexIdMap) {
+        Integer tempHexId = null;
+        Hexagon curNeighborHex = null;
+        AxialHexLocation neighborLocation;
+        int neighborDirect, overlappingPortEdgeDirect;
+        // add clockwise forbidden edge
+        neighborDirect = (edge.getPortHexDirect() + 1) % 6;
+        neighborLocation =
+                AxialHexLocation.axialNeighbor(relativeHexLocation, neighborDirect);
+        tempHexId = hexIdMap.get(
+                HashingUtils.perfectHash(neighborLocation));
+        curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
+        overlappingPortEdgeDirect =
+                (AxialHexLocation.complementAxialDirection(neighborDirect) + 1) % 6;
+        return curNeighborHex != null ? curNeighborHex.getEdge(overlappingPortEdgeDirect) : null;
+    }
+
+    private Edge getOverlappingPortOfCounterClockwiseNeighbor(Edge edge, Hexagon[] hexagons,
+                                                              AxialHexLocation relativeHexLocation,
+                                                              HashMap<Long, Integer> hexIdMap) {
+        Integer tempHexId = null;
+        Hexagon curNeighborHex = null;
+        AxialHexLocation neighborLocation;
+        int neighborDirect, overlappingPortEdgeDirect;
+        // add clockwise forbidden edge
+        neighborDirect = (edge.getPortHexDirect() + 1) % 6;
+        neighborLocation =
+                AxialHexLocation.axialNeighbor(relativeHexLocation, neighborDirect);
+        tempHexId = hexIdMap.get(
+                HashingUtils.perfectHash(neighborLocation));
+        curNeighborHex = tempHexId != null ? hexagons[tempHexId] : null;
+        overlappingPortEdgeDirect =
+                ((((AxialHexLocation.complementAxialDirection(neighborDirect) - 1)
+                        % 6) + 6) % 6);;
+        return curNeighborHex != null ? curNeighborHex.getEdge(overlappingPortEdgeDirect) : null;
+    }
+
+    private Edge getAdjacentFishingGroundEdge(boolean atExtremesOfGameBoard, Edge candidatePortEdge1,
+                                              Hexagon candidatePortHex, Hexagon[] hexagons,
+                                              AxialHexLocation candidatePortHexLocation,
+                                              HashMap<Long, Integer> hexIdMap,
+                                              HashSet<Edge> forbiddenPortEdges,
+                                              HashSet<Edge> allPortEdges) {
+
+        Edge[] toConsider = {getAdjacentClockwiseEdge(candidatePortEdge1, candidatePortHex),
+                getAdjacentCounterClockwiseEdge(candidatePortEdge1, candidatePortHex),
+                getOverlappingPortOfClockwiseNeighbor(candidatePortEdge1, hexagons,
+                        candidatePortHexLocation, hexIdMap),
+                getOverlappingPortOfCounterClockwiseNeighbor(candidatePortEdge1, hexagons,
+                        candidatePortHexLocation, hexIdMap)};
+
+        for (Edge considering : toConsider) {
+            if(considering == null || !allPortEdges.contains(considering)
+                    || considering.isBorderingFishLake()) {
+                // exclude invalid candidate for a port
+                continue;
+            }
+            if(atExtremesOfGameBoard
+                    && considering.getPortHex().getTerrainType() == Hexagon.TerrainType.SEA) {
+                // don't allow fishingGrounds in the middle of the ocean
+                forbiddenPortEdges.add(considering);
+                continue;
+            }
+            if(!forbiddenPortEdges.contains(considering) &&
+                    (considering.isBorderingSea() || atExtremesOfGameBoard)
+                    ) {
+                return considering;
+            }
+        }
+        return null;
     }
 
 	private void initCartesianCoordinates(Hexagon[] hexagons, Vertex[] vertices,
