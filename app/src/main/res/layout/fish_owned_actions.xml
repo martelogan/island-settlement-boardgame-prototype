@@ -52,6 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 2 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -91,6 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 3 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -130,6 +132,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 4 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -169,6 +172,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 5 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -208,6 +212,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 7 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>

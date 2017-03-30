@@ -91,7 +91,7 @@ public class PlayerStatsFragment extends Fragment {
 				message += "\t\t" + getString(R.string.cloth) + ": "
 						+ player.getResources(Resource.ResourceType.CLOTH) + "\n\n";
 				message += getString(R.string.fish) + ": "
-						+ player.getNumFishOwned() + "\n";
+						+ player.getNumOwnedFish() + "\n";
 			}
 
 			message += getString(R.string.player_status_progress_cards) + ": "
@@ -129,10 +129,10 @@ public class PlayerStatsFragment extends Fragment {
 
 			message += "\n";
 
-			message += getString(R.string.player_status_best_road_length) + ": "
+			message += getString(R.string.player_status_best_trade_route_length) + ": "
 					+ player.getMyLongestTradeRouteLength() + "\n";
 			if (player == board.getLongestTradeRouteOwner())
-				message += getString(R.string.player_status_has_longest_road) + ": "
+				message += getString(R.string.player_status_has_longest_trade_route) + ": "
 						+ "2 " + getString(R.string.player_status_points_str) + "\n";
 
 			message += "\n";
@@ -150,7 +150,7 @@ public class PlayerStatsFragment extends Fragment {
 
 			if(board.getMerchantOwner() == player.getPlayerNumber()){
 
-				message += "Owns Merchant (1 VP): " + getString(Resource.toRString(board.getMerchantType())) + " harbour\n\n";
+				message += "Owns Merchant (1 VP): " + getString(Resource.toRString(board.getMerchantType())) + " trade advantage\n\n";
 			}
 
 			boolean hasHarbor = false;

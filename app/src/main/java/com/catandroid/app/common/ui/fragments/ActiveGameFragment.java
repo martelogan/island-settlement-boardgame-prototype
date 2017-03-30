@@ -77,6 +77,7 @@ public class ActiveGameFragment extends Fragment {
 	private GameRenderer renderer;
 
 	private boolean isActive;
+	private boolean showedPlayerGameCreationStats = false;
 
 	private static final String[] ROLL_STRINGS = { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" };
 	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
@@ -437,7 +438,7 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			vertexUnitType = Vertex.CITY_WALL;
+			vertexUnitType = Vertex.WALLED_CITY;
 		}
 		else if(action == Action.BUILD_METROPOLIS)
 		{
@@ -461,7 +462,7 @@ public class ActiveGameFragment extends Fragment {
 		switch(vertexUnitType) {
 			case Vertex.SETTLEMENT:
 			case Vertex.CITY:
-			case Vertex.CITY_WALL:
+			case Vertex.WALLED_CITY:
 			    // selecting buildable vertex unit
 				if (player.buildVertexUnit(vertex, vertexUnitType)) {
 					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
@@ -1150,8 +1151,11 @@ public class ActiveGameFragment extends Fragment {
 		if (board.isSetupSettlement())
 		{
 			action = Action.BUILD_SETTLEMENT;
-			popup("Current Game", "Number players: " + board.getNumPlayers() + "\n" +
-					"VP to win: " + board.getMaxPoints() + "\n\nTo reject, quit game and reject invite.");
+			if(!showedPlayerGameCreationStats) {
+				showedPlayerGameCreationStats = true;
+				popup("Current Game", "Number players: " + board.getNumPlayers() + "\n" +
+						"VP to win: " + board.getMaxPoints() + "\n\nTo reject, quit game and reject invite.");
+			}
 
 		}
 		else if (board.isSetupCity())
@@ -1335,7 +1339,7 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canMoveSomeKnight()) {
 				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
-			if(player.getNumFishOwned() > 0){
+			if(player.getNumOwnedFish() > 0){
 				view.addButton(ButtonType.USE_FISH);
 			}
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);

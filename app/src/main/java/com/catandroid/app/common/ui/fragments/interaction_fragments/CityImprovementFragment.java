@@ -397,7 +397,7 @@ public class CityImprovementFragment extends Fragment {
 										vertex.setCurUnitType(Vertex.CITY);
 										break;
 									case Vertex.WALLED_TRADE_METROPOLIS:
-										vertex.setCurUnitType(Vertex.CITY_WALL);
+										vertex.setCurUnitType(Vertex.WALLED_CITY);
 										break;
 									default:
 										break;
@@ -464,7 +464,7 @@ public class CityImprovementFragment extends Fragment {
 											vertex.setCurUnitType(Vertex.CITY);
 											break;
 										case Vertex.WALLED_SCIENCE_METROPOLIS:
-											vertex.setCurUnitType(Vertex.CITY_WALL);
+											vertex.setCurUnitType(Vertex.WALLED_CITY);
 											break;
 										default:
 											break;
@@ -537,7 +537,7 @@ public class CityImprovementFragment extends Fragment {
 											vertex.setCurUnitType(Vertex.CITY);
 											break;
 										case Vertex.WALLED_POLITICS_METROPOLIS:
-											vertex.setCurUnitType(Vertex.CITY_WALL);
+											vertex.setCurUnitType(Vertex.WALLED_CITY);
 											break;
 										default:
 											break;

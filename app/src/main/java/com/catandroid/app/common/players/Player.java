@@ -56,7 +56,7 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
-	private int numFishOwned = 0;
+	private int numOwnedFish = 0;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
@@ -508,7 +508,7 @@ public class Player {
 			{
 				return false;
 			}
-		} else if (unitType == Vertex.CITY_WALL) {
+		} else if (unitType == Vertex.WALLED_CITY) {
 			if (!setup && !canAffordToBuildCityWall())
 			{
 				return false;
@@ -549,7 +549,7 @@ public class Player {
 				ownedCommunityIds.add(vertex.getId());
 			}
 			numOwnedCities += 1;
-		} else if(vertex.getCurUnitType() == Vertex.CITY_WALL
+		} else if(vertex.getCurUnitType() == Vertex.WALLED_CITY
 				|| vertex.getCurUnitType() == Vertex.WALLED_POLITICS_METROPOLIS
 				|| vertex.getCurUnitType() == Vertex.WALLED_SCIENCE_METROPOLIS
 				|| vertex.getCurUnitType() == Vertex.WALLED_TRADE_METROPOLIS){
@@ -569,7 +569,7 @@ public class Player {
 			case Vertex.CITY:
 				appendAction(R.string.player_city);
 				break;
-			case Vertex.CITY_WALL:
+			case Vertex.WALLED_CITY:
 				appendAction(R.string.player_city_wall);
 				break;
 			case Vertex.TRADE_METROPOLIS:
@@ -589,6 +589,7 @@ public class Player {
 
 		// TODO: does settlement vs. city matter?
 		// collect resources for city during setup
+		boolean distributedFish = false;
 		Resource.ResourceType resourceType;
 		if (board.isSetupPhase2()) {
 			for (int i = 0; i < 3; i++) {
@@ -598,10 +599,16 @@ public class Player {
 					terrainType = curHex.getTerrainType();
 					if (terrainType != Hexagon.TerrainType.DESERT
 							&& terrainType != Hexagon.TerrainType.SEA
-							&& terrainType != Hexagon.TerrainType.GOLD_FIELD) {
+							&& terrainType != Hexagon.TerrainType.GOLD_FIELD
+							&& terrainType != Hexagon.TerrainType.FISH_LAKE) {
 						// collect resource for hex adjacent to city
 						resourceType = curHex.getResourceType();
 						addResources(resourceType, Vertex.CITY, true);
+						// SPECIAL CASE: two random fish draws for city on fishing ground
+						if (!distributedFish && vertex.hasFishingGround()) {
+							addFish(Vertex.CITY);
+							distributedFish = true;
+						}
 						appendAction(R.string.player_received_x_resources,
 								Integer.toString(2) + " " + Resource.toRString(resourceType));
 					} else if(terrainType == Hexagon.TerrainType.GOLD_FIELD){
@@ -1227,7 +1234,7 @@ public class Player {
 		}
 		boolean canBuild = false;
 		for (Vertex vertex : board.getVertices()) {
-			if (canBuildVertexUnit(vertex, Vertex.CITY_WALL)) {
+			if (canBuildVertexUnit(vertex, Vertex.WALLED_CITY)) {
 				canBuild = true;
 				break;
 			}
@@ -1253,7 +1260,7 @@ public class Player {
 		{
 			return false;
 		}
-		else if (unitType == Vertex.CITY_WALL && numOwnedCityWalls >= MAX_CITY_WALLS)
+		else if (unitType == Vertex.WALLED_CITY && numOwnedCityWalls >= MAX_CITY_WALLS)
 		{
 			return false;
 		}
@@ -1430,6 +1437,7 @@ public class Player {
 
 	/**
 	 * Can you move at least one of your knights?
+	 *
 	 *
 	 * @return
 	 */
@@ -1649,9 +1657,35 @@ public class Player {
 			default:
 				break;
 		}
-
-
 	}
+
+	/**
+	 * Add fish to the player
+	 * @param curUnitType
+	 * 			curUnitType of vertex
+	 */
+	public void addFish(int curUnitType) {
+		switch(curUnitType) {
+			case Vertex.SETTLEMENT:
+				gainRandomNumberOfFish();
+				break;
+			case Vertex.CITY:
+			case Vertex.WALLED_CITY:
+			case Vertex.TRADE_METROPOLIS:
+			case Vertex.SCIENCE_METROPOLIS:
+			case Vertex.POLITICS_METROPOLIS:
+			case Vertex.WALLED_TRADE_METROPOLIS:
+			case Vertex.WALLED_SCIENCE_METROPOLIS:
+			case Vertex.WALLED_POLITICS_METROPOLIS:
+				gainRandomNumberOfFish();
+				gainRandomNumberOfFish();
+				break;
+			default:
+				break;
+		}
+	}
+
+
 
 	/**
 	 * Get the number of resources a player has of a given resourceType
@@ -2076,7 +2110,7 @@ public class Player {
 	 * Increment the number of fish owned
 	 * by random 1-3 based on probabilities of game tokens
 	 */
-	public void gainFish(){
+	public void gainRandomNumberOfFish(){
 		//0-10 inclusive = 1
 		//11-20 inclusive = 2
 		//21-28 inclusive = 3
@@ -2084,16 +2118,16 @@ public class Player {
 		Random r = new Random();
 		int fishNum = r.nextInt(30);
 		if(fishNum <= 10){
-			numFishOwned+= 1;
+			numOwnedFish += 1;
 		} else if(fishNum <= 20){
-			numFishOwned+= 2;
+			numOwnedFish += 2;
 		} else if(fishNum <= 28){
-			numFishOwned+= 3;
+			numOwnedFish += 3;
 		} else{
 			if(board.playerNumBootOwner == -1){
 				board.playerNumBootOwner = playerNumber;
 			} else{
-				numFishOwned+= 1;
+				numOwnedFish += 1;
 			}
 		}
 
@@ -2702,12 +2736,12 @@ public class Player {
 		return cityImprovementLevels;
 	}
 
-	public int getNumFishOwned() {
-		return numFishOwned;
+	public int getNumOwnedFish() {
+		return numOwnedFish;
 	}
 
-	public void setNumFishOwned(int numFishOwned) {
-		this.numFishOwned = numFishOwned;
+	public void setNumOwnedFish(int numOwnedFish) {
+		this.numOwnedFish = numOwnedFish;
 	}
 
 	/**
