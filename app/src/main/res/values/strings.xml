@@ -54,19 +54,6 @@
     <string name="shop_improvements">Purchase City Improvements</string>
     <string name="city_improvements">City Improvements</string>
 
-<<<<<<< HEAD
-    <!-- Resource resourceTypes -->
-    <string name="desert">desert</string>
-    <string name="lumber">lumber</string>
-    <string name="wool">wool</string>
-    <string name="grain">grain</string>
-    <string name="brick">brick</string>
-    <string name="ore">ore</string>
-    <string name="gold">gold</string>
-    <string name="paper">paper</string>
-    <string name="coin">coin</string>
-    <string name="cloth">cloth</string>
-=======
 	<!-- Resource resourceTypes -->
 	<string name="desert">desert</string>
 	<string name="lumber">lumber</string>
@@ -79,7 +66,6 @@
 	<string name="coin">coin</string>
 	<string name="cloth">cloth</string>
 	<string name="fish">Fish</string>
->>>>>>> master
 
     <!-- Knight knightRanks -->
     <string name="knight_basic">basic knight</string>
@@ -135,16 +121,6 @@
     <string name="player_city">Built a city</string>
     <string name="player_city_wall">Built a city wall</string>
     <string name="player_place_knight">Dispatched a knight</string>
-<<<<<<< HEAD
-    <string name="player_activate_knight">Activated a knight</string>
-    <string name="player_promote_knight">Promoted a knight</string>
-    <string name="player_chase_robber">Chased the robber</string>
-    <string name="player_chase_pirate">Chased the pirate</string>
-    <string name="player_traded_away">Traded away %s</string>
-    <string name="player_ended_turn">Ended turn</string>
-    <string name="player_received_card">Received a card</string>
-    <string name="player_played_card">Played a %s card</string>
-=======
 	<string name="player_activate_knight">Activated a knight</string>
 	<string name="player_promote_knight">Promoted a knight</string>
 	<string name="player_chase_robber">Chased the robber</string>
@@ -155,7 +131,6 @@
 	<string name="player_ended_turn">Ended turn</string>
 	<string name="player_received_card">Received a free progress card</string>
 	<string name="player_played_card">Played a %s card</string>
->>>>>>> master
     <string name="player_longest_road">Has the longest road</string>
     <string name="player_stole_from">Stole from %s</string>
     <string name="player_received_resource">Received %s</string>
@@ -163,13 +138,6 @@
     <string name="player_discarded">Discarded %s</string>
     <string name="player_traded_with">Traded with %s</string>
     <string name="player_traded_for">Traded for %s</string>
-<<<<<<< HEAD
-    <string name="player_tradeImp">Purchased Trade Improvement Level: %s</string>
-    <string name="player_scienceImp">Purchased Science Improvement Level: %s</string>
-    <string name="player_politicsImp">Purchased Politics Improvement Level: %s</string>
-    <string name="player_stole_trade">Stole Trade Metropolis From: %s</string>
-    <string name="player_stole_science">Stole Science Metropolis From: %s</string>
-    <string name="player_stole_politics">Stole Politics Metropolis From: %s</string>
 
     <!-- PlayerStatsFragment screen -->
     <string name="status">Status</string>
@@ -205,7 +173,6 @@
 		wool, 1 grain, 1 brick\n
 		\nCity:\n2 grain, 3 ore\n
     </string>
-=======
 	<string name="player_tradeImp">Purchased Trade Improvement Level: %s</string>
 	<string name="player_scienceImp">Purchased Science Improvement Level: %s</string>
 	<string name="player_politicsImp">Purchased Politics Improvement Level: %s</string>
@@ -257,7 +224,6 @@
 	<string name="costs_reference_scienceImprovement">Science</string>
 	<string name="costs_reference_politicsImprovement">Politics</string>
 	<string name="reference_fishImprovement">Use Earned Fish</string>
->>>>>>> master
 
     <!-- In-game buttons -->
     <string name="button_cards">Buy or use cards</string>
@@ -277,77 +243,14 @@
     <string name="phase_second_edge_unit">Place 2nd road/ship</string>
     <string name="phase_your_turn">Your turn</string>
     <string name="phase_player_turn">Make your moves</string>
-<<<<<<< HEAD
-    <string name="phase_move_ship">Move the ship</string>
-    <string name="phase_make_choice">Time to choose!</string>
-=======
 	<string name="phase_move_ship">Move the ship</string>
 	<string name="phase_move_knight">Move the knight</string>
 	<string name="phase_displacing_knight">Displacing Knight!</string>
 	<string name="phase_make_choice">Time to choose!</string>
->>>>>>> master
     <string name="phase_move_robber">Move the robber</string>
     <string name="phase_move_pirate">Move the pirate</string>
     <string name="phase_game_over">Game over</string>
 
-<<<<<<< HEAD
-    <!-- Various strings in the game -->
-    <string name="not_my_turn">It\'s not your turn!</string>
-    <string name="game_turn_summary">Turn Summary</string>
-    <string name="waiting_trade_proposed">Trade Proposed, Waiting</string>
-    <string name="waiting_trade_responded">Trade Results</string>
-    <string name="waiting_trade_responded_nobody">Nobody accepted your trade offer!</string>
-    <string name="waiting_trade_responded_somebody"> accepted your trade offer!</string>
-    <string name="game_build_metropolis">Build Metropolis</string>
-    <string name="game_rolled_str">Rolled</string>
-    <string name="game_back_to_board">Back to board</string>
-    <string name="game_return_to_menu">Return to menu</string>
-    <string name="game_use_str">Use</string>
-    <string name="game_purchased_str">Purchased a</string>
-    <string name="game_ok_str">OK</string>
-    <string name="game_confirm_chase_robber">Chase the robber</string>
-    <string name="game_confirm_chase_pirate">Chase the pirate</string>
-    <string name="game_chase_robber_title">Chase robber with...</string>
-    <string name="game_chase_pirate_title">Chase pirate with...</string>
-    <string name="game_confirm_chase_robber_title">Want to chase the robber?</string>
-    <string name="game_confirm_chase_pirate_title">Want to chase the pirate?</string>
-    <string name="game_cancel_str">Cancel</string>
-    <string name="game_resources_str">resources</string>
-    <string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>
-    <string name="game_choose_robber">Move Robber</string>
-    <string name="game_choose_pirate">Move Pirate</string>
-    <string name="game_steal_title">Pick a victim</string>
-    <string name="game_steal_from_str">Steal from</string>
-    <string name="game_steal_fail_str">Nobody to steal from</string>
-    <string name="game_stole_str">Stole</string>
-    <string name="game_from_str">from</string>
-    <string name="game_player_couldnt_steal">Couldn\'t steal from</string>
-    <string name="game_did_nothing_str">Did nothing</string>
-    <string name="game_choose_road">Build road</string>
-    <string name="game_choose_ship">Build ship</string>
-    <string name="game_road_ship_title">Build a road or ship?</string>
-    <string name="game_build_road">Build a road</string>
-    <string name="game_build_ship">Build a ship</string>
-    <string name="game_move_ship">Ship to move?</string>
-    <string name="game_build_settlement">Build a settlement</string>
-    <string name="game_build_city">Build a city</string>
-    <string name="game_build_wall">Build a wall</string>
-    <string name="game_hire_knight">Dispatch knight</string>
-    <string name="game_activate_knight">Activate knight</string>
-    <string name="game_promote_knight">Promote knight</string>
-    <string name="game_chase_robber">Chase the Robber</string>
-    <string name="game_chase_pirate">Chase the Pirate</string>
-    <string name="game_cant_build_str">Can\'t build</string>
-    <string name="game_cant_act_str">Invalid action</string>
-    <string name="game_cant_hire_knight_str">Can\'t hire knight</string>
-    <string name="game_cant_promote_knight_str">Can\'t promote knight</string>
-    <string name="game_cant_move_robber">Can\'t move robber</string>
-    <string name="game_robber_same">You must move the robber to a new location</string>
-    <string name="game_robber_sea">The ocean is no place for a robber!</string>
-    <string name="game_cant_move_pirate">Can\'t move pirate</string>
-    <string name="game_pirate_same">You must move the pirate to a new location</string>
-    <string name="game_pirate_land">The land is no place for a pirate!</string>
-=======
 	<!-- Various strings in the game -->
 	<string name="not_my_turn">It\'s not your turn!</string>
 	<string name="game_turn_summary">Turn Summary</string>
@@ -409,7 +312,6 @@
 	<string name="game_cant_move_pirate">Can\'t move pirate</string>
 	<string name="game_pirate_same">You must move the pirate to a new location</string>
 	<string name="game_pirate_land">The land is no place for a pirate!</string>
->>>>>>> master
     <string name="game_build_settlements_max">Reached the maximum number of settlements.</string>
     <string name="game_build_city_max">Reached the maximum number of cities.</string>
     <string name="game_build_wall_max">Reached the maximum number of walls.</string>
@@ -426,20 +328,13 @@
     <string name="game_nowhere_available_ship_build">No buildable ship locations</string>
     <string name="game_nowhere_available_ship_move">Ship movement would not be possible right now</string>
     <string name="game_nowhere_available_hire_knight">No locations available to dispatch a knight</string>
-<<<<<<< HEAD
-    <string name="game_nowhere_available_activate_knight">No locations available to activate a knight</string>
-    <string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
-    <string name="game_nowhere_available_chase_robber">No knights positioned to chase the robber</string>
-    <string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
-    <string name="game_won">won</string>
-=======
+
 	<string name="game_nowhere_available_activate_knight">No locations available to activate a knight</string>
 	<string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
 	<string name="game_nowhere_available_chase_robber">No knights positioned to chase the robber</string>
 	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
 	<string name="game_nowhere_available_knight_move">No moveable knights at the ready</string>
 	<string name="game_won">won</string>
->>>>>>> master
 
     <!-- Progress Cards -->
     <string name="merchant">Merchant</string>
