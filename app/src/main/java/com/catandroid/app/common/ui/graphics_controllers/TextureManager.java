@@ -11,10 +11,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.BitmapFactory.Options;
 import android.opengl.GLUtils;
+import android.util.Log;
 
 import com.catandroid.app.common.components.BoardGeometry;
 import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.FishingGround;
 import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_pieces.Resource;
@@ -34,8 +36,8 @@ public class TextureManager {
     * button just on top (layer CITY + 1) and all remaining png's at the city layer
     */
 	private enum TextureType {
-		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE,
-		HARBOR, RESOURCE, NUMBER_TOKEN, SHIP, ROAD, SETTLEMENT, CITY, CITY_WALL,
+		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE, HEX_MERCHANT,
+		HARBOR, FISHING_GROUND, RESOURCE, NUMBER_TOKEN, SHIP, ROAD, SETTLEMENT, CITY, CITY_WALL,
 		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
 		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
 		BASIC_KNIGHT_INACTIVE, STRONG_KNIGHT_INACTIVE, MIGHTY_KNIGHT_INACTIVE,
@@ -75,6 +77,8 @@ public class TextureManager {
 		add(TextureType.HEX_COAST, 0, R.drawable.hex_coast, res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.DESERT.ordinal(), R.drawable.hex_desert,
 				res);
+        add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.FISH_LAKE.ordinal(), R.drawable.hex_fish_lake,
+                res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.PASTURE.ordinal(), R.drawable.hex_wool, res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.FIELDS.ordinal(), R.drawable.hex_grain, res);
 		add(TextureType.HEX_TERRAIN, Hexagon.TerrainType.FOREST.ordinal(), R.drawable.hex_lumber,
@@ -252,6 +256,9 @@ public class TextureManager {
         // load robber texture
         add(TextureType.HEX_ROBBER, 0, R.drawable.hex_robber, res);
 
+        // load merchant texture
+        add(TextureType.HEX_MERCHANT, 0, R.drawable.hex_merchant, res);
+
         // load harbor textures
         add(TextureType.HARBOR, Harbor.Position.NORTH.ordinal(),
                 R.drawable.harbor_north, res);
@@ -265,6 +272,20 @@ public class TextureManager {
                 R.drawable.harbor_southeast, res);
         add(TextureType.HARBOR, Harbor.Position.SOUTHWEST.ordinal(),
                 R.drawable.harbor_southwest, res);
+
+        // load fishing ground textures
+        add(TextureType.FISHING_GROUND, FishingGround.Position.NORTH.ordinal(),
+                R.drawable.fishing_ground_north, res);
+        add(TextureType.FISHING_GROUND, FishingGround.Position.SOUTH.ordinal(),
+                R.drawable.fishing_ground_south, res);
+        add(TextureType.FISHING_GROUND, FishingGround.Position.NORTHEAST.ordinal(),
+                R.drawable.fishing_ground_northeast, res);
+        add(TextureType.FISHING_GROUND, FishingGround.Position.NORTHWEST.ordinal(),
+                R.drawable.fishing_ground_northwest, res);
+        add(TextureType.FISHING_GROUND, FishingGround.Position.SOUTHEAST.ordinal(),
+                R.drawable.fishing_ground_southeast, res);
+        add(TextureType.FISHING_GROUND, FishingGround.Position.SOUTHWEST.ordinal(),
+                R.drawable.fishing_ground_southwest, res);
 
         // load road texture
         add(TextureType.ROAD, 0, R.drawable.edge_unit_road, res);
@@ -329,6 +350,8 @@ public class TextureManager {
         add(TextureType.BUTTON, UIButton.ButtonType.CHASE_PIRATE.ordinal(),
                 R.drawable.button_chase_pirate, res);
         add(TextureType.BUTTON, UIButton.ButtonType.MOVE_KNIGHT.ordinal(), R.drawable.button_move_knight,
+                res);
+        add(TextureType.BUTTON, UIButton.ButtonType.USE_FISH.ordinal(), R.drawable.button_use_fish,
                 res);
 	}
 
@@ -400,15 +423,29 @@ public class TextureManager {
         gl.glPopMatrix();
     }
 
-    public void drawRobber(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry) {
+    public void drawRobber(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry, boolean robberDisabled, boolean pirateDisabled) {
         gl.glPushMatrix();
 
         int id = hexagon.getId();
         gl.glTranslatef(boardGeometry.getHexagonX(id), boardGeometry.getHexagonY(id), 0);
 
-        if (hexagon.hasRobber() || hexagon.hasPirate())
+        if ((hexagon.hasRobber() && !robberDisabled) || (hexagon.hasPirate() && !pirateDisabled))
         {
             square.get(hash(TextureType.HEX_ROBBER, 0)).render(gl);
+        }
+
+        gl.glPopMatrix();
+    }
+
+    public void drawMerchant(Hexagon hexagon, GL10 gl, BoardGeometry boardGeometry) {
+        gl.glPushMatrix();
+
+        int id = hexagon.getId();
+        gl.glTranslatef(boardGeometry.getHexagonX(id), boardGeometry.getHexagonY(id), 0);
+
+        if (hexagon.hasMerchant())
+        {
+            square.get(hash(TextureType.HEX_MERCHANT, 0)).render(gl);
         }
 
         gl.glPopMatrix();
@@ -432,6 +469,28 @@ public class TextureManager {
         gl.glPopMatrix();
     }
 
+    public void drawFishingGround(FishingGround fishingGround, GL10 gl, BoardGeometry boardGeometry) {
+        int id = fishingGround.getId();
+
+        if(fishingGround == null) {
+            Log.d("test", "here");
+        }
+
+        // draw shore access notches
+        gl.glPushMatrix();
+        gl.glTranslatef(boardGeometry.getFishingGroundX(id), boardGeometry.getFishingGroundY(id), 0);
+        square.get(hash(TextureType.FISHING_GROUND, fishingGround.getPosition().ordinal())).render(gl);
+        gl.glPopMatrix();
+
+        // draw type fishingGround icon
+        gl.glPushMatrix();
+        gl.glTranslatef(boardGeometry.getFishingGroundIconX(id, fishingGround.getEdge()),
+                boardGeometry.getFishingGroundIconY(id, fishingGround.getEdge()), 0);
+        Log.d("NumberToken", "Number token for fishing ground " + fishingGround.getId() + " = " + fishingGround.getNumberToken().getTokenNum());
+        square.get(hash(TextureType.NUMBER_TOKEN, fishingGround.getNumberToken().getTokenNum())).render(gl);
+        gl.glPopMatrix();
+    }
+
     public void drawBuildableVertexUnit(Vertex vertex, boolean selectableSettlement, boolean selectableCity,
                                         boolean selectableCityWall, boolean selectableMetropolis, 
                                         GL10 gl, BoardGeometry boardGeometry) {
@@ -445,7 +504,7 @@ public class TextureManager {
         {
             textureType = TextureType.SETTLEMENT;
         }
-        else if (vertex.getCurUnitType() == Vertex.CITY_WALL)
+        else if (vertex.getCurUnitType() == Vertex.WALLED_CITY)
         {
             textureType = TextureType.CITY_WALL;
         }
@@ -703,6 +762,9 @@ public class TextureManager {
         }
         else if(textureType == TextureType.SHIP || textureType == TextureType.ROAD) {
             textureDepth = TextureType.ROAD.ordinal();
+        }
+        else if (textureType == TextureType.HARBOR || textureType == TextureType.FISHING_GROUND) {
+            textureDepth = TextureType.HARBOR.ordinal();
         }
         else if (textureType.ordinal() > TextureType.CITY.ordinal()) {
             // render most textures at the depth of a city

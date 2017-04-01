@@ -159,14 +159,46 @@ public class Knight extends OwnableUnit {
     }
 
 
-    public boolean canMoveTo(Vertex target) {
-        if (target.getCurUnitType() != Vertex.NONE || !canMakeMove() || hasMovedThisTurn()) {
+    public boolean canMoveTo(Vertex target, boolean isPeaceful) {
+        if (!canMakeMove() || hasMovedThisTurn()) {
             return false;
         }
 
+        if(target.getCurUnitType() != Vertex.NONE) {
+            if(target.getCurUnitType() != Vertex.KNIGHT) {
+                return false;
+            }
+            else if (!isPeaceful && canDisplace(target.getPlacedKnight())) {
+                Vertex myStartLocation = board.getStartLocationOfMovingKnight();
+                return target.canDisplaceKnightFromHere(getOwnerPlayer(), this)
+                        && myStartLocation.hasTradeRouteTo(target, getOwnerPlayer(), false);
+            }
+        }
+
+        // placing a knight at an unoccupied vertex
         Vertex myStartLocation = board.getStartLocationOfMovingKnight();
-        return target.canPlaceKnightHere(getOwnerPlayer())
-                && myStartLocation.hasTradeRouteTo(target, getOwnerPlayer());
+        return target.canPlaceNewKnightHere(getOwnerPlayer())
+                && myStartLocation.hasTradeRouteTo(target, getOwnerPlayer(), true);
+    }
+
+    public boolean canDisplaceKnightTo(Vertex target) {
+        // NOTE: BE CAREFUL: displaced movement is free
+
+        if(target.getCurUnitType() != Vertex.NONE) {
+            return false;
+        }
+
+        // placing a knight at an unoccupied vertex
+        Vertex myStartLocation;
+        if (!board.isKnightDisplacementPhase()) {
+            /* WARNING: occurs before passing turn,
+               needs curVertexLocationId to be  set at this time */
+            myStartLocation = board.getVertexById(curVertexLocationId);
+        } else {
+            myStartLocation = board.getStartLocationOfMovingKnight();
+        }
+        return target.canPlaceNewKnightHere(getOwnerPlayer())
+                && myStartLocation.hasTradeRouteTo(target, getOwnerPlayer(), true);
     }
 
     public boolean promote() {
@@ -184,6 +216,23 @@ public class Knight extends OwnableUnit {
                 return false;
         }
         turnLastPromoted = board.getGameTurnNumber();
+        return true;
+    }
+
+    public boolean demote() {
+        switch(knightRank) {
+            case BASIC_KNIGHT:
+                // it can't really get any worse...
+                return false;
+            case STRONG_KNIGHT:
+                knightRank = KnightRank.BASIC_KNIGHT;
+                break;
+            case MIGHTY_KNIGHT:
+                knightRank = KnightRank.STRONG_KNIGHT;
+                break;
+            default:
+                return false;
+        }
         return true;
     }
 
@@ -218,6 +267,12 @@ public class Knight extends OwnableUnit {
         return true;
     }
 
+    public boolean displaceFromPost() {
+        // WARNING: only remove vertex location after caching to board
+        curVertexLocationId = -1;
+        return true;
+    }
+
     public boolean hasBeenActivatedThisTurn() {
         return turnLastActivated == board.getGameTurnNumber();
     }
@@ -228,6 +283,42 @@ public class Knight extends OwnableUnit {
 
     public boolean hasBeenPromotedThisTurn() {
         return turnLastPromoted == board.getGameTurnNumber();
+    }
+
+    public boolean canDisplace(Knight defender) {
+        return canDisplace(this, defender);
+    }
+
+    public static boolean canDisplace(Knight attacker, Knight defender) {
+
+        if(attacker.getOwnerPlayer() == defender.getOwnerPlayer()) {
+            // can't displace one of your own knights...
+            return false;
+        }
+
+        KnightRank attackerRank = attacker.getKnightRank(),
+                defenderRank = defender.getKnightRank();
+
+        switch (attackerRank) {
+            case BASIC_KNIGHT:
+                return false;
+            case STRONG_KNIGHT:
+                if(defenderRank == KnightRank.BASIC_KNIGHT) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            case MIGHTY_KNIGHT:
+                if(defenderRank == KnightRank.MIGHTY_KNIGHT) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            default:
+                return false;
+        }
     }
 
 }

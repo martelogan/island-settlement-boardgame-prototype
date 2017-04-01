@@ -21,6 +21,7 @@ public class Edge {
     private int portHexId = -1;
 	private int portHexDirect = -1;
     private int myHarborId = -1;
+	private int myFishingGroundId = -1;
 	private boolean isBorderingSea = false;
 	private boolean isBlockedByPirate = false;
 	private transient Board board;
@@ -235,6 +236,22 @@ public class Edge {
 		return isBorderingSea;
 	}
 
+	public boolean isBorderingFishLake() {
+		Hexagon originhex, neighborHex;
+		originhex = getOriginHex();
+		neighborHex = getNeighborHex();
+		if(originhex != null
+				&& originhex.getTerrainType() == Hexagon.TerrainType.FISH_LAKE) {
+			return true;
+		}
+		else if(neighborHex != null
+				&& neighborHex.getTerrainType() == Hexagon.TerrainType.FISH_LAKE) {
+			return true;
+		}
+
+		return false;
+	}
+
 
 	/**
 	 * Check if the edge is currently blocked by the pirate
@@ -422,6 +439,22 @@ public class Edge {
 	}
 
 	/**
+	 * Get the marginal X sign of the port hexagon direction
+	 * @return the marginal X sign of the port hexagon direction
+	 */
+	public int getPortHexDirectXsign() {
+		return Hexagon.getVDirectXsign(this.portHexDirect);
+	}
+
+	/**
+	 * Get the marginal Y sign of the port hexagon direction
+	 * @return the marginal Y sign of the port hexagon direction
+	 */
+	public int getPortHexDirectYsign() {
+		return Hexagon.getVDirectYsign(this.portHexDirect);
+	}
+
+	/**
 	 * Set the neighbor hexagon
 	 * @param h
 	 *            the hex to set
@@ -455,8 +488,19 @@ public class Edge {
 	 * @return
 	 */
 	public void setMyHarbor(Harbor harbor) {
-		harbor.setEdgeById(this.getId());
+		harbor.setEdge(this);
 		this.myHarborId = harbor.getId();
+	}
+
+	/**
+	 * Set a fishing ground on this edge
+	 * @param fishingGround
+	 *            the fishing ground to set
+	 * @return
+	 */
+	public void setMyFishingGround(FishingGround fishingGround) {
+		fishingGround.setEdge(this);
+		this.myFishingGroundId = fishingGround.getId();
 	}
 
     /**
@@ -530,8 +574,11 @@ public class Edge {
 		return true;
 	}
 
+
+	//FIXME: WARNING...trade route logic is only half-working (considers roads only + minor bug)
+
 	/**
-	 * Get the longest road length through this edge
+	 * Get the longest trade route length through this edge
 	 * 
 	 * @param player
 	 *            player to measure for

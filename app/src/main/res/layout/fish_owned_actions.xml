@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dip" >
+
+        <Button
+            android:id="@+id/giveBoot"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="Give Away Boot"
+            android:enabled="false"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="@string/reference_fishImprovement"
+            android:textSize="24sp" >
+        </TextView>
+
+        <LinearLayout
+            android:id="@+id/fish_level1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="visible">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2x" >
+            </TextView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_fish_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyFish2"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Use 2 Fish"
+                android:enabled="false"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remove pirate/robber" >
+        </TextView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\n" >
+        </TextView>
+        <LinearLayout
+            android:id="@+id/fish_level2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3x" >
+            </TextView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_fish_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyFish3"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Use 3 Fish"
+                android:enabled="false"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Steal from Opponent" >
+        </TextView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\n" >
+        </TextView>
+        <LinearLayout
+            android:id="@+id/fish_level3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4x" >
+            </TextView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_fish_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyFish4"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Use 4 Fish"
+                android:enabled="false"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Get Free Resource" >
+        </TextView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\n" >
+        </TextView>
+        <LinearLayout
+            android:id="@+id/fish_level5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5x" >
+            </TextView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_fish_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyFish5"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Use 5 Fish"
+                android:enabled="false"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Build Road or Ship" >
+        </TextView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\n" >
+        </TextView>
+        <LinearLayout
+            android:id="@+id/fish_level4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="7x" >
+            </TextView>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/resource_fish_large" >
+            </ImageView>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <Button
+                android:id="@+id/buyFish7"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="Use 7 Fish"
+                android:enabled="false"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pick Free Progress Card" >
+        </TextView>
+        
+    </LinearLayout>
+
+</ScrollView>

@@ -8,6 +8,7 @@ import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.FishingGround;
 import com.catandroid.app.common.components.board_positions.Harbor;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
@@ -31,14 +32,15 @@ public class Board {
 
 	private ArrayList<String> gameParticipantIds;
 
-    public final static int[] COUNT_PER_DICE_SUM = { 0, 0, 2, 3, 3, 3, 3, 0, 3, 3, 3, 3, 2 };
+    public final static int[] COUNT_PER_DICE_SUM = { 0, 0, 1, 2, 2, 3, 3, 0, 3, 3, 2, 2, 1 };
 
 	private final HashMap<Hexagon.TerrainType, Integer> terrainTypeToCountMap;
 	private HashMap<Hexagon.TerrainType, Integer> initTerrainTypeToCountMap(int boardSize)
 	{
 		HashMap<Hexagon.TerrainType, Integer> terrainTypeToCountMap =
 				new HashMap<Hexagon.TerrainType, Integer>();
-		terrainTypeToCountMap.put(Hexagon.TerrainType.DESERT, 2);
+		terrainTypeToCountMap.put(Hexagon.TerrainType.FISH_LAKE, 1);
+		terrainTypeToCountMap.put(Hexagon.TerrainType.DESERT, 1);
 		terrainTypeToCountMap.put(Hexagon.TerrainType.GOLD_FIELD, 2);
 		terrainTypeToCountMap.put(Hexagon.TerrainType.HILLS, 3);
 		terrainTypeToCountMap.put(Hexagon.TerrainType.FOREST, 4);
@@ -67,9 +69,10 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,
-		BUILD_METROPOLIS, CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, DONE
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
+		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
+		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
+		DEFENDER_OF_CATAN, PLACE_MERCHANT, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -99,6 +102,7 @@ public class Board {
 	private int numPlayers;
 	private int numTotalPlayableKnights;
 	private Harbor[] harbors;
+    private FishingGround[] fishingGrounds;
 	private Stack<Integer> playerIdsYetToAct;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
@@ -123,11 +127,24 @@ public class Board {
 			longestTradeRouteLength, maxPoints, lastDiceRollNumber;
 	private Integer longestTradeRouteOwnerId = null, winnerId = null;
 	private int latestPlayerChoice = -1;
-    private int tempEdgeIdMemory = -1, tempVertexIdMemory = -1, tempKnightIdMemory = -1;
+    private int tempEdgeIdMemory = -1, tempVertexIdMemory = -1,
+			tempKnightIdMemory = -1, tempPlayerNumberMemory = -1;
 
 	private int[] metropolisOwners = {-1, -1, -1};
 
+
+
+    private int merchantOwner = -1;
+    private int curMerchantHexId = -1;
+    Resource.ResourceType merchantType = null;
+
 	private boolean autoDiscard;
+
+	public int playerNumBootOwner = -1;
+
+	boolean pirateDisabled = false;
+
+	boolean robberDisabled = false;
 
 	/**
 	 * Create new board layout
@@ -200,9 +217,13 @@ public class Board {
 		edges = BoardUtils.generateEdges(this, boardGeometry.getEdgeCount());
 		hexagons = BoardUtils.initRandomHexes(this);
 		harbors = BoardUtils.initRandomHarbors(this, boardGeometry.getHarborCount());
+		Integer[] fishingGroundNumbers = {4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10};
+		fishingGrounds = BoardUtils.generateFishingGrounds(this,
+				fishingGroundNumbers);
 
 		// populate board map with starting parameters
-		boardGeometry.populateBoard(hexagons, vertices, edges, harbors, hexIdMap);
+		boardGeometry.populateBoard(hexagons, vertices, edges,
+				harbors, fishingGrounds, hexIdMap);
 
 		// assign number tokens randomly
 		BoardUtils.assignRandomNumTokens(hexagons);
@@ -239,17 +260,32 @@ public class Board {
 	}
 
 	/**
-	 * Get a reference to the current player
+	 * Get a reference to the player for current game turn
 	 * 
-	 * @return the current player
+	 * @return the player of the current game turn
 	 */
-	public Player getCurrentPlayer() {
+	public Player getPlayerOfCurrentGameTurn() {
 		if (players == null)
 		{
 			return null;
 		}
 
 		return players[curPlayerNumber];
+	}
+
+
+	/**
+	 * Get a reference to the player looking at screen
+	 *
+	 * @return the player currently looking at device
+	 */
+	public Player getActiveFragmentPlayer() {
+		if (players == null)
+		{
+			return null;
+		}
+
+		return getPlayerFromParticipantId(activeGameFragment.myParticipantId);
 	}
 
 	/**
@@ -286,11 +322,24 @@ public class Board {
 	 * @return the currently moving knight (or null)
 	 */
 	public Knight getCurrentlyMovingKnight() {
-		if (phase != Phase.MOVING_KNIGHT) {
+		if (phase != Phase.MOVING_KNIGHT && phase != Phase.DISPLACING_KNIGHT) {
 			return null;
 		}
 
 		return getKnightById(tempKnightIdMemory);
+	}
+
+	/**
+	 * Get a reference to the player that needs to move their displaced knight
+	 *
+	 * @return the player that needs to move their displaced knight
+	 */
+	public Player getPlayerToDisplaceKnight() {
+		if (phase != Phase.DISPLACING_KNIGHT) {
+			return null;
+		}
+
+		return getPlayerById(tempPlayerNumberMemory);
 	}
 
 	/**
@@ -299,7 +348,7 @@ public class Board {
 	 * @return previous location of the currently moving knight
 	 */
 	public Vertex getStartLocationOfMovingKnight() {
-		if (phase != Phase.MOVING_KNIGHT) {
+		if (phase != Phase.MOVING_KNIGHT && phase != Phase.DISPLACING_KNIGHT) {
 			return null;
 		}
 
@@ -315,7 +364,7 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = 3;
+		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 //		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
@@ -348,6 +397,8 @@ public class Board {
 
 		if (diceRollNumber == 7) {
 			// reduce each players to 7 cards
+			robberDisabled = false;
+			pirateDisabled = false;
 			for (int i = 0; i < numPlayers; i++) {
 				int cards = players[i].getResourceCount();
 				int walls = getPlayerById(i).getNumOwnedCityWalls();
@@ -375,10 +426,11 @@ public class Board {
 			// enter ChooseRobberPiratePhase
 			startChooseRobberPiratePhase();
 		} else {
-			// distribute resources
+			// distribute resources and fish
 			for (int i = 0; i < hexagons.length; i++)
 			{
 				hexagons[i].distributeResources(diceRollNumber);
+				hexagons[i].distributeFish(diceRollNumber);
 			}
 		}
 
@@ -562,6 +614,17 @@ public class Board {
 				// TODO: what else when ending knight movement?
 				phase = returnPhase;
 				tempKnightIdMemory = -1;
+				tempVertexIdMemory = -1;
+				break;
+			case DISPLACING_KNIGHT:
+				// TODO: what else when ending knight displacement?
+				phase = returnPhase;
+				tempKnightIdMemory = -1;
+				tempVertexIdMemory = -1;
+				tempPlayerNumberMemory = -1;
+				// pass the turn back to the active turn player
+				activeGameFragment.mListener.endTurn(
+						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				break;
 			case PROGRESS_CARD_STEP_1:
 				phase = Phase.PROGRESS_CARD_STEP_2;
@@ -586,11 +649,11 @@ public class Board {
 						activeGameFragment.mListener.endTurn(gameParticipantIds.get(nextPlayerToRespondNum),false);
 
 					} else {
-						startTradeResponsedPhase();
+						startTradeRespondedPhase();
 					}
 
 				} else {
-					startTradeResponsedPhase();
+					startTradeRespondedPhase();
 				}
 				break;
 			case TRADE_RESPONDED:
@@ -600,7 +663,7 @@ public class Board {
 				break;
 			case BUILD_METROPOLIS:
 				phase = Phase.PLAYER_TURN;
-				getCurrentPlayer().metropolisTypeToBuild = -1;
+				getPlayerOfCurrentGameTurn().metropolisTypeToBuild = -1;
 				break;
 			case DEFENDER_OF_CATAN:
 				//pass to the next player according to stack
@@ -611,6 +674,8 @@ public class Board {
 					phase = Phase.PLAYER_TURN;
 					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber),false);
 				}
+            case PLACE_MERCHANT:
+                phase = Phase.PLAYER_TURN;
 			case DONE:
 				return false;
 		}
@@ -668,7 +733,7 @@ public class Board {
 	 */
 	public void cancelMovingShipPhase() {
 		Edge prevShipLocation = getEdgeById(tempEdgeIdMemory);
-		prevShipLocation.moveShipToHere(getCurrentPlayer());
+		prevShipLocation.moveShipToHere(getPlayerOfCurrentGameTurn());
 		nextPhase();
 	}
 
@@ -676,7 +741,6 @@ public class Board {
 	 * Enter moving knight phase
 	 */
 	public void startMovingKnightPhase(Knight toMove) {
-		//TODO: what else when moving knight?
 		returnPhase = phase;
 		phase = Phase.MOVING_KNIGHT;
 		tempKnightIdMemory = toMove.getId();
@@ -703,11 +767,35 @@ public class Board {
 	}
 
 	/**
-	 * Enter the trade Responsed phase
+	 * Enter the knight displacement phase
 	 */
-	public void startTradeResponsedPhase() {
+	public void startKnightDisplacementPhase(Knight toDisplace) {
+		//TODO: what else when moving knight?
+		// set return phase to the player turn of current active player
+		returnPhase = phase;
+		phase = Phase.DISPLACING_KNIGHT;
+		tempKnightIdMemory = toDisplace.getId();
+		tempVertexIdMemory = toDisplace.getCurrentVertexLocation().getId();
+		Player displacedKnightOwner = toDisplace.getOwnerPlayer();
+		tempPlayerNumberMemory = displacedKnightOwner.getPlayerNumber();
+		toDisplace.displaceFromPost();
+		if(displacedKnightOwner.isBot()) {
+			runAITurn();
+		}
+		else {
+			activeGameFragment.mListener.endTurn(
+					displacedKnightOwner.getGooglePlayParticipantId(), false);
+		}
+		toast("Your turn will resume when your opponent moves the displaced knight! Check back later.");
+	}
+
+	/**
+	 * Enter the trade Responded phase
+	 */
+	public void startTradeRespondedPhase() {
 		this.setPhase(Phase.TRADE_RESPONDED);
-		activeGameFragment.mListener.endTurn(getPlayerById(tradeProposal.getTradeCreatorPlayerId()).getGooglePlayParticipantId(), false);
+		activeGameFragment.mListener.endTurn(getPlayerById(
+				tradeProposal.getTradeCreatorPlayerId()).getGooglePlayParticipantId(), false);
 	}
 
 	public void resolveBarbarians(){
@@ -873,6 +961,8 @@ public class Board {
 		return (phase == Phase.MOVING_KNIGHT);
 	}
 
+	public boolean isKnightDisplacementPhase() { return (phase == Phase.DISPLACING_KNIGHT);}
+
 	public boolean isProgressPhase() {
 		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
 	}
@@ -890,6 +980,8 @@ public class Board {
 	public boolean isTradeRespondedPhase() { return (phase == Phase.TRADE_RESPONDED);}
 
 	public boolean isBuildMetropolisPhase() { return (phase == Phase.BUILD_METROPOLIS);}
+
+    public boolean isPlaceMerchantPhase() { return (phase == Phase.PLACE_MERCHANT);}
 
 	/**
 	 * Get the dice number token value for a hexagons
@@ -957,9 +1049,27 @@ public class Board {
 	 */
 	public Harbor getHarborById(int harborId) {
 		if (harborId < 0 || harborId >= boardGeometry.getHarborCount())
+		{
 			return null;
+		}
 
 		return harbors[harborId];
+	}
+
+	/**
+	 * Get a given fishing ground by id
+	 *
+	 * @param fishingGroundId
+	 *            the id of the fishing ground
+	 * @return the fishing ground with fishingGroundId(or null)
+	 */
+	public FishingGround getFishingGroundById(int fishingGroundId) {
+		if (fishingGroundId < 0 || fishingGroundId >= boardGeometry.getFishingGroundCount())
+		{
+			return null;
+		}
+
+		return fishingGrounds[fishingGroundId];
 	}
 
 	/**
@@ -1042,15 +1152,19 @@ public class Board {
 		return knights;
 	}
 
-	/**
-	 * Get a progress card
-	 *
-	 * @return the type of progress card or null if that stack is empty
-	 */
-	public ProgressCard.ProgressCardType getRandomProgressCard() {
-		//TODO: implement progress cards
-		ProgressCard.ProgressCardType card = null;
-		return card;
+	public boolean isPirateDisabled() {
+		return pirateDisabled;
+	}
+
+	public void setPirateDisabled(boolean pirateDisabled) {
+		this.pirateDisabled = pirateDisabled;
+	}
+	public boolean isRobberDisabled() {
+		return robberDisabled;
+	}
+
+	public void setRobberDisabled(boolean robberDisabled) {
+		this.robberDisabled = robberDisabled;
 	}
 
 	public void startChooseRobberPiratePhase() {
@@ -1193,6 +1307,36 @@ public class Board {
         return true;
     }
 
+    /**
+     * Set the current merchant hexagon
+     *
+     * @param curMerchantHex
+     *            current merchant hexagon
+     * @return true iff the currebt merchant hex was set
+     */
+    public boolean setCurMerchantHex(Hexagon curMerchantHex) {
+        if (this.curMerchantHexId != -1 && hexagons != null) {
+            hexagons[curMerchantHexId].removeMerchant();
+            merchantType = null;
+        }
+        this.curMerchantHexId = curMerchantHex.getId();
+        curMerchantHex.setMerchant();
+        merchantType = curMerchantHex.getResourceType();
+        return true;
+    }
+
+    public int getMerchantOwner() {
+        return merchantOwner;
+    }
+
+    public void setMerchantOwner(int merchantOwner) {
+        this.merchantOwner = merchantOwner;
+    }
+
+    public Resource.ResourceType getMerchantType() {
+        return merchantType;
+    }
+
 	/**
 	 * Get the number of points required to win
 	 * 
@@ -1218,10 +1362,9 @@ public class Board {
 	 */
 	public boolean pillageCity(int playerNumber)
 	{
-		//@TODO add city wall removal
 		for(int i = 0; i < vertices.length; i++){
 			boolean isPillageableCity = vertices[i].getCurUnitType() == Vertex.CITY;
-			boolean isPillageableWall = vertices[i].getCurUnitType() == Vertex.CITY_WALL;
+			boolean isPillageableWall = vertices[i].getCurUnitType() == Vertex.WALLED_CITY;
 
 			if(vertices[i].getOwnerPlayer() != null && vertices[i].getOwnerPlayer().getPlayerNumber() == playerNumber
 					&& isPillageableCity){
@@ -1370,6 +1513,8 @@ public class Board {
                 return R.string.phase_move_ship;
 			case MOVING_KNIGHT:
 				return R.string.phase_move_knight;
+			case DISPLACING_KNIGHT:
+				return R.string.phase_displacing_knight;
 			case PROGRESS_CARD_STEP_1:
 				// TODO: progress card step 1
 				return 0;
@@ -1390,6 +1535,8 @@ public class Board {
 				return R.string.game_build_metropolis;
 			case DEFENDER_OF_CATAN:
 				return R.string.game_defended_catan_wait_pick_card;
+			case PLACE_MERCHANT:
+				return R.string.game_place_merchant;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -1398,8 +1545,8 @@ public class Board {
 	}
 
 	public boolean itsMyTurn(String myParticipantId){
-		String s = this.getCurrentPlayer().getGooglePlayParticipantId();
-		return (this.getCurrentPlayer().getGooglePlayParticipantId().equals(myParticipantId));
+		String s = this.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId();
+		return (this.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId().equals(myParticipantId));
 	}
 
 	/**
@@ -1434,7 +1581,9 @@ public class Board {
 
 		// check for winnerId
 		for (int i = 0; i < numPlayers; i++) {
-			if (players[i].getVictoryPoints() >= maxPoints) {
+			int hasBoot = 0;
+			if(playerNumBootOwner == players[i].getPlayerNumber()) hasBoot = 1;
+			if (players[i].getVictoryPoints() >= (maxPoints+hasBoot)) {
 				winnerId = players[i].getPlayerNumber();
 				if(phase != phase.DONE){
 					//we need to tell google the game is done
@@ -1461,6 +1610,9 @@ public class Board {
 		}
 		for (Harbor harbor : harbors) {
 			harbor.setBoard(this);
+		}
+		for (FishingGround fishingGround : fishingGrounds) {
+			fishingGround.setBoard(this);
 		}
 		for (Player player : players) {
 			player.setBoard(this);
@@ -1506,6 +1658,18 @@ public class Board {
 			default:
 				break;
 		}
+	}
+
+	public boolean progressCardStackEmpty(CityImprovement.CityImprovementType type){
+		switch(type){
+			case TRADE:
+				return tradeDeck.isEmpty();
+			case POLITICS:
+				return politicsDeck.isEmpty();
+			case SCIENCE:
+				return scienceDeck.isEmpty();
+		}
+		return true;
 	}
 
 	public void progressCardInit(){
@@ -1602,6 +1766,8 @@ public class Board {
 	}
 
 	public boolean isMyPseudoTurn(){
+		//TODO: is this dangerous for complete onlooker players?
+
 		//check if the trade proposal is currently proposed to me (my Pseudo turn)
 		if(tradeProposal != null) {
 			return (getPlayerById(
@@ -1612,10 +1778,15 @@ public class Board {
 			return true;
 		}
         else if(phase == Phase.CHOOSE_ROBBER_PIRATE &&
-                !getPlayerById(curPlayerNumber).getGooglePlayParticipantId().equals(
+                !getPlayerOfCurrentGameTurn().getGooglePlayParticipantId().equals(
                         activeGameFragment.myParticipantId)) {
             return true;
         }
+        else if(phase == Phase.DISPLACING_KNIGHT &&
+				getPlayerToDisplaceKnight().getGooglePlayParticipantId().equals(
+						activeGameFragment.myParticipantId)) {
+			return true;
+		}
 		return false;
 	}
 

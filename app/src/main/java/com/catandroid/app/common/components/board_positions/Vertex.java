@@ -14,7 +14,7 @@ public class Vertex {
 	// BUILDABLE VERTEX UNIT CONSTANTS
 	public static final int SETTLEMENT = 1;
 	public static final int CITY = 2;
-	public static final int CITY_WALL = 3;
+	public static final int WALLED_CITY = 3;
 	public static final int TRADE_METROPOLIS = 4;
 	public static final int SCIENCE_METROPOLIS = 5;
 	public static final int POLITICS_METROPOLIS = 6;
@@ -38,6 +38,8 @@ public class Vertex {
 	private int[] edgeIds = {-1, -1, -1};
 	private int[] hexagonIds = {-1, -1, -1};
 	private int[] harborIds = {-1, -1};
+    private int[] fishingGroundIds = {-1, -1};
+    private boolean hasFishingGround = false;
 
 	private transient Board board;
 
@@ -116,6 +118,24 @@ public class Vertex {
 	}
 
 	/**
+	 * Associate a fishing ground with the vertex
+	 *
+	 * @param fishingGround
+	 *            the fishing ground to add (ignored if already associated)
+	 */
+	public void addFishingGround(FishingGround fishingGround) {
+		for (int i = 0; i < 3; i++) {
+			if (fishingGroundIds[i] == -1) {
+                hasFishingGround = true;
+				fishingGroundIds[i] = fishingGround.getId();
+				return;
+			} else if (fishingGroundIds[i] == fishingGround.getId()) {
+				return;
+			}
+		}
+	}
+
+	/**
 	 * Get the hexagon at the given index of hexagonIds
 	 * 
 	 * @param index
@@ -124,6 +144,17 @@ public class Vertex {
 	 * */
 	public Hexagon getHexagon(int index) {
 		return board.getHexagonById(hexagonIds[index]);
+	}
+
+	/**
+	 * Get the hexagon at the given index of fishingGroundIds
+	 *
+	 * @param index
+	 *            the fishingGroundIds index (0, 1, or 2)
+	 * @return the fishingGround (or null)
+	 * */
+	public FishingGround getFishingGround(int index) {
+		return board.getFishingGroundById(fishingGroundIds[index]);
 	}
 
 	/**
@@ -186,7 +217,7 @@ public class Vertex {
 		switch(curUnitType) {
 			case SETTLEMENT:
 			case CITY:
-			case CITY_WALL:
+			case WALLED_CITY:
 			case TRADE_METROPOLIS:
 			case SCIENCE_METROPOLIS:
 			case POLITICS_METROPOLIS:
@@ -247,6 +278,15 @@ public class Vertex {
 	public boolean isAdjacentToRobber() {
 		return (this.isAdjacentToRobber);
 	}
+
+    /**
+     * Check if the vertex is connected to a fishing ground
+     *
+     * @return true iff the vertex is currently connected to a fishing ground
+     */
+    public boolean hasFishingGround() {
+        return (this.hasFishingGround);
+    }
 
 	/**
 	 * Robber is adjacent to this vertex
@@ -449,20 +489,179 @@ public class Vertex {
 				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
 					foundValidTradeRoute =
 							neighborVertex.isConnectedToUnclaimedVertexByTradeRouteOf(
-									tradeRouteOwner);
+									tradeRouteOwner, curEdge);
 				}
 				else if(curEdge.getCurUnitType() == Edge.ROAD) {
 					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
 						foundValidTradeRoute =
 								neighborVertex.isConnectedToUnclaimedVertexByTradeRouteOf(
-										tradeRouteOwner);
+										tradeRouteOwner, curEdge);
 					}
 				}
 				else if(curEdge.getCurUnitType() == Edge.SHIP) {
 					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
 						foundValidTradeRoute =
 								neighborVertex.isConnectedToUnclaimedVertexByTradeRouteOf(
-										tradeRouteOwner);
+										tradeRouteOwner, curEdge);
+					}
+				}
+				if(foundValidTradeRoute) {
+					break;
+				}
+			}
+		}
+
+		return foundValidTradeRoute;
+	}
+
+	/**
+	 * Check that this vertex can connect to an unclaimed vertex via some trade route of the given player
+	 *
+	 * @param tradeRouteOwner
+	 *            player that seeks to connect to unclaimed vertex
+	 * @param toIgnore
+	 *            ignore previously considered edge
+	 * @return true iff there is a path to the target vertex via edge units owned by the given player
+	 */
+	public boolean isConnectedToUnclaimedVertexByTradeRouteOf(Player tradeRouteOwner,
+															  Edge toIgnore) {
+		boolean foundValidTradeRoute = false;
+		Edge curEdge = null;
+		Vertex neighborVertex = null;
+		for (int i = 0; i < 3; i++) {
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge != toIgnore
+					&& curEdge.getOwnerPlayer() == tradeRouteOwner
+					&& curEdge.getCurUnitType() != Edge.NONE)
+			{
+				neighborVertex = curEdge.getAdjacent(this);
+				if (neighborVertex.getCurUnitType() == Vertex.NONE) { // base case
+					return true;
+				}
+				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
+					foundValidTradeRoute =
+							neighborVertex.isConnectedToUnclaimedVertexByTradeRouteOf(
+									tradeRouteOwner, curEdge);
+				}
+				else if(curEdge.getCurUnitType() == Edge.ROAD) {
+					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
+						foundValidTradeRoute =
+								neighborVertex.isConnectedToUnclaimedVertexByTradeRouteOf(
+										tradeRouteOwner, curEdge);
+					}
+				}
+				else if(curEdge.getCurUnitType() == Edge.SHIP) {
+					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
+						foundValidTradeRoute =
+								neighborVertex.isConnectedToUnclaimedVertexByTradeRouteOf(
+										tradeRouteOwner, curEdge);
+					}
+				}
+				if(foundValidTradeRoute) {
+					break;
+				}
+			}
+		}
+
+		return foundValidTradeRoute;
+	}
+
+	/**
+	 * Check that this vertex can connect to a displaceable knight via some trade route of the given player
+	 *
+	 * @param tradeRouteOwner
+	 *            player that seeks to connect to unclaimed vertex
+	 * @param attackerKnight
+	 *			 the knight intending to displace opponent knight
+	 * @return true iff there is a path to the target vertex via edge units owned by the given player
+	 */
+	public boolean isConnectedToDisplaceableKnightByTradeRouteOf(Player tradeRouteOwner,
+															  Knight attackerKnight) {
+		boolean foundValidTradeRoute = false;
+		Edge curEdge = null;
+		Vertex neighborVertex = null;
+		for (int i = 0; i < 3; i++) {
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge.getOwnerPlayer() == tradeRouteOwner &&
+					curEdge.getCurUnitType() != Edge.NONE)
+			{
+				neighborVertex = curEdge.getAdjacent(this);
+				if (neighborVertex.getCurUnitType() == Vertex.KNIGHT) { // base case
+					return attackerKnight.canDisplace(neighborVertex.getPlacedKnight());
+				}
+				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
+					foundValidTradeRoute =
+							neighborVertex.isConnectedToDisplaceableKnightByTradeRouteOf(
+									tradeRouteOwner, attackerKnight, curEdge);
+				}
+				else if(curEdge.getCurUnitType() == Edge.ROAD) {
+					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
+						foundValidTradeRoute =
+								neighborVertex.isConnectedToDisplaceableKnightByTradeRouteOf(
+										tradeRouteOwner, attackerKnight, curEdge);
+					}
+				}
+				else if(curEdge.getCurUnitType() == Edge.SHIP) {
+					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
+						foundValidTradeRoute =
+								neighborVertex.isConnectedToDisplaceableKnightByTradeRouteOf(
+										tradeRouteOwner, attackerKnight, curEdge);
+					}
+				}
+				if(foundValidTradeRoute) {
+					break;
+				}
+			}
+		}
+
+		return foundValidTradeRoute;
+	}
+
+	/**
+	 * Check that this vertex can connect to a displaceable knight via some trade route of the given player
+	 *
+	 * @param tradeRouteOwner
+	 *            player that seeks to connect to unclaimed vertex
+	 * @param attackerKnight
+	 *			 the knight intending to displace opponent knight
+	 * @param toIgnore
+	 *            ignore previously considered edge
+	 * @return true iff there is a path to the target vertex via edge units owned by the given player
+	 */
+	public boolean isConnectedToDisplaceableKnightByTradeRouteOf(Player tradeRouteOwner,
+																 Knight attackerKnight,
+																 Edge toIgnore) {
+
+		boolean foundValidTradeRoute = false;
+		Edge curEdge = null;
+		Vertex neighborVertex = null;
+		for (int i = 0; i < 3; i++) {
+			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+			if (curEdge != null && curEdge != toIgnore
+					&& curEdge.getOwnerPlayer() == tradeRouteOwner
+					&& curEdge.getCurUnitType() != Edge.NONE)
+			{
+				neighborVertex = curEdge.getAdjacent(this);
+				if (neighborVertex.getCurUnitType() == Vertex.KNIGHT) { // base case
+					return attackerKnight.canDisplace(neighborVertex.getPlacedKnight());
+				}
+				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
+					foundValidTradeRoute =
+							neighborVertex.isConnectedToDisplaceableKnightByTradeRouteOf(
+									tradeRouteOwner, attackerKnight, curEdge);
+				}
+				else if(curEdge.getCurUnitType() == Edge.ROAD) {
+					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
+						foundValidTradeRoute =
+								neighborVertex.isConnectedToDisplaceableKnightByTradeRouteOf(
+										tradeRouteOwner, attackerKnight, curEdge);
+					}
+				}
+				else if(curEdge.getCurUnitType() == Edge.SHIP) {
+					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
+						foundValidTradeRoute =
+								neighborVertex.isConnectedToDisplaceableKnightByTradeRouteOf(
+										tradeRouteOwner, attackerKnight, curEdge);
 					}
 				}
 				if(foundValidTradeRoute) {
@@ -483,7 +682,7 @@ public class Vertex {
 	 *            player that seeks to connect to target
 	 * @return true iff there is a path to the target vertex via edge units owned by the given player
 	 */
-	public boolean hasTradeRouteTo(Vertex target, Player tradeRouteOwner) {
+	public boolean hasTradeRouteTo(Vertex target, Player tradeRouteOwner, boolean isPeaceful) {
 		boolean foundValidTradeRoute = false;
 		Edge curEdge = null;
 		Vertex neighborVertex = null;
@@ -494,6 +693,12 @@ public class Vertex {
 			{
 				neighborVertex = curEdge.getAdjacent(this);
 				if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
+					// are we an aggressive knight attempting displacement
+					if(!isPeaceful && neighborVertex == target
+							&& neighborVertex.getCurUnitType() == Vertex.KNIGHT) {
+						// WARNING: need to check elsewhere that we can actually displace opponent
+						return true;
+					}
 					// can't pass through vertex owned by another player
 					continue;
 				}
@@ -501,22 +706,25 @@ public class Vertex {
 					return true;
 				}
 				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
-					foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target, tradeRouteOwner, curEdge);
+					foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target,
+							tradeRouteOwner, curEdge, isPeaceful);
 				}
 				else if(curEdge.getCurUnitType() == Edge.ROAD) {
 					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
 						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target, tradeRouteOwner, curEdge);
+								neighborVertex.hasTradeRouteTo(target,
+										tradeRouteOwner, curEdge, isPeaceful);
 					}
 				}
 				else if(curEdge.getCurUnitType() == Edge.SHIP) {
 					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
 						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target, tradeRouteOwner, curEdge);
+								neighborVertex.hasTradeRouteTo(target,
+										tradeRouteOwner, curEdge, isPeaceful);
 					}
 				}
 				if(foundValidTradeRoute) {
-					break;
+					return true;
 				}
 			}
 		}
@@ -535,7 +743,8 @@ public class Vertex {
 	 *            ignore previously considered edge
 	 * @return true iff there is a path to the target vertex via edge units owned by the given player
 	 */
-	public boolean hasTradeRouteTo(Vertex target, Player tradeRouteOwner, Edge toIgnore) {
+	public boolean hasTradeRouteTo(Vertex target, Player tradeRouteOwner,
+								   Edge toIgnore, boolean isPeaceful) {
 		boolean foundValidTradeRoute = false;
 		Edge curEdge = null;
 		Vertex neighborVertex = null;
@@ -546,6 +755,13 @@ public class Vertex {
 			{
 				neighborVertex = curEdge.getAdjacent(this);
 				if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
+					// are we an aggressive knight attempting displacement
+					if(!isPeaceful && neighborVertex == target
+							&& neighborVertex.getCurUnitType() == Vertex.KNIGHT) {
+						// WARNING: need to check elsewhere that
+						// we can actually displace opponent
+						return true;
+					}
 					// can't pass through vertex owned by another player
 					continue;
 				}
@@ -553,39 +769,33 @@ public class Vertex {
 					return true;
 				}
 				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
-					foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target, tradeRouteOwner, curEdge);
+					foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target,
+							tradeRouteOwner, curEdge, isPeaceful);
 				}
 				else if(curEdge.getCurUnitType() == Edge.ROAD) {
 					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
 						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target, tradeRouteOwner, curEdge);
+								neighborVertex.hasTradeRouteTo(target,
+										tradeRouteOwner, curEdge, isPeaceful);
 					}
 				}
 				else if(curEdge.getCurUnitType() == Edge.SHIP) {
 					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
 						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target, tradeRouteOwner, curEdge);
+								neighborVertex.hasTradeRouteTo(target,
+										tradeRouteOwner, curEdge, isPeaceful);
 					}
 				}
 				if(foundValidTradeRoute) {
-					break;
+					return true;
 				}
 			}
 		}
 
-		return foundValidTradeRoute;
+		return false;
 	}
 
 	public void distributeResources(Resource.ResourceType resourceType) {
-
-		int numToGive = 0;
-
-		// determine how many resources to distribute
-		if(curUnitType == Vertex.SETTLEMENT){
-			numToGive = 100;
-		} else if(curUnitType == Vertex.CITY || curUnitType == Vertex.CITY_WALL){
-			numToGive = 200;
-		}
 
 		if (ownerPlayerNumber == -1)
 		{
@@ -593,13 +803,38 @@ public class Vertex {
 		}
 
 		if (resourceType != null) {
-			// Gold gets two times more on distribution (2 for settlement, 4 for city)
-			if(resourceType == Resource.ResourceType.GOLD){
-				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
-				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
-			} else {
-				board.getPlayerById(ownerPlayerNumber).addResources(resourceType, numToGive);
-				board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
+			board.getPlayerById(ownerPlayerNumber).addResources(resourceType, curUnitType, true);
+			board.getPlayerById(ownerPlayerNumber).gotResourcesSinceLastTurn = true;
+		}
+	}
+
+	public void distributeFish(int diceRoll) {
+		if (!(Hexagon.getFishingLakeNumbersSet().contains(diceRoll)
+				|| FishingGround.getFishingGroundNumbersSet().contains(diceRoll))) {
+			return;
+		}
+
+		if (ownerPlayerNumber == -1)
+		{
+			return;
+		}
+
+		if (Hexagon.getFishingLakeNumbersSet().contains(diceRoll)) {
+			Hexagon curHex = null;
+			for(int i = 0; i < hexagonIds.length; i++) {
+				curHex = getHexagon(i);
+				if(curHex != null && curHex.getTerrainType() == Hexagon.TerrainType.FISH_LAKE) {
+					board.getPlayerById(ownerPlayerNumber).addFish(curUnitType);
+				}
+			}
+		}
+		else if (FishingGround.getFishingGroundNumbersSet().contains(diceRoll)) {
+			FishingGround curFishingGround = null;
+			for(int i = 0; i < fishingGroundIds.length; i++) {
+				curFishingGround = getFishingGround(i);
+				if(curFishingGround != null && curFishingGround.getNumberToken().getTokenNum() == diceRoll) {
+					board.getPlayerById(ownerPlayerNumber).addFish(curUnitType);
+				}
 			}
 		}
 	}
@@ -675,7 +910,7 @@ public class Vertex {
 			return board.getPlayerById(ownerPlayerNumber) == player
 					&& vertexUnitType == CITY && curUnitType == SETTLEMENT;
 		}
-		else if(board.getPlayerById(ownerPlayerNumber) != null && vertexUnitType == CITY_WALL) {
+		else if(board.getPlayerById(ownerPlayerNumber) != null && vertexUnitType == WALLED_CITY) {
 			boolean isCityType = curUnitType == CITY || curUnitType == TRADE_METROPOLIS
 				|| curUnitType == SCIENCE_METROPOLIS || curUnitType == POLITICS_METROPOLIS;
 			// player can build a city wall here
@@ -684,7 +919,7 @@ public class Vertex {
 		else if(board.getPlayerById(ownerPlayerNumber) != null && (vertexUnitType == TRADE_METROPOLIS
 				|| vertexUnitType == SCIENCE_METROPOLIS || vertexUnitType == POLITICS_METROPOLIS)) {
 			// player can build a metropolis here
-			boolean isCityType = curUnitType == CITY_WALL || curUnitType == CITY;
+			boolean isCityType = curUnitType == WALLED_CITY || curUnitType == CITY;
 			return board.getPlayerById(ownerPlayerNumber) == player && isCityType;
 		}
 		else{
@@ -693,13 +928,13 @@ public class Vertex {
 	}
 
 	/**
-	 * Check if player can place a knight at this vertex
+	 * Check if player can place a new knight at an unclaimed vertex
 	 *
 	 * @param player
 	 *            player to check for
-	 * @return true iff player can place a knight at this vertex
+	 * @return true iff player can introduce a knight at this vertex
 	 */
-	public boolean canPlaceKnightHere(Player player) {
+	public boolean canPlaceNewKnightHere(Player player) {
 
 		/* NOTE: unlike a buildable vertex unit, we can place a knight on any vertex
 		*  connected to one of the player's edge units (even if the vertex is adjacent
@@ -711,12 +946,11 @@ public class Vertex {
 		if (!this.isConnectedToEdgeUnitOwnedBy(player)) {
 			return false;
 		}
-
 		if (board.getPlayerById(ownerPlayerNumber) == null && curUnitType == NONE) {
-			// player can place a knight at this vertex
+			// player can place a new knight at this vertex
 			return true;
 		}
-		else{
+		else {
 			return false;
 		}
 	}
@@ -809,9 +1043,10 @@ public class Vertex {
 
 		if (curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player) {
 			return getPlacedKnight().canStartMoving()
-					&& this.isConnectedToUnclaimedVertexByTradeRouteOf(player);
+					&& (this.isConnectedToUnclaimedVertexByTradeRouteOf(player) ||
+					this.isConnectedToDisplaceableKnightByTradeRouteOf(player, getPlacedKnight()));
 		}
-		else{
+		else {
 			return false;
 		}
 	}
@@ -825,12 +1060,44 @@ public class Vertex {
 	 * 			  the knight to check for
 	 * @return true iff player can move his/her knight to this vertex
 	 */
-	public boolean canMoveKnightToHere(Player player, Knight toPlace) {
+	public boolean canMoveKnightToHere(Player player, Knight toPlace, boolean isPeaceful) {
 		if (player == null || toPlace == null) {
 			return false;
 		}
 
-		if (player != board.getCurrentPlayer() || toPlace != board.getCurrentlyMovingKnight()) {
+		if (player != board.getPlayerOfCurrentGameTurn() || toPlace != board.getCurrentlyMovingKnight()) {
+			return false;
+		}
+
+		if(!(curUnitType == NONE) || (ownerPlayerNumber != -1)) {
+			if(!isPeaceful && canDisplaceKnightFromHere(player, toPlace)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		return toPlace.canMoveTo(this, isPeaceful);
+	}
+
+	/**
+	 * Check if the player can place the currently moving knight peacefully at this vertex
+	 * (following displacement)
+	 *
+	 * @param player
+	 *            player to check for
+	 * @param toPlace
+	 * 			  the knight to check for
+	 * @return true iff player can move his/her knight to this vertex (following displacement)
+	 */
+	public boolean canDisplaceKnightToHere(Player player, Knight toPlace) {
+		if (player == null || toPlace == null) {
+			return false;
+		}
+
+		if ((player != board.getPlayerOfCurrentGameTurn() && !board.isMyPseudoTurn())
+				|| toPlace != board.getCurrentlyMovingKnight()) {
 			return false;
 		}
 
@@ -838,7 +1105,32 @@ public class Vertex {
 			return false;
 		}
 
-		return toPlace.canMoveTo(this);
+		return toPlace.canDisplaceKnightTo(this);
+	}
+
+	/**
+	 * Check if the attacking player can displace a knight at this vertex
+	 *
+	 * @param attackerPlayer
+	 *            which player intends to displace an opponent knight
+	 * @param attackerKnight
+	 *            the knight intending to displace opponent knight
+	 */
+	public boolean canDisplaceKnightFromHere(Player attackerPlayer, Knight attackerKnight) {
+		if (attackerPlayer == null || attackerKnight == null) {
+			return false;
+		}
+
+		if (attackerPlayer != board.getPlayerOfCurrentGameTurn()
+				|| attackerKnight != board.getCurrentlyMovingKnight()) {
+			return false;
+		}
+
+		if(!(curUnitType == KNIGHT) || (ownerPlayerNumber == -1)) {
+			return false;
+		}
+
+		return attackerKnight.canDisplace(getPlacedKnight());
 	}
 
 
@@ -876,9 +1168,9 @@ public class Vertex {
 				curUnitType = CITY;
 				break;
 			case CITY:
-				curUnitType = board.isBuildMetropolisPhase() ? player.metropolisTypeToBuild : CITY_WALL;
+				curUnitType = board.isBuildMetropolisPhase() ? player.metropolisTypeToBuild : WALLED_CITY;
 				break;
-			case CITY_WALL:
+			case WALLED_CITY:
 				//determine which type of metropolis we build
 				switch(vertexUnitType) {
 					case TRADE_METROPOLIS:
@@ -915,15 +1207,15 @@ public class Vertex {
 	}
 
 	/**
-	 * Place a knight at this vertex for player
+	 * Attempt to place a new knight at this vertex for player
 	 *
 	 * @param player
 	 *            which player intends to place a knight here
 	 * @param toPlace
 	 *            the knight to place
 	 */
-	public boolean placeKnight(Player player, Knight toPlace) {
-		if (!this.canPlaceKnightHere(player))
+	public boolean placeNewKnight(Player player, Knight toPlace) {
+		if (!this.canPlaceNewKnightHere(player))
 		{
 			return false;
 		}
@@ -993,36 +1285,37 @@ public class Vertex {
 
 
 	/**
-	 * Return a knight to stationed vertex before executing movement
+	 * Return a knight back to stationed vertex
 	 *
 	 */
 	public boolean moveKnightBackHere() {
 
-		return placeKnight(board.getCurrentPlayer(), board.getCurrentlyMovingKnight());
+		return placeNewKnight(board.getPlayerOfCurrentGameTurn(), board.getCurrentlyMovingKnight());
 	}
 
 	/**
-	 * Move a knight to stationed vertex before executing movement
+	 * Move a knight peacefully to this vertex
 	 *
 	 * @param player
-	 *            which player intends to place a knight back here
+	 *            which player intends to place a knight here
 	 * @param toPlace
 	 *            the knight to place
 	 */
-	public boolean moveKnightToHere(Player player, Knight toPlace) {
+	public boolean moveKnightPeacefullyToHere(Player player, Knight toPlace) {
 		if (player == null || toPlace == null) {
 			return false;
 		}
 
-		if (player != board.getCurrentPlayer() || toPlace != board.getCurrentlyMovingKnight()) {
+		if (player != board.getPlayerOfCurrentGameTurn()
+				|| toPlace != board.getCurrentlyMovingKnight()) {
 			return false;
 		}
 
-		if(!canMoveKnightToHere(player, toPlace)) {
+		if(!canMoveKnightToHere(player, toPlace, true)) {
 			return false;
 		}
 
-		if(placeKnight(player, toPlace)) {
+		if(placeNewKnight(player, toPlace)) {
 			toPlace.deactivate();
 			return true;
 		}
@@ -1030,12 +1323,91 @@ public class Vertex {
 		return false;
 	}
 
+
+	/**
+	 * Move a knight peacefully to this vertex FOLLOWING DISPLACEMENT
+	 *
+	 * @param player
+	 *            which player intends to place a knight here
+	 * @param toPlace
+	 *            the knight to place
+	 */
+	public boolean displaceKnightToHere(Player player, Knight toPlace) {
+		if (player == null || toPlace == null) {
+			return false;
+		}
+
+		if ((player != board.getPlayerOfCurrentGameTurn() && !board.isMyPseudoTurn())
+				|| toPlace != board.getCurrentlyMovingKnight()) {
+			return false;
+		}
+
+		// WARNING: returns false if you are trying to displace a knight
+		if(!canDisplaceKnightToHere(player, toPlace)) {
+			return false;
+		}
+
+		if(placeNewKnight(player, toPlace)) {
+			return true;
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Displace the knight at this vertex by the attacking knight
+	 *
+	 * @param attackerPlayer
+	 *            which player intends to displace an opponent knight
+	 * @param attackerKnight
+	 *            the knight intending to displace opponent knight
+	 */
+	public boolean displaceKnightFromHere(Player attackerPlayer, Knight attackerKnight) {
+		if (attackerPlayer == null || attackerKnight == null) {
+			return false;
+		}
+
+		if (attackerPlayer != board.getPlayerOfCurrentGameTurn()
+				|| attackerKnight != board.getCurrentlyMovingKnight()) {
+			return false;
+		}
+
+		if(!canDisplaceKnightFromHere(attackerPlayer, attackerKnight)) {
+			return false;
+		}
+
+		// DISPLACE THE KNIGHT STATIONED AT THIS VERTEX
+		placedKnightId = -1;
+		placedKnightRank = null;
+		ownerPlayerNumber = -1;
+		curUnitType = NONE;
+
+		// PLACE THE ATTACKING KNIGHT AT THIS VERTEX
+		if(placeNewKnight(attackerPlayer, attackerKnight)) {
+			attackerKnight.deactivate();
+			return true;
+		}
+
+		return false;
+	}
+
+
 	public Harbor[] getHarbors() {
 		Harbor[] myHarbors = new Harbor[2];
 		myHarbors[0] = board.getHarborById(harborIds[0]);
 		myHarbors[0] = board.getHarborById(harborIds[1]);
 		return myHarbors;
 	}
+
+	public FishingGround[] getFishingGrounds() {
+		FishingGround[] myFishingGrounds = new FishingGround[2];
+		myFishingGrounds[0] = board.getFishingGroundById(fishingGroundIds[0]);
+		myFishingGrounds[0] = board.getFishingGroundById(fishingGroundIds[1]);
+		return myFishingGrounds;
+	}
+
+	//FIXME: WARNING...trade route logic is only half-working (considers roads only + minor bug)
 
 	/**
 	 * Find the longest trade route passing through this vertex for the given player

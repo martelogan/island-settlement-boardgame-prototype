@@ -8,6 +8,7 @@ import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovem
 import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
 import com.catandroid.app.R;;
 import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.UseFishFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeProposedFragment;
 import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeRequestFragment;
 import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
@@ -52,7 +53,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
@@ -77,6 +77,7 @@ public class ActiveGameFragment extends Fragment {
 	private GameRenderer renderer;
 
 	private boolean isActive;
+	private boolean showedPlayerGameCreationStats = false;
 
 	private static final String[] ROLL_STRINGS = { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" };
 	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
@@ -141,13 +142,13 @@ public class ActiveGameFragment extends Fragment {
 						pickCard.what = PICK_PROGRESS_CARD_MESSAGE;
 						turnHandler.sendMessage(pickCard);
 					}
-				} else if (board.getCurrentPlayer().isBot()) {
+				} else if (board.getPlayerOfCurrentGameTurn().isBot()) {
 					board.runAITurn();
 					Message change = new Message();
 					change.what = UPDATE_MESSAGE;
 					turnHandler.sendMessage(change);
 
-					if (board.getCurrentPlayer().isHuman()) {
+					if (board.getPlayerOfCurrentGameTurn().isHuman()) {
 						Message turn = new Message();
 						turn.what = LOG_MESSAGE;
 						turnHandler.sendMessage(turn);
@@ -323,7 +324,7 @@ public class ActiveGameFragment extends Fragment {
 				// must ask the activity to close this StartScreenActivity Fragment
 				getActivity().getSupportFragmentManager().popBackStack();
 				return true;
-			case R.id.reference:
+			case R.id.costs_reference:
 				CostsReferenceFragment costsReferenceFragment = new CostsReferenceFragment();
 
 				Log.d("myTag", "about to launch costs fragment");
@@ -343,6 +344,7 @@ public class ActiveGameFragment extends Fragment {
 		switch (action) {
 			case MOVE_ROBBER:
 			case MOVE_PIRATE:
+            case PLACE_MERCHANT:
 				select(action, board.getHexagonById(id));
 				break;
 
@@ -357,6 +359,7 @@ public class ActiveGameFragment extends Fragment {
             case CHASE_PIRATE:
 			case MOVE_KNIGHT_1:
 			case MOVE_KNIGHT_2:
+			case MOVE_DISPLACED_KNIGHT:
 				select(action, board.getVertexById(id));
 				break;
 
@@ -404,6 +407,23 @@ public class ActiveGameFragment extends Fragment {
 				showState(false);
 			}
 		}
+		else if(action == Action.PLACE_MERCHANT) {
+            boolean ownsBuildableOnHex = hexagon.getPlayers().contains(board.getActiveFragmentPlayer());
+            if (hexagon.getTerrainType() == Hexagon.TerrainType.SEA) {
+                popup(getString(R.string.game_cant_move_merchant),
+                        getString(R.string.game_merchant_sea));
+            }
+            else if(!ownsBuildableOnHex){
+                popup("Can't Place Merchant",
+                        "You don't own a City/Settlement on that Hexagon");
+            }
+            else {
+                board.setCurMerchantHex(hexagon);
+                board.setMerchantOwner(board.getActiveFragmentPlayer().getPlayerNumber());
+				board.nextPhase();
+                showState(false);
+            }
+        }
 	}
 
 	private void select(Action action, Vertex vertex) {
@@ -418,24 +438,31 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			vertexUnitType = Vertex.CITY_WALL;
+			vertexUnitType = Vertex.WALLED_CITY;
 		}
 		else if(action == Action.BUILD_METROPOLIS)
 		{
-			vertexUnitType = board.getCurrentPlayer().metropolisTypeToBuild;
+			vertexUnitType = board.getPlayerOfCurrentGameTurn().metropolisTypeToBuild;
 		}
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
                 || action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
-				|| action == Action.MOVE_KNIGHT_2) {
+				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
-		Player player = board.getCurrentPlayer();
+		boolean executingPsuedoTurnAction =
+				(board.isMyPseudoTurn() && renderer.isPsuedoTurnAction());
+		Player player;
+		if (executingPsuedoTurnAction) {
+			player = view.getActivePlayer();
+		} else {
+			player = board.getPlayerOfCurrentGameTurn();
+		}
 		switch(vertexUnitType) {
 			case Vertex.SETTLEMENT:
 			case Vertex.CITY:
-			case Vertex.CITY_WALL:
+			case Vertex.WALLED_CITY:
 			    // selecting buildable vertex unit
 				if (player.buildVertexUnit(vertex, vertexUnitType)) {
 					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
@@ -481,9 +508,22 @@ public class ActiveGameFragment extends Fragment {
 						}
 						break;
 					case MOVE_KNIGHT_2:
-						if (player.moveKnightTo(vertex)) {
+						if(vertex.getCurUnitType() == Vertex.KNIGHT
+								&& vertex.getOwnerPlayer() != player
+								   && player.canDisplaceKnightAt(vertex)) {
+
+								confirmDisplaceKnightDialog(vertex);
+						}
+						else if (player.moveKnightPeacefullyTo(vertex)) {
 							board.nextPhase();
 							renderer.setAction(Action.NONE);
+							showState(true);
+						}
+						break;
+					case MOVE_DISPLACED_KNIGHT:
+						if(player.displaceKnightTo(vertex)) {
+							// pass turn back to attacker
+							board.nextPhase();
 							showState(true);
 						}
 						break;
@@ -527,7 +567,7 @@ public class ActiveGameFragment extends Fragment {
 
         //proceed to build road or edge
 
-        Player player = board.getCurrentPlayer();
+        Player player = board.getPlayerOfCurrentGameTurn();
 		if (action == Action.BUILD_ROAD) {
 			if (player.buildRoad(edge)) {
 				renderer.setAction(Action.NONE);
@@ -610,7 +650,7 @@ public class ActiveGameFragment extends Fragment {
 
 	public boolean buttonPress(UIButton.ButtonType button) {
 		boolean canAct = false;
-		Player player = board.getCurrentPlayer();
+		Player player = board.getPlayerOfCurrentGameTurn();
 		
 		switch (button) {
 			case PLAYER_STATUS:
@@ -669,26 +709,27 @@ public class ActiveGameFragment extends Fragment {
 				int roll2 = (int) (Math.random() * 6) + 1;
 				int event = (int) (Math.random() * 6) + 1;
 				int roll = roll1 + roll2;
-				board.getCurrentPlayer().rollDice(roll1, roll2 , event);
+				board.getPlayerOfCurrentGameTurn().rollDice(roll1, roll2 , event);
 				if(!board.isMyPseudoTurn()){
-					mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+					mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				}
 
 				//give free resource if they have AQUEDUCT and didnt get any resources and not 7
 				if(player.getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] >= 3
 						&& player.gotResourcesSinceLastTurn == false && roll != 7){
 
-					CharSequence[] items = new CharSequence[4];
+					CharSequence[] items = new CharSequence[5];
 					items[0] = "Lumber";
 					items[1] = "Wool";
 					items[2] = "Grain";
 					items[3] = "Brick";
+					items[4] = "Ore";
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 					builder.setTitle("Aqueduct: Choose your free resource!");
 					builder.setItems(items, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int item) {
-							board.getCurrentPlayer().addResources(Resource.RESOURCE_TYPES[item], 1);
+							board.getPlayerOfCurrentGameTurn().addResources(Resource.RESOURCE_TYPES[item], 1, false);
 						}
 					});
 
@@ -731,7 +772,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.BUILD_ROAD);
 				setButtons(Action.BUILD_ROAD);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_build_road));
 				break;
 
@@ -751,7 +792,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.BUILD_SHIP);
 				setButtons(Action.BUILD_SHIP);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_build_ship));
 
 				break;
@@ -766,7 +807,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.MOVE_SHIP_1);
 				setButtons(Action.MOVE_SHIP_1);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_move_ship));
 				break;
 
@@ -778,7 +819,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumOwnedSettlements() >= Player.MAX_SETTLEMENTS) {
+				if (board.getPlayerOfCurrentGameTurn().getNumOwnedSettlements() >= Player.MAX_SETTLEMENTS) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_settlements_max));
 					break;
@@ -786,7 +827,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.BUILD_SETTLEMENT);
 				setButtons(Action.BUILD_SETTLEMENT);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_build_settlement));
 				break;
 
@@ -798,7 +839,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumOwnedCities() >= Player.MAX_CITIES) {
+				if (board.getPlayerOfCurrentGameTurn().getNumOwnedCities() >= Player.MAX_CITIES) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_city_max));
 					break;
@@ -806,7 +847,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.BUILD_CITY);
 				setButtons(Action.BUILD_CITY);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						 + getActivity().getString(R.string.game_build_city));
 				break;
 
@@ -823,7 +864,7 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-				if (board.getCurrentPlayer().getNumOwnedCityWalls() >= Player.MAX_CITY_WALLS) {
+				if (board.getPlayerOfCurrentGameTurn().getNumOwnedCityWalls() >= Player.MAX_CITY_WALLS) {
 					popup(getString(R.string.game_cant_build_str),
 							getString(R.string.game_build_wall_max));
 					break;
@@ -831,7 +872,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.BUILD_CITY_WALL);
 				setButtons(Action.BUILD_CITY_WALL);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_build_wall));
 				break;
 
@@ -852,7 +893,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.HIRE_KNIGHT);
 				setButtons(Action.HIRE_KNIGHT);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_hire_knight));
 				break;
 
@@ -866,7 +907,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.ACTIVATE_KNIGHT);
 				setButtons(Action.ACTIVATE_KNIGHT);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_activate_knight));
 				break;
 
@@ -894,7 +935,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.PROMOTE_KNIGHT);
 				setButtons(Action.PROMOTE_KNIGHT);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_promote_knight));
 				break;
 
@@ -913,7 +954,7 @@ public class ActiveGameFragment extends Fragment {
 
                 renderer.setAction(Action.CHASE_ROBBER);
                 setButtons(Action.CHASE_ROBBER);
-                getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+                getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
                         + getActivity().getString(R.string.game_chase_robber_title));
 //				confirmChaseRobberDialog();
 				break;
@@ -932,7 +973,7 @@ public class ActiveGameFragment extends Fragment {
 				}
                 renderer.setAction(Action.CHASE_PIRATE);
                 setButtons(Action.CHASE_PIRATE);
-                getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+                getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
                         + getActivity().getString(R.string.game_chase_pirate_title));
 //				confirmChasePirateDialog();
 				break;
@@ -954,7 +995,7 @@ public class ActiveGameFragment extends Fragment {
 
 				renderer.setAction(Action.MOVE_KNIGHT_1);
 				setButtons(Action.MOVE_KNIGHT_1);
-				getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
 						+ getActivity().getString(R.string.game_move_knight));
 				break;
 
@@ -968,6 +1009,19 @@ public class ActiveGameFragment extends Fragment {
                 cityImprovementFragmentTransaction.replace(R.id.fragment_container, cityImprovementFragment,cityImprovementFragment.getClass().getSimpleName());
                 cityImprovementFragmentTransaction.addToBackStack(cityImprovementFragment.getClass().getSimpleName());
                 cityImprovementFragmentTransaction.commit();
+
+				break;
+
+			case USE_FISH:
+				FragmentManager fishFragmentManager = getActivity().getSupportFragmentManager();
+				UseFishFragment fishFragment = new UseFishFragment();
+				fishFragment.setBoard(board);
+				fishFragment.setActiveGameFragment(this);
+
+				FragmentTransaction fishFragmentTransaction =  fishFragmentManager.beginTransaction();
+				fishFragmentTransaction.replace(R.id.fragment_container, fishFragment,fishFragment.getClass().getSimpleName());
+				fishFragmentTransaction.addToBackStack(fishFragment.getClass().getSimpleName());
+				fishFragmentTransaction.commit();
 
 				break;
 
@@ -1014,7 +1068,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	public boolean clickResource(int index) {
-		if (!board.getCurrentPlayer().isHuman() || !board.isPlayerTurnPhase())
+		if (!board.getPlayerOfCurrentGameTurn().isHuman() || !board.isPlayerTurnPhase())
 			return false;
 
 
@@ -1041,8 +1095,16 @@ public class ActiveGameFragment extends Fragment {
 
 	//setup()
 	private void showState(boolean setZoom) {
-		Player player = board.getCurrentPlayer();
+		boolean executingPsuedoTurnAction =
+				(board.isMyPseudoTurn() && renderer.isPsuedoTurnAction());
+		Player player;
+		if (executingPsuedoTurnAction) {
+			player = view.getActivePlayer();
+		} else {
+			player = board.getPlayerOfCurrentGameTurn();
+		}
 
+		// WARNING: only sets the active player on renderer if they are playing their game turn
 		renderer.setState(board, (player.isHuman() && board.itsMyTurn(myParticipantId) &&
 				!board.isMyPseudoTurn())  ? player : null, texture, board.getLastDiceRollNumber());
 
@@ -1089,6 +1151,12 @@ public class ActiveGameFragment extends Fragment {
 		if (board.isSetupSettlement())
 		{
 			action = Action.BUILD_SETTLEMENT;
+			if(!showedPlayerGameCreationStats) {
+				showedPlayerGameCreationStats = true;
+				popup("Current Game", "Number players: " + board.getNumPlayers() + "\n" +
+						"VP to win: " + board.getMaxPoints() + "\n\nTo reject, quit game and reject invite.");
+			}
+
 		}
 		else if (board.isSetupCity())
 		{
@@ -1115,16 +1183,22 @@ public class ActiveGameFragment extends Fragment {
 		else if (board.isMovingKnightPhase()) {
 			action = Action.MOVE_KNIGHT_2;
 		}
+		else if (board.isKnightDisplacementPhase()) {
+			action = Action.MOVE_DISPLACED_KNIGHT;
+		}
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
+        else if(board.isPlaceMerchantPhase()){
+            action = Action.PLACE_MERCHANT;
+        }
 
 		renderer.setAction(action);
 		setButtons(action);
 
 		getActivity().setTitleColor(Color.WHITE);
 
-		int color = TextureManager.getColor(board.getCurrentPlayer().getColor());
+		int color = TextureManager.getColor(player.getColor());
 		color = TextureManager.darken(color, 0.35);
 		ActionBar actionBar = getActivity().getActionBar();
 		//actionBar.setDisplayHomeAsUpEnabled(true);
@@ -1135,6 +1209,7 @@ public class ActiveGameFragment extends Fragment {
 		int resourceId = board.getPhaseResource();
 		if (resourceId != 0)
 			if((board.itsMyTurn(myParticipantId) && !board.isMyPseudoTurn())
+					|| (board.isMyPseudoTurn() && renderer.isPsuedoTurnAction())
 					|| myTurnInterrupted()) {
 				getActivity().setTitle(player.getPlayerName() + ": " + getActivity().getString(resourceId));
 			} else{
@@ -1153,7 +1228,7 @@ public class ActiveGameFragment extends Fragment {
 //            String currentPlayerToProposeParticipantId = board.getPlayerById(board.getTradeProposal().getCurrentPlayerToProposeId()).getGooglePlayParticipantId();
 //            if (board.isTradeProposedPhase() && currentPlayerToProposeParticipantId.equals(myParticipantId)){
 //                proposeTrade();
-//            } else if(board.isTradeRespondedPhase() && board.getTradeProposal().getTradeCreatorPlayerId() == board.getCurrentPlayer().getPlayerNumber()){
+//            } else if(board.isTradeRespondedPhase() && board.getTradeProposal().getTradeCreatorPlayerId() == board.getPlayerOfCurrentGameTurn().getPlayerNumber()){
 //				resultsTrade();
 //			}
         } else if(board.isTradeRespondedPhase()
@@ -1161,8 +1236,18 @@ public class ActiveGameFragment extends Fragment {
 			resultsTrade();
 		}
 
-		// TODO: remove/replace all references to resources
-//		resources.setValues(player);
+		if(!board.isMyPseudoTurn() && player.getFreeBuild()){
+			switch(player.getFreeBuildUnit()){
+				case 0:
+					buttonPress(ButtonType.BUILD_SHIP);
+					break;
+				case 1:
+					buttonPress(ButtonType.BUILD_ROAD);
+					break;
+				default:
+
+			}
+		}
 
 		Log.d("myTag", "end of showState");
 	}
@@ -1180,7 +1265,7 @@ public class ActiveGameFragment extends Fragment {
 		view.addButton(ButtonType.PLAYER_STATUS);
 		view.addButton(ButtonType.VIEW_BARBARIANS);
 
-		Player player = board.getCurrentPlayer();
+		Player player = board.getPlayerOfCurrentGameTurn();
 		Player winner = board.getWinner();
 		if (winner != null || !player.isHuman() || !board.itsMyTurn(myParticipantId)){
 			// anonymous mode
@@ -1192,16 +1277,14 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
-		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS ) {
+        } else if (board.isPlaceMerchantPhase()) {
+            // do nothing
+		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS
+				&& action != Action.MOVE_DISPLACED_KNIGHT) {
 			// cancel the action
 			view.addButton(ButtonType.CANCEL_ACTION);
 		} else if (board.isProduction()) {
 			view.addButton(ButtonType.DICE_ROLL);
-            //TODO: add button to play progress cards
-//			if (player.canUseCard())
-//            {
-//                view.addButton(ButtonType.PLAY_PROGRESS_CARD);
-//            }
 		} else if (board.isPlayerTurnPhase()) {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
@@ -1256,7 +1339,9 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canMoveSomeKnight()) {
 				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
-			//@TODO ADD THESE BUTTONS WHEN THEY ARE RELEVANT
+			if(player.getNumOwnedFish() > 0){
+				view.addButton(ButtonType.USE_FISH);
+			}
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
 		}
 	}
@@ -1289,7 +1374,7 @@ public class ActiveGameFragment extends Fragment {
 		String message = "";
 
 		// show log of the other players' turns
-		int offset = board.getCurrentPlayer().getPlayerNumber() + 1;
+		int offset = board.getPlayerOfCurrentGameTurn().getPlayerNumber() + 1;
 		for (int i = offset; i < offset + board.getNumPlayers()-1; i++) {
 			// don't include players after you on your first turn
 			if (board.getGameRoundNumber() == 1 && (i % board.getNumPlayers()) >= offset)
@@ -1572,7 +1657,7 @@ public class ActiveGameFragment extends Fragment {
 	private void steal(Hexagon target) {
 
 		boolean stealFromShipsOnly = board.isPiratePhase();
-		Player current = board.getCurrentPlayer();
+		Player current = board.getPlayerOfCurrentGameTurn();
 
 		CharSequence[] list = new CharSequence[3];
 		int index = 0;
@@ -1608,7 +1693,7 @@ public class ActiveGameFragment extends Fragment {
 			// nobody to rob from
 			toast(getString(R.string.game_steal_fail_str));
 			board.nextPhase();
-			mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+			mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 			showState(false);
 			return;
 		} else if (index == 1) {
@@ -1625,8 +1710,6 @@ public class ActiveGameFragment extends Fragment {
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		//TODO: why was this here?
-//		builder.setTitle(getString(R.string.to_remove_str));
 		builder.setTitle(getString(R.string.game_steal_title));
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
@@ -1641,7 +1724,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void steal(int victim) {
-		Player current = board.getCurrentPlayer();
+		Player current = board.getPlayerOfCurrentGameTurn();
 		boolean stealFromShipsOnly = board.isPiratePhase();
 		Hexagon target = null;
 		if(board.isRobberPhase()) {
@@ -1674,7 +1757,7 @@ public class ActiveGameFragment extends Fragment {
 			}
 
 			if (index == victim) {
-				Resource.ResourceType resourceType = board.getCurrentPlayer().steal(player);
+				Resource.ResourceType resourceType = board.getPlayerOfCurrentGameTurn().steal(player);
 
 				if (resourceType != null)
 				{
@@ -1690,7 +1773,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 
 				board.nextPhase();
-				mListener.endTurn(board.getCurrentPlayer().getGooglePlayParticipantId(), false);
+				mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				showState(false);
 				return;
 			}
@@ -1701,7 +1784,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void cantAct(Action action) {
-		Player player = board.getCurrentPlayer();
+		Player player = board.getPlayerOfCurrentGameTurn();
 
 		String message = "";
 		switch (action) {
@@ -1861,7 +1944,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void progressCardDialog() {
-		final Player me = board.getCurrentPlayer();
+		final Player me = board.getPlayerOfCurrentGameTurn();
 		final Vector<ProgressCard.ProgressCardType> cards = me.getHand();
 
 		CharSequence[] list = new CharSequence[cards.size()+1];
@@ -1885,7 +1968,7 @@ public class ActiveGameFragment extends Fragment {
 
 		//create the popup asking which card to use
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getString(R.string.status_progress_cards));
+		builder.setTitle(getString(R.string.player_status_progress_cards));
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
 
@@ -1947,6 +2030,44 @@ public class ActiveGameFragment extends Fragment {
 		//@TODO
 		//add merchant placement logic
 		toast("Played the merchant");
+        getActivity().setTitle("Place Merchant");
+        board.setPhase(Board.Phase.PLACE_MERCHANT);
+		showState(true);
+	}
+
+	private void confirmDisplaceKnightDialog(Vertex vertex) {
+
+		if(vertex.getCurUnitType() != Vertex.KNIGHT) {
+			return;
+		}
+
+		final int confirm = 0;
+		final int cancel = 1;
+		CharSequence[] items = new CharSequence[2];
+		items[0] = getString(R.string.game_confirm_displace_knight);
+		items[1] = getString(R.string.game_cancel_str);
+
+		final Vertex displacementTarget = vertex;
+		//create the popup asking which card to use
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_confirm_displace_knight_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+				if (item == cancel) {
+					dialog.dismiss();
+				} else if (item == confirm){
+					dialog.dismiss();
+					if (board.getPlayerOfCurrentGameTurn().displaceKnightAt(displacementTarget)) {
+						// finish moving the knight
+						renderer.setAction(Action.NONE);
+						showState(true);
+					}
+				}
+			}
+		});
+
+		builder.create().show();
 	}
 
 
@@ -2032,7 +2153,7 @@ public class ActiveGameFragment extends Fragment {
 //		builder.setItems(items, new DialogInterface.OnClickListener() {
 //			@Override
 //			public void onClick(DialogInterface dialog, int which) {
-//				Player player = board.getCurrentPlayer();
+//				Player player = board.getPlayerOfCurrentGameTurn();
 //
 //				if (player.useCard(Board.ProgressCardType.MONOPOLY)) {
 //					int total = player.monopoly(Resource.RESOURCE_TYPES[which]);
@@ -2059,7 +2180,7 @@ public class ActiveGameFragment extends Fragment {
 //		builder.setItems(items, new DialogInterface.OnClickListener() {
 //			@Override
 //			public void onClick(DialogInterface dialog, int which) {
-//				Player player = board.getCurrentPlayer();
+//				Player player = board.getPlayerOfCurrentGameTurn();
 //
 //				if (player.useCard(Board.ProgressCardType.HARVEST)) {
 //					player.harvest(Resource.RESOURCE_TYPES[which], Resource.RESOURCE_TYPES[which]);

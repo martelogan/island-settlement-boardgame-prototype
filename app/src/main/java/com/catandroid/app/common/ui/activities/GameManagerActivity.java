@@ -202,7 +202,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 										actionBar.setDisplayHomeAsUpEnabled(false);
 										actionBar.setDisplayShowCustomEnabled(false);
 										setTitle("CatAndroid");
-										View item = findViewById(R.id.reference);
+										View item = findViewById(R.id.costs_reference);
 										if(item != null){
 											item.setVisibility(View.GONE);
 										}
@@ -226,12 +226,12 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				alertDialogBuilder.create().show();
 
 			} else {
-				catandroidTurn.currentBoard = null;
+                catandroidTurn.currentBoard = null;
 				ActionBar actionBar = getActionBar();
 				actionBar.setDisplayHomeAsUpEnabled(false);
 				actionBar.setDisplayShowCustomEnabled(false);
 				setTitle("CatAndroid");
-				View item = findViewById(R.id.reference);
+				View item = findViewById(R.id.costs_reference);
 				if(item != null){
 					item.setVisibility(View.GONE);
 				}

@@ -65,6 +65,7 @@
 	<string name="paper">paper</string>
 	<string name="coin">coin</string>
 	<string name="cloth">cloth</string>
+	<string name="fish">Fish</string>
 
     <!-- Knight knightRanks -->
     <string name="knight_basic">basic knight</string>
@@ -124,12 +125,15 @@
 	<string name="player_promote_knight">Promoted a knight</string>
 	<string name="player_chase_robber">Chased the robber</string>
 	<string name="player_chase_pirate">Chased the pirate</string>
+	<string name="player_move_knight">Moved a knight</string>
+	<string name="player_displace_knight">Displaced an opponent knight</string>
 	<string name="player_traded_away">Traded away %s</string>
 	<string name="player_ended_turn">Ended turn</string>
-	<string name="player_received_card">Received a card</string>
+	<string name="player_received_card">Received a free progress card</string>
 	<string name="player_played_card">Played a %s card</string>
     <string name="player_longest_road">Has the longest road</string>
     <string name="player_stole_from">Stole from %s</string>
+	<string name="player_gave_boot">Gave boot to %s</string>
 	<string name="player_received_resource">Received %s</string>
 	<string name="player_received_x_resources" formatted="false">Received %s resources</string>
     <string name="player_discarded">Discarded %s</string>
@@ -146,41 +150,46 @@
 	<string name="player_barbarians_lose">Catan Defended Successfully!</string>
 	<string name="player_barbarians_defender">%s was Defender of Catan!</string>
 	<string name="player_barbarians_tie">Players %s tied for defender of Catan!</string>
+	<string name="player_removed_robber">Removed the Robber from the board!</string>
+	<string name="player_removedPirate">Removed the Pirate from the board!</string>
+
 
 	<!-- PlayerStatsFragment screen -->
-	<string name="status">Status</string>
-	<string name="status_points_str">points</string>
-	<string name="status_victory_points">Victory points</string>
-	<string name="status_color">Color</string>
-	<string name="status_this_turn">This turn</string>
-	<string name="status_last_turn">Last turn</string>
-	<string name="status_turn">Turn</string>
-	<string name="status_resources">Resources</string>
-	<string name="status_settlements">Settlements (1 point)</string>
-	<string name="status_cities">Cities (2 points)</string>
-	<string name="status_roads">Total roads</string>
-	<string name="status_ships">Total ships</string>
-	<string name="status_best_road_length">Your longest road length</string>
-	<string name="status_has_longest_road">Longest road</string>
-	<string name="status_progress_cards">Progress cards</string>
-	<string name="status_harbor">harbor</string>
+	<string name="player_status">Player Status</string>
+	<string name="player_status_points_str">points</string>
+	<string name="player_status_victory_points">Victory points</string>
+	<string name="player_status_color">Color</string>
+	<string name="player_status_this_turn">This turn</string>
+	<string name="player_status_last_turn">Last turn</string>
+	<string name="player_status_resources">Resources</string>
+	<string name="player_status_total_settlements">Settlements (1 point each)</string>
+	<string name="player_status_total_cities">Cities (2 points each)</string>
+	<string name="player_status_total_roads">Roads</string>
+	<string name="player_status_total_ships">Ships</string>
+	<string name="player_status_total_city_walls">City walls</string>
+	<string name="player_status_total_basic_knights">Basic knights</string>
+	<string name="player_status_total_strong_knights">Strong knights</string>
+	<string name="player_status_total_mighty_knights">Mighty knights</string>
+	<string name="player_status_best_trade_route_length">Your longest trade route length</string>
+	<string name="player_status_has_longest_trade_route">Longest trade route</string>
+	<string name="player_status_progress_cards">Progress cards</string>
+	<string name="player_status_harbor">harbor</string>
 
 	<!-- Quick costs_reference screen -->
-	<string name="reference">Costs Reference</string>
-	<string name="development_costs">Development Costs</string>
-	<string name="reference_road">Road</string>
-	<string name="reference_settlement">Settlement</string>
-	<string name="reference_city">City</string>
-	<string name="reference_city_wall">City Wall</string>
-	<string name="reference_ship">Ship</string>
-	<string name="reference_tradeImprovement">Trade</string>
-	<string name="reference_scienceImprovement">Science</string>
-	<string name="reference_politicsImprovement">Politics</string>
-	<string name="reference_costs">Road:\n1 lumber, 1 brick\n
-		\nSettlement:\n1 lumber, 1
-		wool, 1 grain, 1 brick\n
-		\nCity:\n2 grain, 3 ore\n
-    </string>
+	<string name="costs_reference">Costs Reference</string>
+	<string name="costs_reference_title">Development Costs</string>
+	<string name="costs_reference_build_road">Build Road</string>
+	<string name="costs_reference_build_ship">Build Ship</string>
+	<string name="costs_reference_build_settlement">Build Settlement</string>
+	<string name="costs_reference_build_city">Build City</string>
+	<string name="costs_reference_build_city_wall">Build City Wall</string>
+	<string name="costs_reference_hire_knight">Hire Knight</string>
+	<string name="costs_reference_activate_knight">Activate Knight</string>
+	<string name="costs_reference_promote_knight">Promote Knight</string>
+	<string name="costs_reference_tradeImprovement">Trade</string>
+	<string name="costs_reference_scienceImprovement">Science</string>
+	<string name="costs_reference_politicsImprovement">Politics</string>
+	<string name="reference_fishImprovement">Use Earned Fish</string>
 
 	<!-- In-game buttons -->
 	<string name="button_cards">Buy or use cards</string>
@@ -202,6 +211,7 @@
     <string name="phase_player_turn">Make your moves</string>
 	<string name="phase_move_ship">Move the ship</string>
 	<string name="phase_move_knight">Move the knight</string>
+	<string name="phase_displacing_knight">Displacing Knight!</string>
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
 	<string name="phase_move_pirate">Move the pirate</string>
@@ -223,10 +233,12 @@
 	<string name="game_ok_str">OK</string>
 	<string name="game_confirm_chase_robber">Chase the robber</string>
 	<string name="game_confirm_chase_pirate">Chase the pirate</string>
+	<string name="game_confirm_displace_knight">Displace knight</string>
 	<string name="game_chase_robber_title">Chase robber with...</string>
 	<string name="game_chase_pirate_title">Chase pirate with...</string>
 	<string name="game_confirm_chase_robber_title">Want to chase the robber?</string>
 	<string name="game_confirm_chase_pirate_title">Want to chase the pirate?</string>
+	<string name="game_confirm_displace_knight_title">Displace opponent knight?</string>
 	<string name="game_cancel_str">Cancel</string>
 	<string name="game_resources_str">resources</string>
 	<string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>
@@ -243,7 +255,8 @@
 	<string name="game_choose_ship">Build ship</string>
 	<string name="game_road_ship_title">Build a road or ship?</string>
 	<string name="game_defended_catan">Defended Catan! Pick Card.</string>
-	<string name="game_defended_catan_wait_pick_card">Waiting Others To Pick Card!</string>
+	<string name="game_defended_catan_wait_pick_card">Waiting On Others to Pick Card!</string>
+	<string name="game_place_merchant">Place Merchant</string>
 	<string name="game_build_road">Build a road</string>
 	<string name="game_build_ship">Build a ship</string>
     <string name="game_move_ship">Ship to move?</string>
@@ -260,9 +273,11 @@
 	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
 	<string name="game_cant_promote_knight_str">Can\'t promote knight</string>
 	<string name="game_move_knight">Knight to move?</string>
+	<string name="game_cant_move_merchant">Can\'t move merchant</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
+	<string name="game_merchant_sea">The ocean is no place for a merchant!</string>
 	<string name="game_cant_move_pirate">Can\'t move pirate</string>
 	<string name="game_pirate_same">You must move the pirate to a new location</string>
 	<string name="game_pirate_land">The land is no place for a pirate!</string>

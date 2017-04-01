@@ -87,7 +87,7 @@ public class TradeRequestFragment extends Fragment {
 		}
 
 		final View tradeView = inflater.inflate(R.layout.trade_request, null, false);
-		player = board.getCurrentPlayer();
+		player = board.getPlayerOfCurrentGameTurn();
 
 		Spinner select = (Spinner) tradeView.findViewById(R.id.trade_type);
 		ArrayAdapter<CharSequence> choices = new ArrayAdapter<CharSequence>(
@@ -107,6 +107,10 @@ public class TradeRequestFragment extends Fragment {
 					Resource.RESOURCE_TYPES[i] == Resource.ResourceType.GOLD ){
 				ratio = 2;
 			}
+			if(board.getMerchantOwner() == player.getPlayerNumber() &&
+                    Resource.RESOURCE_TYPES[i] == board.getMerchantType()){
+                ratio = 2;
+            }
 
 			TextView text = (TextView) tradeView.findViewById(RESOURCES[i]);
 			text.setText(Integer.toString(count));
@@ -226,7 +230,7 @@ public class TradeRequestFragment extends Fragment {
 
 				ArrayList<Integer> playerList = new ArrayList<Integer>();
 				for (int i = 0; i < board.getNumPlayers(); i++){
-					if(i != board.getCurrentPlayer().getPlayerNumber() && board.getPlayerById(i).getResources(Resource.RESOURCE_TYPES[selected]) > 0){
+					if(i != board.getPlayerOfCurrentGameTurn().getPlayerNumber() && board.getPlayerById(i).getResources(Resource.RESOURCE_TYPES[selected]) > 0){
 						playerList.add(i);
 					}
 				}
@@ -237,7 +241,7 @@ public class TradeRequestFragment extends Fragment {
 					int currentPlayerToProposeId = playerList.remove(0);
 
 
-					TradeProposal tradeProposal = new TradeProposal(Resource.RESOURCE_TYPES[selected], board.getCurrentPlayer().getPlayerNumber(), currentPlayerToProposeId, trade, playerList);
+					TradeProposal tradeProposal = new TradeProposal(Resource.RESOURCE_TYPES[selected], board.getPlayerOfCurrentGameTurn().getPlayerNumber(), currentPlayerToProposeId, trade, playerList);
 					board.setTradeProposal(tradeProposal);
 
 					board.startTradeProposedPhase();

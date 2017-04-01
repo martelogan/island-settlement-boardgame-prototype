@@ -19,7 +19,6 @@ import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
-import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
 
 public class CityImprovementFragment extends Fragment {
 
@@ -85,7 +84,7 @@ public class CityImprovementFragment extends Fragment {
 		setShopViewVisibility(city_improvement_shop);
 
 		
-		ViewPager viewPager = (ViewPager) view.findViewById(R.id.reference);
+		ViewPager viewPager = (ViewPager) view.findViewById(R.id.costs_reference);
 		viewPager.setAdapter(new ReferenceTabAdapter());
 		viewPager.setCurrentItem(0);
 
@@ -398,7 +397,7 @@ public class CityImprovementFragment extends Fragment {
 										vertex.setCurUnitType(Vertex.CITY);
 										break;
 									case Vertex.WALLED_TRADE_METROPOLIS:
-										vertex.setCurUnitType(Vertex.CITY_WALL);
+										vertex.setCurUnitType(Vertex.WALLED_CITY);
 										break;
 									default:
 										break;
@@ -465,7 +464,7 @@ public class CityImprovementFragment extends Fragment {
 											vertex.setCurUnitType(Vertex.CITY);
 											break;
 										case Vertex.WALLED_SCIENCE_METROPOLIS:
-											vertex.setCurUnitType(Vertex.CITY_WALL);
+											vertex.setCurUnitType(Vertex.WALLED_CITY);
 											break;
 										default:
 											break;
@@ -538,7 +537,7 @@ public class CityImprovementFragment extends Fragment {
 											vertex.setCurUnitType(Vertex.CITY);
 											break;
 										case Vertex.WALLED_POLITICS_METROPOLIS:
-											vertex.setCurUnitType(Vertex.CITY_WALL);
+											vertex.setCurUnitType(Vertex.WALLED_CITY);
 											break;
 										default:
 											break;
