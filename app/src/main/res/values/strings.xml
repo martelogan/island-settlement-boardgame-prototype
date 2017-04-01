@@ -133,8 +133,14 @@
 	<string name="player_played_card">Played a %s card</string>
     <string name="player_longest_road">Has the longest road</string>
     <string name="player_stole_from">Stole from %s</string>
+<<<<<<< HEAD
     <string name="player_received_resource">Received %s</string>
     <string name="player_received_x_resources" formatted="false">Received %s resources</string>
+=======
+	<string name="player_gave_boot">Gave boot to %s</string>
+	<string name="player_received_resource">Received %s</string>
+	<string name="player_received_x_resources" formatted="false">Received %s resources</string>
+>>>>>>> master
     <string name="player_discarded">Discarded %s</string>
     <string name="player_traded_with">Traded with %s</string>
     <string name="player_traded_for">Traded for %s</string>
@@ -196,16 +202,16 @@
 	<string name="player_status_this_turn">This turn</string>
 	<string name="player_status_last_turn">Last turn</string>
 	<string name="player_status_resources">Resources</string>
-	<string name="player_status_total_settlements">Total Settlements (1 point each)</string>
-	<string name="player_status_total_cities">Total Cities (2 points each)</string>
-	<string name="player_status_total_roads">Total roads</string>
-	<string name="player_status_total_ships">Total ships</string>
-	<string name="player_status_total_city_walls">Total city walls</string>
-	<string name="player_status_total_basic_knights">Total basic knights</string>
-	<string name="player_status_total_strong_knights">Total strong knights</string>
-	<string name="player_status_total_mighty_knights">Total mighty knights</string>
-	<string name="player_status_best_road_length">Your longest road length</string>
-	<string name="player_status_has_longest_road">Longest road</string>
+	<string name="player_status_total_settlements">Settlements (1 point each)</string>
+	<string name="player_status_total_cities">Cities (2 points each)</string>
+	<string name="player_status_total_roads">Roads</string>
+	<string name="player_status_total_ships">Ships</string>
+	<string name="player_status_total_city_walls">City walls</string>
+	<string name="player_status_total_basic_knights">Basic knights</string>
+	<string name="player_status_total_strong_knights">Strong knights</string>
+	<string name="player_status_total_mighty_knights">Mighty knights</string>
+	<string name="player_status_best_trade_route_length">Your longest trade route length</string>
+	<string name="player_status_has_longest_trade_route">Longest trade route</string>
 	<string name="player_status_progress_cards">Progress cards</string>
 	<string name="player_status_harbor">harbor</string>
 
@@ -290,6 +296,7 @@
 	<string name="game_road_ship_title">Build a road or ship?</string>
 	<string name="game_defended_catan">Defended Catan! Pick Card.</string>
 	<string name="game_defended_catan_wait_pick_card">Waiting On Others to Pick Card!</string>
+	<string name="game_place_merchant">Place Merchant</string>
 	<string name="game_build_road">Build a road</string>
 	<string name="game_build_ship">Build a ship</string>
     <string name="game_move_ship">Ship to move?</string>
@@ -306,9 +313,11 @@
 	<string name="game_cant_hire_knight_str">Can\'t hire knight</string>
 	<string name="game_cant_promote_knight_str">Can\'t promote knight</string>
 	<string name="game_move_knight">Knight to move?</string>
+	<string name="game_cant_move_merchant">Can\'t move merchant</string>
 	<string name="game_cant_move_robber">Can\'t move robber</string>
 	<string name="game_robber_same">You must move the robber to a new location</string>
 	<string name="game_robber_sea">The ocean is no place for a robber!</string>
+	<string name="game_merchant_sea">The ocean is no place for a merchant!</string>
 	<string name="game_cant_move_pirate">Can\'t move pirate</string>
 	<string name="game_pirate_same">You must move the pirate to a new location</string>
 	<string name="game_pirate_land">The land is no place for a pirate!</string>

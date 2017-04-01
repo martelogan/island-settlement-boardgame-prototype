@@ -14,7 +14,7 @@ public class Vertex {
 	// BUILDABLE VERTEX UNIT CONSTANTS
 	public static final int SETTLEMENT = 1;
 	public static final int CITY = 2;
-	public static final int CITY_WALL = 3;
+	public static final int WALLED_CITY = 3;
 	public static final int TRADE_METROPOLIS = 4;
 	public static final int SCIENCE_METROPOLIS = 5;
 	public static final int POLITICS_METROPOLIS = 6;
@@ -38,6 +38,8 @@ public class Vertex {
 	private int[] edgeIds = {-1, -1, -1};
 	private int[] hexagonIds = {-1, -1, -1};
 	private int[] harborIds = {-1, -1};
+    private int[] fishingGroundIds = {-1, -1};
+    private boolean hasFishingGround = false;
 
 	private transient Board board;
 
@@ -116,6 +118,24 @@ public class Vertex {
 	}
 
 	/**
+	 * Associate a fishing ground with the vertex
+	 *
+	 * @param fishingGround
+	 *            the fishing ground to add (ignored if already associated)
+	 */
+	public void addFishingGround(FishingGround fishingGround) {
+		for (int i = 0; i < 3; i++) {
+			if (fishingGroundIds[i] == -1) {
+                hasFishingGround = true;
+				fishingGroundIds[i] = fishingGround.getId();
+				return;
+			} else if (fishingGroundIds[i] == fishingGround.getId()) {
+				return;
+			}
+		}
+	}
+
+	/**
 	 * Get the hexagon at the given index of hexagonIds
 	 * 
 	 * @param index
@@ -124,6 +144,17 @@ public class Vertex {
 	 * */
 	public Hexagon getHexagon(int index) {
 		return board.getHexagonById(hexagonIds[index]);
+	}
+
+	/**
+	 * Get the hexagon at the given index of fishingGroundIds
+	 *
+	 * @param index
+	 *            the fishingGroundIds index (0, 1, or 2)
+	 * @return the fishingGround (or null)
+	 * */
+	public FishingGround getFishingGround(int index) {
+		return board.getFishingGroundById(fishingGroundIds[index]);
 	}
 
 	/**
@@ -186,7 +217,7 @@ public class Vertex {
 		switch(curUnitType) {
 			case SETTLEMENT:
 			case CITY:
-			case CITY_WALL:
+			case WALLED_CITY:
 			case TRADE_METROPOLIS:
 			case SCIENCE_METROPOLIS:
 			case POLITICS_METROPOLIS:
@@ -247,6 +278,15 @@ public class Vertex {
 	public boolean isAdjacentToRobber() {
 		return (this.isAdjacentToRobber);
 	}
+
+    /**
+     * Check if the vertex is connected to a fishing ground
+     *
+     * @return true iff the vertex is currently connected to a fishing ground
+     */
+    public boolean hasFishingGround() {
+        return (this.hasFishingGround);
+    }
 
 	/**
 	 * Robber is adjacent to this vertex
@@ -768,6 +808,37 @@ public class Vertex {
 		}
 	}
 
+	public void distributeFish(int diceRoll) {
+		if (!(Hexagon.getFishingLakeNumbersSet().contains(diceRoll)
+				|| FishingGround.getFishingGroundNumbersSet().contains(diceRoll))) {
+			return;
+		}
+
+		if (ownerPlayerNumber == -1)
+		{
+			return;
+		}
+
+		if (Hexagon.getFishingLakeNumbersSet().contains(diceRoll)) {
+			Hexagon curHex = null;
+			for(int i = 0; i < hexagonIds.length; i++) {
+				curHex = getHexagon(i);
+				if(curHex != null && curHex.getTerrainType() == Hexagon.TerrainType.FISH_LAKE) {
+					board.getPlayerById(ownerPlayerNumber).addFish(curUnitType);
+				}
+			}
+		}
+		else if (FishingGround.getFishingGroundNumbersSet().contains(diceRoll)) {
+			FishingGround curFishingGround = null;
+			for(int i = 0; i < fishingGroundIds.length; i++) {
+				curFishingGround = getFishingGround(i);
+				if(curFishingGround != null && curFishingGround.getNumberToken().getTokenNum() == diceRoll) {
+					board.getPlayerById(ownerPlayerNumber).addFish(curUnitType);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Ensure that this vertex is available for a vertexUnit buildable
 	 * 
@@ -839,7 +910,7 @@ public class Vertex {
 			return board.getPlayerById(ownerPlayerNumber) == player
 					&& vertexUnitType == CITY && curUnitType == SETTLEMENT;
 		}
-		else if(board.getPlayerById(ownerPlayerNumber) != null && vertexUnitType == CITY_WALL) {
+		else if(board.getPlayerById(ownerPlayerNumber) != null && vertexUnitType == WALLED_CITY) {
 			boolean isCityType = curUnitType == CITY || curUnitType == TRADE_METROPOLIS
 				|| curUnitType == SCIENCE_METROPOLIS || curUnitType == POLITICS_METROPOLIS;
 			// player can build a city wall here
@@ -848,7 +919,7 @@ public class Vertex {
 		else if(board.getPlayerById(ownerPlayerNumber) != null && (vertexUnitType == TRADE_METROPOLIS
 				|| vertexUnitType == SCIENCE_METROPOLIS || vertexUnitType == POLITICS_METROPOLIS)) {
 			// player can build a metropolis here
-			boolean isCityType = curUnitType == CITY_WALL || curUnitType == CITY;
+			boolean isCityType = curUnitType == WALLED_CITY || curUnitType == CITY;
 			return board.getPlayerById(ownerPlayerNumber) == player && isCityType;
 		}
 		else{
@@ -1097,9 +1168,9 @@ public class Vertex {
 				curUnitType = CITY;
 				break;
 			case CITY:
-				curUnitType = board.isBuildMetropolisPhase() ? player.metropolisTypeToBuild : CITY_WALL;
+				curUnitType = board.isBuildMetropolisPhase() ? player.metropolisTypeToBuild : WALLED_CITY;
 				break;
-			case CITY_WALL:
+			case WALLED_CITY:
 				//determine which type of metropolis we build
 				switch(vertexUnitType) {
 					case TRADE_METROPOLIS:
@@ -1329,6 +1400,15 @@ public class Vertex {
 		myHarbors[0] = board.getHarborById(harborIds[1]);
 		return myHarbors;
 	}
+
+	public FishingGround[] getFishingGrounds() {
+		FishingGround[] myFishingGrounds = new FishingGround[2];
+		myFishingGrounds[0] = board.getFishingGroundById(fishingGroundIds[0]);
+		myFishingGrounds[0] = board.getFishingGroundById(fishingGroundIds[1]);
+		return myFishingGrounds;
+	}
+
+	//FIXME: WARNING...trade route logic is only half-working (considers roads only + minor bug)
 
 	/**
 	 * Find the longest trade route passing through this vertex for the given player
