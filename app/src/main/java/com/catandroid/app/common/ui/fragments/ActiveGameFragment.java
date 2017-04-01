@@ -2073,13 +2073,14 @@ public class ActiveGameFragment extends Fragment {
 
 	private void playPrinter(){
 		//@TODO
-		(board.getCurrentPlayer()).incProgressCardVictoryPointsCount(1);
+
+		(board.getPlayerOfCurrentGameTurn()).incProgressCardVictoryPointsCount(1);
 		toast("Played printer");
 	}
 
 	private void playConstitution(){
 		//@TODO
-		(board.getCurrentPlayer()).incProgressCardVictoryPointsCount(1);
+		(board.getPlayerOfCurrentGameTurn()).incProgressCardVictoryPointsCount(1);
 		toast("Played constitution");
 	}
 
