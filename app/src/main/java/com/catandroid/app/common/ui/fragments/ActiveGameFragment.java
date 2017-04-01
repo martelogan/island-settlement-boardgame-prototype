@@ -49,6 +49,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -1216,8 +1217,13 @@ public class ActiveGameFragment extends Fragment {
 				case 1:
 					buttonPress(ButtonType.BUILD_ROAD);
 					break;
+				case 2:
+					buttonPress(ButtonType.BUILD_CITY_WALL);
+					break;
+				case 3:
+					buttonPress(ButtonType.ACTIVATE_KNIGHT);
+					break;
 				default:
-
 			}
 		}
 
@@ -1964,31 +1970,31 @@ public class ActiveGameFragment extends Fragment {
 											//play the card
 											switch (card) {
 												case MERCHANT:
-													playMining();
+													playCrane();
 													break;
 												case CRANE:
-													playMining();
+													playCrane();
 													break;
 												case ENGINEER:
-													playMining();
+													playCrane();
 													break;
 												case IRRIGIATION:
-													playMining();
+													playCrane();
 													break;
 												case MINING:
-													playMining();
+													playCrane();
 													break;
 												case DESERTER:
-													playMining();
+													playCrane();
 													break;
 												case WEDDING:
-													playMining();
+													playCrane();
 													break;
 												case WARLORD:
-													playMining();
+													playCrane();
 													break;
 												case MASTER_MERCHANT:
-													playMining();
+													playCrane();
 													break;
 												default:
 													break;
@@ -2010,53 +2016,57 @@ public class ActiveGameFragment extends Fragment {
 		builder.create().show();
 	}
 
-	/**
-	private void playMerchant()
-	{
-		//@TODO
-		//add merchant placement logic
-		toast("Played the merchant");
-	}
-
-<<<<<<< HEAD
+	//Now working
 	 private void playCrane()
 	{
-		Player currentPlayer;
+		Player player = board.getPlayerOfCurrentGameTurn();
 		int[] playerCityImprovementLevels;
-		int playerTradeLevel;
-		int playerScienceLevel;
-		int playerPoliticsLevel;
+		playerCityImprovementLevels = player.getCityImprovementLevels();
 
-		currentPlayer = board.getCurrentPlayer();
-
-		playerCityImprovementLevels = currentPlayer.getCityImprovementLevels();
-
-		if(currentPlayer.getScienceLevel() > 0)
+		if(player.getResources(Resource.ResourceType.CLOTH) >= player.getTradeLevel())
 		{
-			currentPlayer.useResources(Resource.ResourceType.PAPER,
-					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)]);
+			player.appendAction(R.string.player_tradeImp, Integer.toString((player.getTradeLevel() + 1)));
+
+			//increase their discipline level
+			playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] = player.getTradeLevel() + 1;
+
+			//remove the resources from the player
+			player.useResources(Resource.ResourceType.CLOTH,
+					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)]-1);
 		}
-
-		if(currentPlayer.getTradeLevel() > 0)
+		else if(player.getResources(Resource.ResourceType.PAPER) >= player.getScienceLevel())
 		{
-			currentPlayer.useResources(Resource.ResourceType.CLOTH,
-					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)]);
+			// Perform buy on click because only pressable if they can afford it
+			player.appendAction(R.string.player_scienceImp, Integer.toString((player.getScienceLevel() + 1)));
+			// increase their discipline level
+			playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] = player.getScienceLevel() + 1;
+			// Remove the resources from the player
+			player.useResources(Resource.ResourceType.PAPER,
+					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)]-1);
+
 		}
-
-		if(currentPlayer.getPoliticsLevel() > 0)
+		else if(player.getResources(Resource.ResourceType.COIN) >= player.getPoliticsLevel())
 		{
-			currentPlayer.useResources(Resource.ResourceType.COIN,
-					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)]);
+			player.appendAction(R.string.player_politicsImp, Integer.toString((player.getPoliticsLevel() + 1)));
+			// increase their discipline level
+			playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)] = player.getPoliticsLevel() + 1;
+			// Remove the resources from the player
+			player.useResources(Resource.ResourceType.COIN,
+					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)]-1);
 
+		}
+		else
+		{
+			toast("You cannot improve your city");
+			return;
 		}
 		toast("Played the crane");
 	}
-	 **/
 
 	//Now working
 	private void playIrrigation()
 	{
-		Player me = board.getCurrentPlayer();
+		Player me = board.getPlayerOfCurrentGameTurn();
 		Resource.ResourceType resourceType;
 		Hexagon.TerrainType terrainType;
 
@@ -2077,7 +2087,7 @@ public class ActiveGameFragment extends Fragment {
 						if(terrainType == Hexagon.TerrainType.FIELDS)
 						{
 							resourceType = Resource.ResourceType.GRAIN;
-							me.addResources(resourceType, 2);
+							me.addResources(resourceType, 2, true);
 							me.appendAction(R.string.player_received_x_resources,
 									Integer.toString(2) + " " + Resource.toRString(resourceType));
 						}
@@ -2091,7 +2101,7 @@ public class ActiveGameFragment extends Fragment {
 	//Now working
 	private void playMining()
 	{
-		Player me = board.getCurrentPlayer();
+		Player me = board.getPlayerOfCurrentGameTurn();
 		Resource.ResourceType resourceType;
 		Hexagon.TerrainType terrainType;
 
@@ -2112,7 +2122,7 @@ public class ActiveGameFragment extends Fragment {
 						if(terrainType == Hexagon.TerrainType.MOUNTAINS)
 						{
 							resourceType = Resource.ResourceType.ORE;
-							me.addResources(resourceType, 2);
+							me.addResources(resourceType, 2, true);
 							me.appendAction(R.string.player_received_x_resources,
 									Integer.toString(2) + " " + Resource.toRString(resourceType));
 						}
@@ -2123,61 +2133,63 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played Mining");
 	}
 
-
-	/**
+	//Now working
 	 private void playEngineer()
 	 {
-		 Player player = board.getCurrentPlayer();
-		 boolean canAct = false;
+		 Player player = board.getPlayerOfCurrentGameTurn();
 
-		 for (Vertex vertex : board.getVertices())
+		 if(player.getNumOwnedCityWalls() < Player.MAX_CITY_WALLS)
 		 {
-			 if (vertex.canBuild(player, Vertex.CITY_WALL, false))
-			 {
-				 canAct = true;
-			 }
+			 player.addResources(Resource.ResourceType.BRICK, 2, true);
+			 player.setFreeBuildUnit(2);
+			 renderer.setAction(Action.BUILD_CITY_WALL);
+			 setButtons(Action.BUILD_CITY_WALL);
+			 getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
+					 + getActivity().getString(R.string.game_build_wall));
+			 getFragmentManager().popBackStack();
+			 player.appendAction(R.string.player_city_wall);
 		 }
-
-		 if (!canAct)
+		 else
 		 {
-			 cantAct(Action.BUILD_CITY_WALL);
+			toast("Cannot build a city wall");
 			 return;
+
 		 }
-
-		 if (player.getNumOwnedCityWalls() >= Player.MAX_CITY_WALLS)
-		 {
-			 popup(getString(R.string.game_cant_build_str),
-					 getString(R.string.game_build_wall_max));
-			 return;
-		 }
-
-		 renderer.setAction(Action.BUILD_CITY_WALL);
-		 setButtons(Action.BUILD_CITY_WALL);
-		 //player.addResources();
-		 getActivity().setTitle(board.getCurrentPlayer().getPlayerName() + ": "
-				 + getActivity().getString(R.string.game_build_wall));
-
 		 toast("Played the engineer");
 	 }
+
+	/**
+	//Not working yet
+	private void playWarlord()
+	{
+		boolean canAct = false;
+		Player player = board.getPlayerOfCurrentGameTurn();
+		canAct = player.canActivateSomeKnight();
+		player.addResources(Resource.ResourceType.GRAIN, 1, true);
+
+		if (!canAct)
+		{
+			cantAct(Action.ACTIVATE_KNIGHT);
+			return;
+		}
+		else
+		{
+			player.setFreeBuildUnit(3);
+			renderer.setAction(Action.ACTIVATE_KNIGHT);
+			setButtons(Action.ACTIVATE_KNIGHT);
+			getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
+					+ getActivity().getString(R.string.game_activate_knight));
+		}
+		toast("Played the warlord");
+	}
 	 **/
 
 	 /**
-	 private void playDeserter()
-	{
-		toast("Played the deserter");
-	}
-	 private void playWarlord()
-	{
-		toast("Played the warlord");
-	}
+	 private void playDeserter(){toast("Played the deserter");}
 	 private void playWedding() {toast("Played the wedding");}
-	 private void playMasterMerchant()
-	{
-		toast("Played the master merchant");
-	}
+	 private void playMasterMerchant(){toast("Played the master merchant");}
 	 **/
 
-=======
 	private void confirmDisplaceKnightDialog(Vertex vertex) {
 
 		if(vertex.getCurUnitType() != Vertex.KNIGHT) {
@@ -2212,7 +2224,6 @@ public class ActiveGameFragment extends Fragment {
 
 		builder.create().show();
 	}
->>>>>>> master
 
 	private void confirmChaseRobberDialog() {
 		final int confirm = 0;
@@ -2268,60 +2279,4 @@ public class ActiveGameFragment extends Fragment {
 		builder.create().show();
 	}
 
-<<<<<<< HEAD
-=======
-//	private void monopoly() {
-//		CharSequence[] items = new CharSequence[Resource.RESOURCE_TYPES.length];
-//		for (int i = 0; i < items.length; i++)
-//			items[i] = String.format(getString(R.string.game_monopoly_select),
-//					getActivity().getString(Resource.toRString(Resource.RESOURCE_TYPES[i])));
-//
-//		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//		builder.setTitle(getString(R.string.game_monopoly_prompt));
-//		builder.setItems(items, new DialogInterface.OnClickListener() {
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				Player player = board.getPlayerOfCurrentGameTurn();
-//
-//				if (player.useCard(Board.ProgressCardType.MONOPOLY)) {
-//					int total = player.monopoly(Resource.RESOURCE_TYPES[which]);
-//					toast(String.format(getString(R.string.game_used_monopoly),
-//							total));
-//					showState(false);
-//				} else {
-//					toast(getString(R.string.game_card_fail));
-//				}
-//			}
-//		});
-//
-//		builder.create().show();
-//	}
-
-//	private void harvest() {
-//		CharSequence[] items = new CharSequence[Resource.RESOURCE_TYPES.length];
-//		for (int i = 0; i < items.length; i++)
-//			items[i] = String.format(getString(R.string.game_harvest_select),
-//					getActivity().getString(Resource.toRString(Resource.RESOURCE_TYPES[i])));
-//
-//		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//		builder.setTitle(getActivity().getString(R.string.game_harvest_prompt));
-//		builder.setItems(items, new DialogInterface.OnClickListener() {
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				Player player = board.getPlayerOfCurrentGameTurn();
-//
-//				if (player.useCard(Board.ProgressCardType.HARVEST)) {
-//					player.harvest(Resource.RESOURCE_TYPES[which], Resource.RESOURCE_TYPES[which]);
-//					toast(getString(R.string.game_used_harvest));
-//					showState(false);
-//				} else {
-//					toast(getString(R.string.game_card_fail));
-//				}
-//			}
-//		});
-//
-//		builder.create().show();
-//	}
-
->>>>>>> master
 }

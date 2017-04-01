@@ -1164,7 +1164,8 @@ public class Vertex {
 	 * @param player
 	 *            which player intends to activate a knight here
 	 */
-	public boolean activateKnight(Player player) {
+	public boolean activateKnight(Player player)
+	{
 		if (!this.canActivateKnightHere(player))
 		{
 			return false;

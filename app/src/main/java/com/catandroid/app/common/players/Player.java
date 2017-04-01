@@ -229,6 +229,7 @@ public class Player {
 		this.freeBuildUnit = freeBuildUnit;
 	}
 
+
 	/**
 	* Attempt to build a road on an edge. Returns true on success
 	*
@@ -2701,6 +2702,17 @@ public class Player {
 	public void setNumFishOwned(int numFishOwned) {
 		this.numFishOwned = numFishOwned;
 	}
+
+	public void setNumOwnedCityWalls(int numOwnedCityWalls)
+	{
+		this.numOwnedCityWalls = this.numOwnedCityWalls + numOwnedCityWalls;
+	}
+
+	public void setNumOwnedBricks(int count)
+	{
+
+	}
+
 
 	/**
 	 * Add an action to the turn log

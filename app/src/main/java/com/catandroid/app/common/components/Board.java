@@ -351,8 +351,8 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = 7;
-//		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
+		//int diceRollNumber = 7;
+		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
@@ -1606,28 +1606,27 @@ public class Board {
 		politicsDeck = new ArrayList<>();
 
 		//@TODO for testing purposes ONLY
-		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
-		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
-		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
-		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
-		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
-		tradeDeck.add(ProgressCard.ProgressCardType.MINING);
+		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
+		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
+		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
+		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
+		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
+		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-		politicsDeck.add(ProgressCard.ProgressCardType.MINING);
-
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
 
 		//@TODO Implement all these progress cards
 //		tradeDeck.add(ProgressCard.ProgressCardType.COMMERCIAL_HARBOR);
