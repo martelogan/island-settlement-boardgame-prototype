@@ -2186,8 +2186,8 @@ public class ActiveGameFragment extends Fragment {
 		for(int i = 0; i < 2; i++) {
 			if (player.getNumRoads() + player.getNumShips() < (Player.MAX_ROADS + Player.MAX_SHIPS))
 			{
-				//player.setFreeBuildUnit(2);
 				player.setFreeBuild(true);
+
 				renderer.setAction(Action.BUILD_EDGE_UNIT);
 				setButtons(Action.BUILD_EDGE_UNIT);
 				if (SelectedEdgeUnit == 0) {

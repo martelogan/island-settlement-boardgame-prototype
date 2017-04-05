@@ -107,8 +107,8 @@ public class Board {
 	private Stack<Integer> playerIdsYetToAct;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
-    private Hexagon hexInventor1;///////////////////////
-    private Hexagon hexInventor2;///////////////////////
+    private Hexagon hexInventor1; //for inventor progress card
+    private Hexagon hexInventor2; //for inventor progress card
 
 	private ArrayList<ProgressCard.ProgressCardType> tradeDeck;
 	private ArrayList<ProgressCard.ProgressCardType> scienceDeck;
@@ -167,8 +167,8 @@ public class Board {
 		this.numPlayers = gameParticipantIds.size();
 		this.numTotalPlayableKnights = numPlayers * 6;
 		nextAvailableKnightId = 0;
-        this.hexInventor1 = null;/////////////////
-        this.hexInventor2 = null;/////////////////
+        this.hexInventor1 = null;
+        this.hexInventor2 = null;
 
 		// initialize players
 		players = new Player[numPlayers];
@@ -241,7 +241,7 @@ public class Board {
 		//generate progress card decks
 		progressCardInit();
 	}
-//////////////////////////
+    //Inventor: set hexes chosen to have number tokens switched
 	public void setHexInventor(Hexagon hexagon, int num){
         if(num == 1){
             this.hexInventor1 = hexagon;
@@ -250,7 +250,6 @@ public class Board {
             this.hexInventor2 = hexagon;
         }
     }
-////////////////////////////
     public Hexagon getHexInventor1(){return this.hexInventor1;}
     public Hexagon getHexInventor2(){return this.hexInventor2;}
 
