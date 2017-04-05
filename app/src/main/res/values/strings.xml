@@ -152,6 +152,11 @@
 	<string name="player_barbarians_tie">Players %s tied for defender of Catan!</string>
 	<string name="player_removed_robber">Removed the Robber from the board!</string>
 	<string name="player_removedPirate">Removed the Pirate from the board!</string>
+	<string name="player_removedOpenRoad">Removed an open road!</string>
+	<string name="player_stole_x">Stole %s!</string>
+    <string name="player_switched_numToken">Switched two number tokens</string>
+
+
 
 
 	<!-- PlayerStatsFragment screen -->
@@ -303,6 +308,11 @@
 	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
 	<string name="game_nowhere_available_knight_move">No moveable knights at the ready</string>
 	<string name="game_won">won</string>
+	<string name="game_play_trade_monopoly">Select a commodity to steal</string>
+	<string name="game_play_resource_monopoly">Select a resource to steal</string>
+	<string name="game_play_diplomat">Select an open road to remove</string>
+    <string name="game_play_inventor">Select the first number token by clicking a hex</string>
+
 
 	<!-- Progress Cards -->
 	<string name="merchant">Merchant</string>

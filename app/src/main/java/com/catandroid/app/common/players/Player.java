@@ -213,13 +213,16 @@ public class Player {
 		appendAction(R.string.player_ended_turn);
 	}
 
-	public static void setFreeBuild(boolean freeBuild) {
+
+	public Vector<Integer> getRoadIds(){ return this.roadIds;}
+
+	public Vector<Integer> getReachingVertexIds(){ return this.reachingVertexIds;}
+
+	public void setFreeBuild(boolean freeBuild) {
 		FREE_BUILD = freeBuild;
 	}
 
-	public boolean getFreeBuild() {
-		return FREE_BUILD;
-	}
+	public boolean getFreeBuild() {return FREE_BUILD;}
 
 	public int getFreeBuildUnit() {
 		return freeBuildUnit;
@@ -497,6 +500,7 @@ public class Player {
 		}
 
 		boolean setup = board.isSetupPhase();
+		boolean playedMedicine = board.isProgressPhase1();
 
 		// check resources based on type we want to build
 		if (unitType == Vertex.SETTLEMENT) {
@@ -541,10 +545,15 @@ public class Player {
 			ownedCommunityIds.add(vertex.getId());
 			board.updateLongestTradeRoute();
 		} else if(vertex.getCurUnitType() == Vertex.CITY){ // city
-			if (!setup) {
+			if (!setup && !playedMedicine) { ///////////////////////////////////////////////////////////////////////
 				useResources(Resource.ResourceType.GRAIN, 2);
 				useResources(Resource.ResourceType.ORE, 3);
 				numOwnedSettlements -= 1;
+			}
+			else if (playedMedicine)
+			{
+				useResources(Resource.ResourceType.GRAIN, 2);
+				useResources(Resource.ResourceType.ORE, 1);
 			}
 			else {
 				ownedCommunityIds.add(vertex.getId());
@@ -1533,6 +1542,32 @@ public class Player {
 
 		return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
 	}
+	/**
+ 	* Can you remove this road? (is it open)
+ 	*
+ 	*/
+
+	public boolean RemoveOpenRoad(Edge edge) {
+		boolean isOpen = false;
+		if (edge.hasEdgeUnit() && edge.getCurUnitType() == 1) {
+			int[] vertexIds = edge.getVertices();
+
+			for (int i = 0; i < 2; i++) {
+				//checks if either end of road is open
+				Vertex thisVertex = board.getVertexById(vertexIds[i]);
+				if (!thisVertex.hasVertexUnitPlacedHere()) {
+					isOpen = true;
+				}
+				//also considered open if road/ship has city,settlement or knight of a different colour on one end
+				else if (thisVertex.getOwnerPlayer() != edge.getOwnerPlayer()) {
+					isOpen = true;
+				}
+			}
+		}
+		if(isOpen){edge.removeRoad();}
+
+		return isOpen;
+	}
 
 	/**
 	 * Can you remove a ship from this edge?
@@ -1777,6 +1812,28 @@ public class Player {
 		}
 
 		return resourceType;
+	}
+
+	public boolean stealResourceNumber(Resource.ResourceType resourceType, int num){
+		boolean stoleSomething = false;
+		Player player = null;
+		for (int i = 0; i < board.getNumPlayers(); i++) {
+
+			player = board.getPlayerById(i);
+
+			if (player == this) // don't steal from ourselves...
+				continue;
+
+			if (player.getCountPerResource()[Resource.toResourceIndex(resourceType)] >= num) {
+				stoleSomething = true;
+				player.useResources(resourceType, num);
+				if (resourceType != null) {
+					addResources(resourceType, num, false);
+					appendAction(R.string.player_stole_from, player.getPlayerName());
+				}
+			}
+		}
+		return stoleSomething;
 	}
 
 	/**
