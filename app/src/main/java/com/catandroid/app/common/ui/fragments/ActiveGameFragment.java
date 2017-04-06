@@ -255,16 +255,16 @@ public class ActiveGameFragment extends Fragment {
 									toast("Played printer");
 								}
 
-								else currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+								else currentPlayer.getHand().add(progressCard);
 							}
 							else if(item == 2){
-								ProgressCard.ProgressCardType progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE);
+								ProgressCard.ProgressCardType progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS);
 								if (progressCard == ProgressCard.ProgressCardType.CONSTITUTION){
 									(board.getPlayerOfCurrentGameTurn()).incProgressCardVictoryPointsCount(1);
 									toast("Played Constitution");
 								}
 
-								else currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+								else currentPlayer.getHand().add(progressCard);
 							}
 
 							//pass turn
