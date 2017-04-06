@@ -1,23 +1,23 @@
 package com.catandroid.app.common.players;
 
-import java.util.Random;
-import java.util.Vector;
-
 import android.content.Context;
 import android.util.Log;
 
+import com.catandroid.app.CatAndroidApp;
+import com.catandroid.app.R;
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.ProgressCard.ProgressCardType;
+import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.components.board_pieces.Resource.ResourceType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
-import com.catandroid.app.common.components.board_pieces.Resource.ResourceType;
-import com.catandroid.app.R;
-import com.catandroid.app.CatAndroidApp;
-import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Vertex;
+
+import java.util.Random;
+import java.util.Vector;
 
 public class Player {
 
@@ -705,6 +705,28 @@ public class Player {
 
 		return true;
 	}
+
+	public boolean activateFreeKnightAt(Vertex vertex)
+    {
+        if (vertex == null || !canActivateKnightAt(vertex))
+        {
+            return false;
+        }
+
+        if (!canAffordToActivateKnight()) {
+            return false;
+        }
+
+        if (!vertex.activateKnight(this))
+        {
+            return false;
+        }
+
+        // append to the turn log
+        appendAction(R.string.player_activate_knight);
+
+        return true;
+    }
 
 	// TODO: implement promote knight
 	/**

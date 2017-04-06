@@ -1,8 +1,5 @@
 package com.catandroid.app.common.ui.graphics_controllers;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -13,15 +10,18 @@ import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
-import com.catandroid.app.common.ui.views.GameView;
 import com.catandroid.app.common.ui.resources.Square;
+import com.catandroid.app.common.ui.views.GameView;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 public class GameRenderer implements Renderer {
 
 	public enum Action {
 		NONE, BUILD_SETTLEMENT, BUILD_CITY, BUILD_CITY_WALL, BUILD_METROPOLIS, BUILD_EDGE_UNIT,
 		BUILD_ROAD,	BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER,
-		CHASE_PIRATE, MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_DISPLACED_KNIGHT,
+		CHASE_PIRATE, MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_DISPLACED_KNIGHT, REMOVE_KNIGHT,
         MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE, PLACE_MERCHANT
 	}
 
@@ -259,6 +259,10 @@ public class GameRenderer implements Renderer {
 				else if (action == Action.ACTIVATE_KNIGHT && activeTurnPlayer.canActivateKnightAt(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+				}
+				else if(action == Action.REMOVE_KNIGHT && activeTurnPlayer.canRemoveKnightFrom(vertex)) {
+					Knight toRemove = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toRemove.getKnightRank(), false);
 				}
 				else if (action == Action.PROMOTE_KNIGHT && activeTurnPlayer.canPromoteKnightAt(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();

@@ -133,14 +133,9 @@
 	<string name="player_played_card">Played a %s card</string>
     <string name="player_longest_road">Has the longest road</string>
     <string name="player_stole_from">Stole from %s</string>
-<<<<<<< HEAD
-    <string name="player_received_resource">Received %s</string>
-    <string name="player_received_x_resources" formatted="false">Received %s resources</string>
-=======
 	<string name="player_gave_boot">Gave boot to %s</string>
 	<string name="player_received_resource">Received %s</string>
 	<string name="player_received_x_resources" formatted="false">Received %s resources</string>
->>>>>>> master
     <string name="player_discarded">Discarded %s</string>
     <string name="player_traded_with">Traded with %s</string>
     <string name="player_traded_for">Traded for %s</string>
@@ -274,11 +269,27 @@
 	<string name="game_confirm_chase_robber">Chase the robber</string>
 	<string name="game_confirm_chase_pirate">Chase the pirate</string>
 	<string name="game_confirm_displace_knight">Displace knight</string>
+    <string name="game_confirm_remove_knight">Which player would you like to remove a knight?</string>
 	<string name="game_chase_robber_title">Chase robber with...</string>
 	<string name="game_chase_pirate_title">Chase pirate with...</string>
 	<string name="game_confirm_chase_robber_title">Want to chase the robber?</string>
 	<string name="game_confirm_chase_pirate_title">Want to chase the pirate?</string>
 	<string name="game_confirm_displace_knight_title">Displace opponent knight?</string>
+    <string name="game_confirm_choose_opponent">Choose opponent to remove knight</string>
+    <string name="game_choose_victory_opponent">Choose opponent</string>
+    <string name="game_choose_resource">Pick first resource</string>
+    <string name="victory_points_opponent">None of your opponents have more victory points than you</string>
+    <string name="no_city_wall">Cannot build a city wall</string>
+    <string name="no_improve_city">Cannot improve your city</string>
+    <string name="game_resource_warning">WARNING: choose a resource with a count greater than 0</string>
+    <string name="game_chosen_resources">The chosen resources have been added to your resource count</string>
+    <string name="game_remove_knight">No knight to remove</string>
+    <string name="game_remove_knight_final">Remove Knight</string>
+    <string name="game_choose_resource2">Pick second resource</string>
+    <string name="game_player_1">Player 1</string>
+    <string name="game_player_2">Player 2</string>
+    <string name="game_player_3">Player 3</string>
+    <string name="game_player_4">Player 4</string>
 	<string name="game_cancel_str">Cancel</string>
 	<string name="game_resources_str">resources</string>
 	<string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>

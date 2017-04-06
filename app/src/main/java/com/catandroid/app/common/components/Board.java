@@ -18,6 +18,7 @@ import com.catandroid.app.common.players.AutomatedPlayer;
 import com.catandroid.app.common.players.BalancedAI;
 import com.catandroid.app.common.players.Player;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
+import com.catandroid.app.common.ui.resources.UIButton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import java.util.Stack;
 
 public class Board {
 
+	int playerNo;
 	private transient ActiveGameFragment activeGameFragment;
 
 	private ArrayList<String> gameParticipantIds;
@@ -69,14 +71,19 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
+		PRODUCTION, MY_PlAYER_TURN, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
 		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
 		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, PLACE_MERCHANT, DONE
+		DEFENDER_OF_CATAN, PLACE_MERCHANT, DONE, PRODUCTION1, REMOVE_KNIGHT, MY_PRODUCTION;
 	}
 
 	public void setPhase(Phase phase) {
 		this.phase = phase;
+	}
+
+	public void setPlayerNo(int playerNo)
+	{
+		this.playerNo = playerNo;
 	}
 
 	public Phase getPhase() {
@@ -303,6 +310,23 @@ public class Board {
 		return players[playerNumber];
 	}
 
+	public Player getPlayerByName(CharSequence playerName)
+	{
+		for(int i = 0; i < this.getNumPlayers(); i++)
+		{
+			Player player = this.getPlayerById(i);
+			if(player.getPlayerName().equals(playerName+""))
+			{
+				return players[i];
+			}
+			else
+			{
+				continue;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Get a reference to the currently moving ship
 	 *
@@ -364,13 +388,9 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-<<<<<<< HEAD
 		//int diceRollNumber = 7;
 		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
-=======
-		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
-//		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
->>>>>>> master
+
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
@@ -611,7 +631,24 @@ public class Board {
 					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber),false);
 				}
 				break;
-            case MOVING_SHIP:
+			case REMOVE_KNIGHT:
+				int originalNo = curPlayerNumber;
+				players[curPlayerNumber].endTurn(); //we also want pseudo turn
+				phase = Phase.PLAYER_TURN;
+				curPlayerNumber = playerNo;
+				gameTurnNumber++;
+				curPlayerNumber %= numPlayers;
+				turnChanged = true;
+				players[curPlayerNumber].beginTurn();
+				lastDiceRollNumber = 0;
+				if(players[curPlayerNumber].isHuman())
+				{
+					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber), false);
+					activeGameFragment.buttonPress(UIButton.ButtonType.REMOVE_KNIGHT);
+				}
+				curPlayerNumber = originalNo;
+				break;
+			case MOVING_SHIP:
                 phase = returnPhase;
 				tempEdgeIdMemory = -1;
 				break;
@@ -1684,27 +1721,27 @@ public class Board {
 		politicsDeck = new ArrayList<>();
 
 		//@TODO for testing purposes ONLY
-		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
-		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
-		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
-		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
-		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
-		tradeDeck.add(ProgressCard.ProgressCardType.CRANE);
+		tradeDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		tradeDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		tradeDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		tradeDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		tradeDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		tradeDeck.add(ProgressCard.ProgressCardType.DESERTER);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.DESERTER);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
-		politicsDeck.add(ProgressCard.ProgressCardType.CRANE);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
+		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
 
 		//@TODO Implement all these progress cards
 //		tradeDeck.add(ProgressCard.ProgressCardType.COMMERCIAL_HARBOR);

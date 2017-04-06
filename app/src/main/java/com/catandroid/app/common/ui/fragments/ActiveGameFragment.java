@@ -1,30 +1,5 @@
 package com.catandroid.app.common.ui.fragments;
 
-import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
-import com.catandroid.app.common.components.board_pieces.CityImprovement;
-import com.catandroid.app.common.components.board_pieces.ProgressCard;
-import com.catandroid.app.common.components.board_pieces.Resource;
-import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
-import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
-import com.catandroid.app.R;
-import com.catandroid.app.common.components.Board;
-import com.catandroid.app.common.ui.fragments.interaction_fragments.UseFishFragment;
-import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeProposedFragment;
-import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeRequestFragment;
-import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
-import com.catandroid.app.common.ui.graphics_controllers.GameRenderer.Action;
-import com.catandroid.app.common.components.board_positions.Edge;
-import com.catandroid.app.common.components.board_positions.Hexagon;
-import com.catandroid.app.common.components.board_positions.Vertex;
-import com.catandroid.app.common.ui.resources.UIButton;
-import com.catandroid.app.common.ui.views.GameView;
-import com.catandroid.app.common.ui.fragments.static_fragments.CostsReferenceFragment;
-import com.catandroid.app.common.ui.views.ResourceView;
-import com.catandroid.app.common.ui.fragments.static_fragments.PlayerStatsFragment;
-import com.catandroid.app.common.ui.resources.UIButton.ButtonType;
-import com.catandroid.app.common.players.Player;
-import com.catandroid.app.common.ui.graphics_controllers.TextureManager;
-
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -38,8 +13,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -49,11 +24,39 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.catandroid.app.R;
+import com.catandroid.app.common.components.Board;
+import com.catandroid.app.common.components.board_pieces.CityImprovement;
+import com.catandroid.app.common.components.board_pieces.ProgressCard;
+import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.components.board_positions.Edge;
+import com.catandroid.app.common.components.board_positions.Hexagon;
+import com.catandroid.app.common.components.board_positions.Vertex;
+import com.catandroid.app.common.logistics.multiplayer.TradeProposal;
+import com.catandroid.app.common.players.Player;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.CityImprovementFragment;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.DiscardResourcesFragment;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.UseFishFragment;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeProposedFragment;
+import com.catandroid.app.common.ui.fragments.interaction_fragments.trade.TradeRequestFragment;
+import com.catandroid.app.common.ui.fragments.static_fragments.CostsReferenceFragment;
+import com.catandroid.app.common.ui.fragments.static_fragments.PlayerStatsFragment;
+import com.catandroid.app.common.ui.graphics_controllers.GameRenderer;
+import com.catandroid.app.common.ui.graphics_controllers.GameRenderer.Action;
+import com.catandroid.app.common.ui.graphics_controllers.TextureManager;
+import com.catandroid.app.common.ui.resources.UIButton;
+import com.catandroid.app.common.ui.resources.UIButton.ButtonType;
+import com.catandroid.app.common.ui.views.GameView;
+import com.catandroid.app.common.ui.views.ResourceView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
@@ -74,7 +77,7 @@ public class ActiveGameFragment extends Fragment {
 
 	private UpdateHandler turnHandler;
 	private TurnThread turnThread;
-	
+
 	private GameRenderer renderer;
 
 	private boolean isActive;
@@ -256,13 +259,13 @@ public class ActiveGameFragment extends Fragment {
 					AlertDialog choseProgressCardDialog = builder.create();
 					choseProgressCardDialog.setCancelable(false);
 					choseProgressCardDialog.show();
-				}
+			}
 
-				super.handleMessage(msg);
-			}
-			public void setActiveGameFragment(ActiveGameFragment activeGameFragment){
-				this.activeGameFragment = activeGameFragment;
-			}
+			super.handleMessage(msg);
+		}
+		public void setActiveGameFragment(ActiveGameFragment activeGameFragment){
+			this.activeGameFragment = activeGameFragment;
+		}
 	}
 
 	@Override
@@ -340,12 +343,12 @@ public class ActiveGameFragment extends Fragment {
 
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	public void select(Action action, int id) {
 		switch (action) {
 			case MOVE_ROBBER:
 			case MOVE_PIRATE:
-            case PLACE_MERCHANT:
+			case PLACE_MERCHANT:
 				select(action, board.getHexagonById(id));
 				break;
 
@@ -355,9 +358,10 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_METROPOLIS:
 			case HIRE_KNIGHT:
 			case ACTIVATE_KNIGHT:
+			case REMOVE_KNIGHT: //This might be problem
 			case PROMOTE_KNIGHT:
-            case CHASE_ROBBER:
-            case CHASE_PIRATE:
+			case CHASE_ROBBER:
+			case CHASE_PIRATE:
 			case MOVE_KNIGHT_1:
 			case MOVE_KNIGHT_2:
 			case MOVE_DISPLACED_KNIGHT:
@@ -376,7 +380,7 @@ public class ActiveGameFragment extends Fragment {
 				// REMOVED
 				//Log.e(getClass().getName(), "invalid selection type");
 				break;
-			}
+		}
 	}
 
 	private void select(Action action, Hexagon hexagon) {
@@ -409,22 +413,22 @@ public class ActiveGameFragment extends Fragment {
 			}
 		}
 		else if(action == Action.PLACE_MERCHANT) {
-            boolean ownsBuildableOnHex = hexagon.getPlayers().contains(board.getActiveFragmentPlayer());
-            if (hexagon.getTerrainType() == Hexagon.TerrainType.SEA) {
-                popup(getString(R.string.game_cant_move_merchant),
-                        getString(R.string.game_merchant_sea));
-            }
-            else if(!ownsBuildableOnHex){
-                popup("Can't Place Merchant",
-                        "You don't own a City/Settlement on that Hexagon");
-            }
-            else {
-                board.setCurMerchantHex(hexagon);
-                board.setMerchantOwner(board.getActiveFragmentPlayer().getPlayerNumber());
+			boolean ownsBuildableOnHex = hexagon.getPlayers().contains(board.getActiveFragmentPlayer());
+			if (hexagon.getTerrainType() == Hexagon.TerrainType.SEA) {
+				popup(getString(R.string.game_cant_move_merchant),
+						getString(R.string.game_merchant_sea));
+			}
+			else if(!ownsBuildableOnHex){
+				popup("Can't Place Merchant",
+						"You don't own a City/Settlement on that Hexagon");
+			}
+			else {
+				board.setCurMerchantHex(hexagon);
+				board.setMerchantOwner(board.getActiveFragmentPlayer().getPlayerNumber());
 				board.nextPhase();
-                showState(false);
-            }
-        }
+				showState(false);
+			}
+		}
 	}
 
 	private void select(Action action, Vertex vertex) {
@@ -447,7 +451,7 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
-                || action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
+				|| action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
 				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
@@ -464,7 +468,7 @@ public class ActiveGameFragment extends Fragment {
 			case Vertex.SETTLEMENT:
 			case Vertex.CITY:
 			case Vertex.WALLED_CITY:
-			    // selecting buildable vertex unit
+				// selecting buildable vertex unit
 				if (player.buildVertexUnit(vertex, vertexUnitType)) {
 					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
 					{
@@ -487,21 +491,27 @@ public class ActiveGameFragment extends Fragment {
 							showState(false);
 						}
 						break;
+					//PROBLEM MIGHT BE HERE
+					case REMOVE_KNIGHT:
+						if(player.removeKnightFrom(vertex))
+						{
+							showState(false);
+						}
 					case PROMOTE_KNIGHT:
 						if (player.promoteKnightAt(vertex)) {
 							showState(false);
 						}
 						break;
-                    case CHASE_ROBBER:
-                        if (player.chaseRobberFrom(vertex)) {
-                            showState(false);
-                        }
-                        break;
-                    case CHASE_PIRATE:
-                        if (player.chasePirateFrom(vertex)) {
-                            showState(false);
-                        }
-                        break;
+					case CHASE_ROBBER:
+						if (player.chaseRobberFrom(vertex)) {
+							showState(false);
+						}
+						break;
+					case CHASE_PIRATE:
+						if (player.chasePirateFrom(vertex)) {
+							showState(false);
+						}
+						break;
 					case MOVE_KNIGHT_1:
 						if (player.removeKnightFrom(vertex)) {
 							renderer.setAction(Action.MOVE_KNIGHT_2);
@@ -511,9 +521,9 @@ public class ActiveGameFragment extends Fragment {
 					case MOVE_KNIGHT_2:
 						if(vertex.getCurUnitType() == Vertex.KNIGHT
 								&& vertex.getOwnerPlayer() != player
-								   && player.canDisplaceKnightAt(vertex)) {
+								&& player.canDisplaceKnightAt(vertex)) {
 
-								confirmDisplaceKnightDialog(vertex);
+							confirmDisplaceKnightDialog(vertex);
 						}
 						else if (player.moveKnightPeacefullyTo(vertex)) {
 							board.nextPhase();
@@ -533,8 +543,8 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void select(Action action, Edge edge) {
-        if (action == Action.BUILD_EDGE_UNIT ) {
-            if (edge.isAvailableForShip() && !edge.isBlockedByPirate()) {
+		if (action == Action.BUILD_EDGE_UNIT ) {
+			if (edge.isAvailableForShip() && !edge.isBlockedByPirate()) {
 				if(edge.isBorderingSea()) { // choice of road or ship
 					CharSequence[] items = new CharSequence[2];
 					items[0] = getString(R.string.game_choose_road);
@@ -560,15 +570,15 @@ public class ActiveGameFragment extends Fragment {
 				else { // can only build a ship here
 					select(Action.BUILD_SHIP, edge);
 				}
-            }
-            else { // can only build a road here
-                select(Action.BUILD_ROAD, edge);
-            }
-        }
+			}
+			else { // can only build a road here
+				select(Action.BUILD_ROAD, edge);
+			}
+		}
 
-        //proceed to build road or edge
+		//proceed to build road or edge
 
-        Player player = board.getPlayerOfCurrentGameTurn();
+		Player player = board.getPlayerOfCurrentGameTurn();
 		if (action == Action.BUILD_ROAD) {
 			if (player.buildRoad(edge)) {
 				renderer.setAction(Action.NONE);
@@ -640,19 +650,19 @@ public class ActiveGameFragment extends Fragment {
 			}
 		}
 		else if (action == Action.MOVE_SHIP_2) {
-            if (player.moveShipTo(edge)) {
+			if (player.moveShipTo(edge)) {
 				board.nextPhase();
-                renderer.setAction(Action.NONE);
-                showState(true);
-            }
-        }
+				renderer.setAction(Action.NONE);
+				showState(true);
+			}
+		}
 	}
 
 
 	public boolean buttonPress(UIButton.ButtonType button) {
 		boolean canAct = false;
 		Player player = board.getPlayerOfCurrentGameTurn();
-		
+
 		switch (button) {
 			case PLAYER_STATUS:
 				//PLAYER_STATUS IS THE BUTTON THAT IS ALWAYS VISIBLE IN TOP LEFT CORNER
@@ -849,7 +859,7 @@ public class ActiveGameFragment extends Fragment {
 				renderer.setAction(Action.BUILD_CITY);
 				setButtons(Action.BUILD_CITY);
 				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-						 + getActivity().getString(R.string.game_build_city));
+						+ getActivity().getString(R.string.game_build_city));
 				break;
 
 			case PLAY_PROGRESS_CARD:
@@ -912,6 +922,27 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_activate_knight));
 				break;
 
+			case REMOVE_KNIGHT:
+				for (Vertex vertex : board.getVertices()) {
+					if(player.canRemoveKnightFrom(vertex))
+					{
+						canAct = true;
+						break;
+					}
+				}
+
+				if(!canAct)
+				{
+					cantAct(Action.REMOVE_KNIGHT);
+					break;
+				}
+
+				renderer.setAction(Action.REMOVE_KNIGHT);
+				setButtons(Action.REMOVE_KNIGHT);
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
+						+ getString(R.string.game_remove_knight_final));
+				break;
+
 			case PROMOTE_KNIGHT:
 				canAct = player.canPromoteSomeKnight();
 
@@ -953,10 +984,10 @@ public class ActiveGameFragment extends Fragment {
 					break;
 				}
 
-                renderer.setAction(Action.CHASE_ROBBER);
-                setButtons(Action.CHASE_ROBBER);
-                getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-                        + getActivity().getString(R.string.game_chase_robber_title));
+				renderer.setAction(Action.CHASE_ROBBER);
+				setButtons(Action.CHASE_ROBBER);
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_chase_robber_title));
 //				confirmChaseRobberDialog();
 				break;
 
@@ -972,10 +1003,10 @@ public class ActiveGameFragment extends Fragment {
 					cantAct(Action.CHASE_PIRATE);
 					break;
 				}
-                renderer.setAction(Action.CHASE_PIRATE);
-                setButtons(Action.CHASE_PIRATE);
-                getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-                        + getActivity().getString(R.string.game_chase_pirate_title));
+				renderer.setAction(Action.CHASE_PIRATE);
+				setButtons(Action.CHASE_PIRATE);
+				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
+						+ getActivity().getString(R.string.game_chase_pirate_title));
 //				confirmChasePirateDialog();
 				break;
 
@@ -1001,15 +1032,15 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case PURCHASE_CITY_IMPROVEMENT:
-                FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
-                CityImprovementFragment cityImprovementFragment = new CityImprovementFragment();
-                cityImprovementFragment.setBoard(board);
-                cityImprovementFragment.setActiveGameFragment(this);
+				FragmentManager cityImprovementFragmentManager = getActivity().getSupportFragmentManager();
+				CityImprovementFragment cityImprovementFragment = new CityImprovementFragment();
+				cityImprovementFragment.setBoard(board);
+				cityImprovementFragment.setActiveGameFragment(this);
 
-                FragmentTransaction cityImprovementFragmentTransaction =  cityImprovementFragmentManager.beginTransaction();
-                cityImprovementFragmentTransaction.replace(R.id.fragment_container, cityImprovementFragment,cityImprovementFragment.getClass().getSimpleName());
-                cityImprovementFragmentTransaction.addToBackStack(cityImprovementFragment.getClass().getSimpleName());
-                cityImprovementFragmentTransaction.commit();
+				FragmentTransaction cityImprovementFragmentTransaction =  cityImprovementFragmentManager.beginTransaction();
+				cityImprovementFragmentTransaction.replace(R.id.fragment_container, cityImprovementFragment,cityImprovementFragment.getClass().getSimpleName());
+				cityImprovementFragmentTransaction.addToBackStack(cityImprovementFragment.getClass().getSimpleName());
+				cityImprovementFragmentTransaction.commit();
 
 				break;
 
@@ -1031,7 +1062,7 @@ public class ActiveGameFragment extends Fragment {
 				FragmentManager tradeFragmentManager = getActivity().getSupportFragmentManager();
 				TradeRequestFragment tradeFragment = new TradeRequestFragment();
 				tradeFragment.setBoard(board);
-                tradeFragment.setActiveGameFragment(this);
+				tradeFragment.setActiveGameFragment(this);
 
 				FragmentTransaction tradeFragmentTransaction =  tradeFragmentManager.beginTransaction();
 				tradeFragmentTransaction.replace(R.id.fragment_container, tradeFragment,tradeFragment.getClass().getSimpleName());
@@ -1063,7 +1094,7 @@ public class ActiveGameFragment extends Fragment {
 				// sets renderer action to cancel
 				showState(false);
 				return result;
-			}
+		}
 
 		return true;
 	}
@@ -1118,9 +1149,9 @@ public class ActiveGameFragment extends Fragment {
 			chooseRobberPirate();
 		}
 		else if (board.isRobberPhase() && board.getCurRobberHex() != null){
-            rob();
-        }
-        else if (board.isPiratePhase() && board.getCurPirateHex() != null) {
+			rob();
+		}
+		else if (board.isPiratePhase() && board.getCurPirateHex() != null) {
 			pirate();
 		}
 
@@ -1190,9 +1221,9 @@ public class ActiveGameFragment extends Fragment {
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
-        else if(board.isPlaceMerchantPhase()){
-            action = Action.PLACE_MERCHANT;
-        }
+		else if(board.isPlaceMerchantPhase()){
+			action = Action.PLACE_MERCHANT;
+		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -1222,9 +1253,9 @@ public class ActiveGameFragment extends Fragment {
 		}
 
 		if(board.getTradeProposal() != null && board.isMyPseudoTurn() && board.isTradeProposedPhase()){
-            //We are in a phase of trade somehow
-            //check which phase we are in based on current Phase
-            // show trade proposal if its my turn to see the proposal
+			//We are in a phase of trade somehow
+			//check which phase we are in based on current Phase
+			// show trade proposal if its my turn to see the proposal
 			proposeTrade();
 //            String currentPlayerToProposeParticipantId = board.getPlayerById(board.getTradeProposal().getCurrentPlayerToProposeId()).getGooglePlayParticipantId();
 //            if (board.isTradeProposedPhase() && currentPlayerToProposeParticipantId.equals(myParticipantId)){
@@ -1232,7 +1263,7 @@ public class ActiveGameFragment extends Fragment {
 //            } else if(board.isTradeRespondedPhase() && board.getTradeProposal().getTradeCreatorPlayerId() == board.getPlayerOfCurrentGameTurn().getPlayerNumber()){
 //				resultsTrade();
 //			}
-        } else if(board.isTradeRespondedPhase()
+		} else if(board.isTradeRespondedPhase()
 				&& board.getPlayerById(board.getTradeProposal().getTradeCreatorPlayerId()).getGooglePlayParticipantId().equals(myParticipantId)){
 			resultsTrade();
 		}
@@ -1283,8 +1314,8 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
-        } else if (board.isPlaceMerchantPhase()) {
-            // do nothing
+		} else if (board.isPlaceMerchantPhase()) {
+			// do nothing
 		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS
 				&& action != Action.MOVE_DISPLACED_KNIGHT) {
 			// cancel the action
@@ -1295,18 +1326,18 @@ public class ActiveGameFragment extends Fragment {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
 
-            if (!player.getHand().isEmpty())
-            {
-                view.addButton(UIButton.ButtonType.PLAY_PROGRESS_CARD);
-            }
+			if (!player.getHand().isEmpty())
+			{
+				view.addButton(UIButton.ButtonType.PLAY_PROGRESS_CARD);
+			}
 
 			if (player.canBuildSomeRoad())
-            {
-                view.addButton(UIButton.ButtonType.BUILD_ROAD);
-            }
+			{
+				view.addButton(UIButton.ButtonType.BUILD_ROAD);
+			}
 
-            if (player.canBuildSomeShip())
-            {
+			if (player.canBuildSomeShip())
+			{
 				view.addButton(UIButton.ButtonType.BUILD_SHIP);
 			}
 
@@ -1315,16 +1346,16 @@ public class ActiveGameFragment extends Fragment {
 			}
 
 			if (player.canBuildSomeSettlement())
-            {
-                view.addButton(UIButton.ButtonType.BUILD_SETTLEMENT);
-            }
+			{
+				view.addButton(UIButton.ButtonType.BUILD_SETTLEMENT);
+			}
 
 			if (player.canBuildSomeCity())
-            {
-                view.addButton(UIButton.ButtonType.BUILD_CITY);
-            }
-            if (player.canBuildSomeCityWall())
-            {
+			{
+				view.addButton(UIButton.ButtonType.BUILD_CITY);
+			}
+			if (player.canBuildSomeCityWall())
+			{
 				view.addButton(ButtonType.BUILD_CITY_WALL);
 			}
 			if(player.canHireSomeKnight()) {
@@ -1332,6 +1363,14 @@ public class ActiveGameFragment extends Fragment {
 			}
 			if(player.canActivateSomeKnight()) {
 				view.addButton(ButtonType.ACTIVATE_KNIGHT);
+			}
+			//PROBLEM IS HERE
+			for (Vertex vertex : board.getVertices())
+			{
+				if(player.removeKnightFrom(vertex))
+				{
+					view.addButton(ButtonType.REMOVE_KNIGHT);
+				}
 			}
 			if(player.canPromoteSomeKnight()) {
 				view.addButton(ButtonType.PROMOTE_KNIGHT);
@@ -1357,7 +1396,7 @@ public class ActiveGameFragment extends Fragment {
 				.show();
 	}
 
-	private void popup(String title, String message) {
+	public void popup(String title, String message) {
 		final Builder infoDialog = new AlertDialog.Builder(getActivity());
 		infoDialog.setTitle(title);
 		infoDialog.setIcon(R.drawable.logo);
@@ -1392,7 +1431,7 @@ public class ActiveGameFragment extends Fragment {
 			String name = player.getPlayerName()
 					+ " ("
 					+ getActivity().getString(Player
-							.getColorStringResource(player.getColor())) + ")";
+					.getColorStringResource(player.getColor())) + ")";
 			String log = player.getActionLog();
 
 			if (message != "")
@@ -1417,29 +1456,29 @@ public class ActiveGameFragment extends Fragment {
 		}
 	}
 
-    private void proposeTrade() {
-        if (!board.isTradeProposedPhase()) {
-            Log.w(getActivity().getClass().getName(),
-                    "shouldn't be calling trade() out of trade phase");
-            return;
-        }
+	private void proposeTrade() {
+		if (!board.isTradeProposedPhase()) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling trade() out of trade phase");
+			return;
+		}
 
-        if (board.getTradeProposal() == null) {
-            Log.w(getActivity().getClass().getName(),
-                    "shouldn't be calling trade() without trade proposal set");
-            return;
-        }
+		if (board.getTradeProposal() == null) {
+			Log.w(getActivity().getClass().getName(),
+					"shouldn't be calling trade() without trade proposal set");
+			return;
+		}
 
-        TradeProposedFragment tradeProposedFragment = new TradeProposedFragment();
-        tradeProposedFragment.setBoard(board);
+		TradeProposedFragment tradeProposedFragment = new TradeProposedFragment();
+		tradeProposedFragment.setBoard(board);
 		tradeProposedFragment.setActiveGameFragment(this);
 
-        FragmentTransaction tradeFragmentTransaction =  getActivity().getSupportFragmentManager().beginTransaction();
-        tradeFragmentTransaction.replace(R.id.fragment_container, tradeProposedFragment,"PROPOSE_TRADE");
-        tradeFragmentTransaction.addToBackStack("PROPOSE_TRADE");
-        tradeFragmentTransaction.commit();
+		FragmentTransaction tradeFragmentTransaction =  getActivity().getSupportFragmentManager().beginTransaction();
+		tradeFragmentTransaction.replace(R.id.fragment_container, tradeProposedFragment,"PROPOSE_TRADE");
+		tradeFragmentTransaction.addToBackStack("PROPOSE_TRADE");
+		tradeFragmentTransaction.commit();
 
-    }
+	}
 
 	private void resultsTrade() {
 
@@ -1789,6 +1828,7 @@ public class ActiveGameFragment extends Fragment {
 
 	}
 
+	//should be private without static **testing
 	private void cantAct(Action action) {
 		Player player = board.getPlayerOfCurrentGameTurn();
 
@@ -1903,7 +1943,11 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case ACTIVATE_KNIGHT:
-					message = getString(R.string.game_nowhere_available_activate_knight);
+				message = getString(R.string.game_nowhere_available_activate_knight);
+				break;
+
+			case REMOVE_KNIGHT:
+				message = getString(R.string.game_remove_knight);
 				break;
 
 			case PROMOTE_KNIGHT:
@@ -2000,31 +2044,31 @@ public class ActiveGameFragment extends Fragment {
 											//play the card
 											switch (card) {
 												case MERCHANT:
-													playCrane();
+													playDeserter();
 													break;
 												case CRANE:
-													playCrane();
+													playDeserter();
 													break;
 												case ENGINEER:
-													playCrane();
+													playDeserter();
 													break;
 												case IRRIGIATION:
-													playCrane();
+													playDeserter();
 													break;
 												case MINING:
-													playCrane();
+													playDeserter();
 													break;
 												case DESERTER:
-													playCrane();
+													playDeserter();
 													break;
 												case WEDDING:
-													playCrane();
+													playDeserter();
 													break;
 												case WARLORD:
-													playCrane();
+													playDeserter();
 													break;
 												case MASTER_MERCHANT:
-													playCrane();
+													playDeserter();
 													break;
 												default:
 													break;
@@ -2046,9 +2090,8 @@ public class ActiveGameFragment extends Fragment {
 		builder.create().show();
 	}
 
-<<<<<<< HEAD
 	//Now working
-	 private void playCrane()
+	private void playCrane()
 	{
 		Player player = board.getPlayerOfCurrentGameTurn();
 		int[] playerCityImprovementLevels;
@@ -2084,11 +2127,10 @@ public class ActiveGameFragment extends Fragment {
 			// Remove the resources from the player
 			player.useResources(Resource.ResourceType.COIN,
 					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)]-1);
-
 		}
 		else
 		{
-			toast("You cannot improve your city");
+			popup("Message", getString(R.string.no_improve_city));
 			return;
 		}
 		toast("Played the crane");
@@ -2165,70 +2207,480 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	//Now working
-	 private void playEngineer()
-	 {
-		 Player player = board.getPlayerOfCurrentGameTurn();
+	private void playEngineer()
+	{
+		Player player = board.getPlayerOfCurrentGameTurn();
 
-		 if(player.getNumOwnedCityWalls() < Player.MAX_CITY_WALLS)
-		 {
-			 player.addResources(Resource.ResourceType.BRICK, 2, true);
-			 player.setFreeBuildUnit(2);
-			 renderer.setAction(Action.BUILD_CITY_WALL);
-			 setButtons(Action.BUILD_CITY_WALL);
-			 getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-					 + getActivity().getString(R.string.game_build_wall));
-			 getFragmentManager().popBackStack();
-			 player.appendAction(R.string.player_city_wall);
-		 }
-		 else
-		 {
-			toast("Cannot build a city wall");
-			 return;
+		if(player.getNumOwnedCityWalls() < Player.MAX_CITY_WALLS)
+		{
+			player.addResources(Resource.ResourceType.BRICK, 2, true);
+			player.setFreeBuildUnit(2);
+			renderer.setAction(Action.BUILD_CITY_WALL);
+			setButtons(Action.BUILD_CITY_WALL);
+			getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
+					+ getActivity().getString(R.string.game_build_wall));
+			getFragmentManager().popBackStack();
+			player.appendAction(R.string.player_city_wall);
+		}
+		else
+		{
+			popup("Message", getString(R.string.no_city_wall));
+			return;
+		}
+		toast("Played the engineer");
+	}
 
-		 }
-		 toast("Played the engineer");
-	 }
-
-	/**
-	//Not working yet
+	//Now working
 	private void playWarlord()
 	{
 		boolean canAct = false;
 		Player player = board.getPlayerOfCurrentGameTurn();
-		canAct = player.canActivateSomeKnight();
-		player.addResources(Resource.ResourceType.GRAIN, 1, true);
+		int temp = 0;
 
-		if (!canAct)
+		if(player.getResources(Resource.ResourceType.GRAIN) == 0)
+		{
+			player.addResources(Resource.ResourceType.GRAIN, 1, true);
+			temp++;
+		}
+
+		canAct = player.canActivateSomeKnight();
+
+		if (canAct == false)
 		{
 			cantAct(Action.ACTIVATE_KNIGHT);
 			return;
 		}
 		else
 		{
-			player.setFreeBuildUnit(3);
-			renderer.setAction(Action.ACTIVATE_KNIGHT);
-			setButtons(Action.ACTIVATE_KNIGHT);
-			getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-					+ getActivity().getString(R.string.game_activate_knight));
+			for(int i = 0; i < board.getVertices().length; i++)
+			{
+				Vertex vertex = board.getVertexById(i);
+				if(player.canActivateKnightAt(vertex))
+				{
+					player.activateFreeKnightAt(vertex);
+					continue;
+				}
+				else
+				{
+					continue;
+				}
+			}
 		}
+
+		if(temp > 0)
+		{
+			player.useResources(Resource.ResourceType.GRAIN, 1);
+		}
+
 		toast("Played the warlord");
-=======
+	}
+
+	//Now working
+	private void playMasterMerchant()
+	{
+		final Player player = board.getPlayerOfCurrentGameTurn();
+		int l = 0;
+		int j = 0;
+
+		for(int k = 0; k < board.getNumPlayers(); k++)
+		{
+			Player opponent = board.getPlayerById(k);
+			if(player == opponent)
+			{
+				continue;
+			}
+			else
+			{
+				if(opponent.getVictoryPoints() > player.getVictoryPoints())
+				{
+					l++;
+				}
+			}
+		}
+
+		if(l == 0)
+		{
+			popup("Message", getString(R.string.victory_points_opponent));
+			return;
+		}
+
+		//CharSequence[] playerList = new CharSequence[board.getNumPlayers()];
+		final Map<CharSequence,Integer> resourcePointerMap = new HashMap<>();
+
+		resourcePointerMap.put("Lumber", 0);
+		resourcePointerMap.put("Wool", 1);
+		resourcePointerMap.put("Grain", 2);
+		resourcePointerMap.put("Brick", 3);
+		resourcePointerMap.put("Ore", 4);
+		resourcePointerMap.put("Gold", 5);
+		resourcePointerMap.put("Paper", 6);
+		resourcePointerMap.put("Coin", 7);
+		resourcePointerMap.put("Cloth", 8);
+
+		final CharSequence[] items = new CharSequence[l+1];
+
+		for(int i = 0; i < board.getNumPlayers(); i++)
+		{
+			Player opponent = board.getPlayerById(i);
+
+			if(player == opponent)
+			{
+				continue;
+			}
+			else
+			{
+				if(opponent.getVictoryPoints() > player.getVictoryPoints())
+				{
+					items[j] = opponent.getPlayerName();
+					j++;
+				}
+				else
+				{
+					continue;
+				}
+			}
+		}
+
+		items[j] = getString(R.string.game_cancel_str);
+
+		final CharSequence[] newList = new CharSequence[l+1];
+		for(int i = 0; i < l+1; i++)
+		{
+			newList[i] = items[i];
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_choose_victory_opponent));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item)
+			{
+				for(int i = 0; i < newList.length-1; i++) {
+					int lumberCount;
+					int woolCount;
+					int grainCount;
+					int brickCount;
+					int oreCount;
+					int goldCount;
+					int paperCount;
+					int coinCount;
+					int clothCount;
+					int resourceIndex = 0;
+
+					if (item == i)
+					{
+						dialog.dismiss();
+						final Player player1 = board.getPlayerByName(newList[i]);
+						final List<String> currentlyContainedResources = new ArrayList<>();
+
+						woolCount = player1.getResources(Resource.ResourceType.WOOL);
+						if(woolCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Wool: " + player1.getResources(Resource.ResourceType.WOOL));
+						}
+						lumberCount = player1.getResources(Resource.ResourceType.LUMBER);
+						if(lumberCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Lumber: " + player1.getResources(Resource.ResourceType.LUMBER));
+						}
+						brickCount = player1.getResources(Resource.ResourceType.BRICK);
+						if(brickCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Brick: " + player1.getResources(Resource.ResourceType.BRICK));
+						}
+						oreCount = player1.getResources(Resource.ResourceType.ORE);
+						if(oreCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Ore: " + player1.getResources(Resource.ResourceType.ORE));
+						}
+						goldCount = player1.getResources(Resource.ResourceType.GOLD);
+						if(goldCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Gold: " + player1.getResources(Resource.ResourceType.GOLD));
+						}
+						grainCount = player1.getResources(Resource.ResourceType.GRAIN);
+						if(grainCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Grain: " + player1.getResources(Resource.ResourceType.GRAIN));
+						}
+						paperCount = player1.getResources(Resource.ResourceType.PAPER);
+						if(paperCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Paper: " + player1.getResources(Resource.ResourceType.PAPER));
+						}
+						coinCount = player1.getResources(Resource.ResourceType.COIN);
+						if(coinCount != 0) {
+							currentlyContainedResources.add(resourceIndex++, "Coin: " + player1.getResources(Resource.ResourceType.COIN));
+						}
+						clothCount = player1.getResources(Resource.ResourceType.CLOTH);
+						if(clothCount != 0) {
+							currentlyContainedResources.add(resourceIndex, "Cloth: " + player1.getResources(Resource.ResourceType.CLOTH));
+						}
+
+						CharSequence[] myCount = new CharSequence[currentlyContainedResources.size()];
+						myCount = currentlyContainedResources.toArray(myCount);
+
+						AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+						builder.setTitle(getString(R.string.game_choose_resource));
+						builder.setItems(myCount, new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog, int item) {
+
+								if(currentlyContainedResources.get(item).startsWith("Ore"))
+								{
+									player.addResources(Resource.ResourceType.ORE, 1, false);
+									player1.useResources(Resource.ResourceType.ORE, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Lumber"))
+								{
+									player.addResources(Resource.ResourceType.LUMBER, 1, false);
+									player1.useResources(Resource.ResourceType.LUMBER, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Wool"))
+								{
+									player.addResources(Resource.ResourceType.WOOL, 1, false);
+									player1.useResources(Resource.ResourceType.WOOL, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Grain"))
+								{
+									player.addResources(Resource.ResourceType.GRAIN, 1, false);
+									player1.useResources(Resource.ResourceType.GRAIN, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Brick"))
+								{
+									player.addResources(Resource.ResourceType.BRICK, 1, false);
+									player1.useResources(Resource.ResourceType.BRICK, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Gold"))
+								{
+									player.addResources(Resource.ResourceType.GOLD, 1, false);
+									player1.useResources(Resource.ResourceType.GOLD, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Paper"))
+								{
+									player.addResources(Resource.ResourceType.PAPER, 1, false);
+									player1.useResources(Resource.ResourceType.PAPER, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Coin"))
+								{
+									player.addResources(Resource.ResourceType.COIN, 1, false);
+									player1.useResources(Resource.ResourceType.COIN, 1);
+								}
+								if(currentlyContainedResources.get(item).startsWith("Cloth"))
+								{
+									player.addResources(Resource.ResourceType.CLOTH, 1, false);
+									player1.useResources(Resource.ResourceType.CLOTH, 1);
+								}
+
+								dialog.dismiss();
+
+
+								int woolCount;
+								int grainCount;
+								int brickCount;
+								int oreCount;
+								int goldCount;
+								int paperCount;
+								int coinCount;
+								int clothCount;
+								int lumberCount;
+
+								final List<String> currentlyContainedResources = new ArrayList<>();
+
+								woolCount = player1.getResources(Resource.ResourceType.WOOL);
+								if(woolCount != 0) {
+									currentlyContainedResources.add("Wool: " + player1.getResources(Resource.ResourceType.WOOL));
+								}
+								lumberCount = player1.getResources(Resource.ResourceType.LUMBER);
+								if(lumberCount != 0) {
+									currentlyContainedResources.add("Lumber: " + player1.getResources(Resource.ResourceType.LUMBER));
+								}
+								brickCount = player1.getResources(Resource.ResourceType.BRICK);
+								if(brickCount != 0) {
+									currentlyContainedResources.add("Brick: " + player1.getResources(Resource.ResourceType.BRICK));
+								}
+								oreCount = player1.getResources(Resource.ResourceType.ORE);
+								if(oreCount != 0) {
+									currentlyContainedResources.add("Ore: " + player1.getResources(Resource.ResourceType.ORE));
+								}
+								goldCount = player1.getResources(Resource.ResourceType.GOLD);
+								if(goldCount != 0) {
+									currentlyContainedResources.add("Gold: " + player1.getResources(Resource.ResourceType.GOLD));
+								}
+								grainCount = player1.getResources(Resource.ResourceType.GRAIN);
+								if(grainCount != 0) {
+									currentlyContainedResources.add("Grain: " + player1.getResources(Resource.ResourceType.GRAIN));
+								}
+								paperCount = player1.getResources(Resource.ResourceType.PAPER);
+								if(paperCount != 0) {
+									currentlyContainedResources.add("Paper: " + player1.getResources(Resource.ResourceType.PAPER));
+								}
+								coinCount = player1.getResources(Resource.ResourceType.COIN);
+								if(coinCount != 0) {
+									currentlyContainedResources.add("Coin: " + player1.getResources(Resource.ResourceType.COIN));
+								}
+								clothCount = player1.getResources(Resource.ResourceType.CLOTH);
+								if(clothCount != 0) {
+									currentlyContainedResources.add("Cloth: " + player1.getResources(Resource.ResourceType.CLOTH));
+								}
+
+								CharSequence[] myCount = new CharSequence[currentlyContainedResources.size()];
+								myCount = currentlyContainedResources.toArray(myCount);
+
+								AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+								builder.setTitle(getString(R.string.game_choose_resource2));
+								builder.setItems(myCount, new DialogInterface.OnClickListener() {
+
+									@Override
+									public void onClick(DialogInterface dialog, int item) {
+
+										if(currentlyContainedResources.get(item).startsWith("Ore"))
+										{
+											player.addResources(Resource.ResourceType.ORE, 1, false);
+											player1.useResources(Resource.ResourceType.ORE, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Lumber"))
+										{
+											player.addResources(Resource.ResourceType.LUMBER, 1, false);
+											player1.useResources(Resource.ResourceType.LUMBER, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Wool"))
+										{
+											player.addResources(Resource.ResourceType.WOOL, 1, false);
+											player1.useResources(Resource.ResourceType.WOOL, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Grain"))
+										{
+											player.addResources(Resource.ResourceType.GRAIN, 1, false);
+											player1.useResources(Resource.ResourceType.GRAIN, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Brick"))
+										{
+											player.addResources(Resource.ResourceType.BRICK, 1, false);
+											player1.useResources(Resource.ResourceType.BRICK, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Gold"))
+										{
+											player.addResources(Resource.ResourceType.GOLD, 1, false);
+											player1.useResources(Resource.ResourceType.GOLD, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Paper"))
+										{
+											player.addResources(Resource.ResourceType.PAPER, 1, false);
+											player1.useResources(Resource.ResourceType.PAPER, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Coin"))
+										{
+											player.addResources(Resource.ResourceType.COIN, 1, false);
+											player1.useResources(Resource.ResourceType.COIN, 1);
+										}
+										if(currentlyContainedResources.get(item).startsWith("Cloth"))
+										{
+											player.addResources(Resource.ResourceType.CLOTH, 1, false);
+											player1.useResources(Resource.ResourceType.CLOTH, 1);
+										}
+
+										dialog.dismiss();
+										popup("Message", getString(R.string.game_chosen_resources));
+									}
+								});
+								builder.create().show();
+							}
+						});
+						builder.create().show();
+					}
+				}
+			}
+		});
+		builder.create().show();
+
+		toast("Played the master merchant");
+	}
+
 	private void playMerchant(){
 		//@TODO
 		//add merchant placement logic
 		toast("Played the merchant");
-        getActivity().setTitle("Place Merchant");
-        board.setPhase(Board.Phase.PLACE_MERCHANT);
+		getActivity().setTitle("Place Merchant");
+		board.setPhase(Board.Phase.PLACE_MERCHANT);
 		showState(true);
->>>>>>> master
 	}
+
+	//Working on this
+	private void playDeserter()
+	{
+		final Player currentPlayer = board.getPlayerOfCurrentGameTurn();
+		int l = 0;
+
+		final List<String> playersWithKnightsList = new ArrayList<>();
+		final Map<Integer, String> playersWithKnights = new HashMap<>();
+
+		for(int k = 0; k < board.getNumPlayers(); k++)
+		{
+			Player opponent = board.getPlayerById(k);
+			if(currentPlayer == opponent)
+			{
+				continue;
+			}
+			else
+			{
+				if(opponent.getTotalNumOwnedKnights() > 0)
+				{
+					playersWithKnights.put(opponent.getPlayerNumber(), opponent.getPlayerName());
+					l++;
+				}
+			}
+		}
+
+		if(playersWithKnights.size() == 0)
+		{
+			popup("Message", "None of your opponents have removeable knights");
+			return;
+		}
+
+		final int[] newItem = new int[l];
+		int k = 0;
+
+		for(int i = 0; i < board.getNumPlayers(); i++)
+		{
+			Player opponent = board.getPlayerById(i);
+			if(currentPlayer == opponent)
+			{
+				continue;
+			}
+			else
+			{
+				if(opponent.getTotalNumOwnedKnights() > 0)
+				{
+					newItem[k] = opponent.getPlayerNumber();
+					k++;
+				}
+			}
+		}
+
+		playersWithKnightsList.addAll(playersWithKnights.values());
+		CharSequence[] items = new CharSequence[playersWithKnightsList.size()];
+		items = playersWithKnightsList.toArray(items);
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_confirm_choose_opponent));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item)
+			{
+						board.setPlayerNo(2);
+						board.setPhase(Board.Phase.REMOVE_KNIGHT);
+						currentPlayer.gotResourcesSinceLastTurn = false;
+						//board.setReturnPhase(Board.Phase.PROGRESS_CARD_STEP_2);
+						board.nextPhase();
+						showState(true);
+
+			}
+		});
+		builder.create().show();
+
+		toast("Played the deserter");
+	}
+
+	/**
+	 private void playWedding()
+	 {
+	 toast("Played the wedding");
+	 }
 	 **/
 
-	 /**
-	 private void playDeserter(){toast("Played the deserter");}
-	 private void playWedding() {toast("Played the wedding");}
-	 private void playMasterMerchant(){toast("Played the master merchant");}
-	 **/
 
 	private void confirmDisplaceKnightDialog(Vertex vertex) {
 
