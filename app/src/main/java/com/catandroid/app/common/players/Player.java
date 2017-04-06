@@ -60,7 +60,8 @@ public class Player {
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
-	private int[] cityImprovementLevels = {0, 0, 0};
+	//
+	private int[] cityImprovementLevels = {3, 3, 3};
 	private boolean[] harbors;
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
@@ -72,7 +73,10 @@ public class Player {
 
 	protected transient Board board;
 
+
+	//Progress Cards
 	private boolean isMerchantFleetActive = false;
+	private boolean isIntrigue = false;
 
 	public enum Color {
 		RED, BLUE, GREEN, YELLOW, SELECTING, NONE
@@ -1525,7 +1529,9 @@ public class Player {
 		{
 			return false;
 		}
-
+		if(isIntrigue) {
+			return vertex.canDisplaceKnightFromHere(this);
+		}
 		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
 
 		if(!isMyKnight(currentlyMovingKnight)) {
@@ -2180,6 +2186,14 @@ public class Player {
 
 	public boolean getIsMerchantFleetActive() {
 		return isMerchantFleetActive;
+	}
+
+	public void setIsIntrigue(boolean isActive) {
+		isIntrigue = isActive;
+	}
+
+	public boolean getIsIntrigue() {
+		return isIntrigue;
 	}
 
 //TODO: see how we can use this similar code for progress cards

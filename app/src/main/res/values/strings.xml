@@ -313,12 +313,17 @@
 	<string name="intrigue">Intrigue</string>
 	<string name="master_merchant">Master Merchant</string>
 	<string name="alchemist">Alchemist</string>
+	<string name="merchant_fleet">Merchant Fleet</string>
 
 	<!-- Progress Card Description -->
+	<string name="alchemist_description">This is the only progress card that you can play before you roll the dice. It allows you to choose the results of both production dice. Then, roll the event die as normal, and resolve the event.</string>
 	<string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
 	<string name="bishop_description">String holder</string>
-	<string name="commercial_harbor_description">String holder</string>
-	<string name="spy_description">String Holder</string>
+	<string name="commercial_harbor_description">You may force each of the other players to make a special trade. You may offer each opponent any 1 resource card from your hand. He must exchange it for any 1 commodity card from his hand, if he has any. </string>
+	<string name="spy_description">Look at another player\'s progress cards. You may choose 1 card and take and add it to your hand.</string>
+	<string name="intrigue_description">You may displace an opponent\'s knight. The knight must be on an intersection connected to at least one of your roads.</string>
+	<string name="saboteur_description">When you play this card, each player who has as many or more victory points must discard half (round down) of his cards to the bank (resource and/or commodity cards)</string>
+	<string name="merchant_fleet_description">You may use one resource or commodity of your choice to make any number of 2:1 trades with the supply during the turn that you play the card.</string>
 
 	<!-- Progress Card Titles and Default Headers -->
 	<string name="commercial_harbor_trade_title">Pick the resource to trade with each player</string>

@@ -33,6 +33,8 @@ public class ProgressCard extends InventoryItem {
                 return R.string.master_merchant;
             case ALCHEMIST:
                 return R.string.alchemist;
+            case MERCHANT_FLEET:
+                return R.string.merchant_fleet;
             default:
                 return R.string.empty_string;
         }

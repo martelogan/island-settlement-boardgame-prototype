@@ -545,6 +545,12 @@ public class ActiveGameFragment extends Fragment {
 							showState(true);
 						}
 						break;
+					case PLAY_INTRIGUE:
+						if(vertex.getCurUnitType() == Vertex.KNIGHT
+								&& vertex.getOwnerPlayer() != player
+								&& player.canDisplaceKnightAt(vertex)) {
+
+						}
 				}
 		}
 	}
@@ -2193,6 +2199,8 @@ public class ActiveGameFragment extends Fragment {
 
 	private void playIntrigue(){
 		//@TODO
+		Player player = board.getPlayerOfCurrentGameTurn();
+		player.setIsIntrigue(true);
 		//add merchant placement logic
 		toast("Played the Intrigue");
 	}

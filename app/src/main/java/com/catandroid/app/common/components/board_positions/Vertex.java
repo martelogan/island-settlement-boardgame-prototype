@@ -1133,7 +1133,21 @@ public class Vertex {
 		return attackerKnight.canDisplace(getPlacedKnight());
 	}
 
+	public boolean canDisplaceKnightFromHere(Player attackerPlayer) {
+		if (attackerPlayer == null) {
+			return false;
+		}
 
+		if (attackerPlayer != board.getPlayerOfCurrentGameTurn()) {
+			return false;
+		}
+
+		if(!(curUnitType == KNIGHT) || (ownerPlayerNumber == -1)) {
+			return false;
+		}
+
+		return true;
+	}
 	/**
 	 * Wrapper of canBuild(player, setup) where setup is false by default
 	 *
