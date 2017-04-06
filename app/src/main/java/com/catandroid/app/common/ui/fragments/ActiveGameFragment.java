@@ -247,10 +247,24 @@ public class ActiveGameFragment extends Fragment {
 							Player currentPlayer = board.getPlayerFromParticipantId(myParticipantId);
 							if (item == 0) {
 								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.TRADE));
-							} else if(item == 1){
-								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
-							} else if(item == 2){
-								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+							}
+							else if(item == 1){
+								ProgressCard.ProgressCardType progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE);
+								if (progressCard == ProgressCard.ProgressCardType.PRINTER){
+									(board.getPlayerOfCurrentGameTurn()).incProgressCardVictoryPointsCount(1);
+									toast("Played printer");
+								}
+
+								else currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+							}
+							else if(item == 2){
+								ProgressCard.ProgressCardType progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE);
+								if (progressCard == ProgressCard.ProgressCardType.CONSTITUTION){
+									(board.getPlayerOfCurrentGameTurn()).incProgressCardVictoryPointsCount(1);
+									toast("Played Constitution");
+								}
+
+								else currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
 							}
 
 							//pass turn
@@ -2221,7 +2235,7 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else
 		{
-			board.setPhase(Board.Phase.PROGRESS_CARD_STEP_1);
+			board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
 			renderer.setAction(Action.BUILD_CITY);
 			setButtons(Action.BUILD_CITY);
 			getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
@@ -2249,19 +2263,17 @@ public class ActiveGameFragment extends Fragment {
 		builder.setTitle(getString(R.string.game_play_trade_monopoly));
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
+				dialog.dismiss();
 				Player current = board.getPlayerOfCurrentGameTurn();
 				Player player = null;
 				boolean stoleSomething = false;
 				if (item == coin) {
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[7],1);
 				}
 				else if (item == paper){
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[6],1);
 				}
 				else if (item == cloth){
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[8],1);
 				}
 				if (stoleSomething == false) {
@@ -2272,6 +2284,9 @@ public class ActiveGameFragment extends Fragment {
 
 			}
 		});
+
+		builder.setCancelable(false);
+		builder.create().show();
 
 		toast("Played Trade Monopoly");
 	}
@@ -2295,28 +2310,24 @@ public class ActiveGameFragment extends Fragment {
 		builder.setTitle(getString(R.string.game_play_resource_monopoly));
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item) {
+				dialog.dismiss();
 				Player current = board.getPlayerOfCurrentGameTurn();
 				Player player = null;
 				boolean stoleSomething = false;
 
 				if (item == ore) {
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[4],2);
 				}
 				else if (item == grain){
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[2],2);
 				}
 				else if (item == wool){
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[1],2);
 				}
 				else if (item == lumber){
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[0],2);
 				}
 				else if (item == brick){
-					dialog.dismiss();
 					stoleSomething = current.stealResourceNumber(Resource.ResourceType.values()[3],2);
 				}
 
@@ -2328,6 +2339,8 @@ public class ActiveGameFragment extends Fragment {
 
 			}
 		});
+		builder.setCancelable(false);
+		builder.create().show();
 
 
 		toast("Played Resource Monopoly");

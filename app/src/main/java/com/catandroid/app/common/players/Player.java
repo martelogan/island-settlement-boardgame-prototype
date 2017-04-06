@@ -500,7 +500,7 @@ public class Player {
 		}
 
 		boolean setup = board.isSetupPhase();
-		boolean playedMedicine = board.isProgressPhase1();
+		boolean playedMedicine = board.isProgressPhase2();
 
 		// check resources based on type we want to build
 		if (unitType == Vertex.SETTLEMENT) {
