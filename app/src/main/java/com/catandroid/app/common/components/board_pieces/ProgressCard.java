@@ -21,6 +21,18 @@ public class ProgressCard extends InventoryItem {
                 return R.string.merchant;
             case BISHOP:
                 return R.string.bishop;
+            case SABOTEUR:
+                return R.string.saboteur;
+            case COMMERCIAL_HARBOR:
+                return R.string.commercial_harbor;
+            case SPY:
+                return R.string.spy;
+            case INTRIGUE:
+                return R.string.intrigue;
+            case MASTER_MERCHANT:
+                return R.string.master_merchant;
+            case ALCHEMIST:
+                return R.string.alchemist;
             default:
                 return R.string.empty_string;
         }
@@ -38,6 +50,9 @@ public class ProgressCard extends InventoryItem {
                 return R.string.merchant_description;
             case BISHOP:
                 return R.string.bishop_description;
+            case COMMERCIAL_HARBOR:
+                return R.string.commercial_harbor_description;
+            case INTRIGUE:
             default:
                 return R.string.empty_string;
         }

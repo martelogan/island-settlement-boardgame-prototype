@@ -72,6 +72,8 @@ public class Player {
 
 	protected transient Board board;
 
+	private boolean isMerchantFleetActive = false;
+
 	public enum Color {
 		RED, BLUE, GREEN, YELLOW, SELECTING, NONE
 	}
@@ -1571,6 +1573,19 @@ public class Player {
 	}
 
 	/**
+	 * Relies on the ordering of resources
+	 *
+	 * @return sum of player's main resources only (lumber, wheat, brick, wool, ore)
+	 */
+	public int getBaseGameResourceCount() {
+		int sum = 0;
+		for (int i = 0; i < 4; i++) {
+			sum += countPerResource[i];
+		}
+		return sum;
+	}
+
+	/**
 	 * Add resources to the player
 	 *  @param resourceType
 	 *            resourceType of resources to add
@@ -1643,8 +1658,33 @@ public class Player {
 			default:
 				break;
 		}
+	}
 
-
+	public void decreaseResources(ResourceType resourceType) {
+		if(countPerResource[resourceType.ordinal()] > 0) {
+			countPerResource[resourceType.ordinal()] -= 1;
+		/*
+		switch(resourceType) {
+			case LUMBER:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case WOOL:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case GRAIN:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case BRICK:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case ORE:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case GOLD:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case CLOTH:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case COIN:
+				countPerResource[resourceType.ordinal()] -= 1;
+			case PAPER:
+				countPerResource[resourceType.ordinal()] -= 1;
+				*/
+		}
 	}
 
 	/**
@@ -2090,6 +2130,14 @@ public class Player {
 
 	}
 
+	public void setIsMerchantFleetActive(boolean isActive) {
+		isMerchantFleetActive = isActive;
+	}
+
+	public boolean getIsMerchantFleetActive() {
+		return isMerchantFleetActive;
+	}
+
 //TODO: see how we can use this similar code for progress cards
 
 //	/**
@@ -2318,12 +2366,11 @@ public class Player {
 		for (int i = 0; i < Resource.RESOURCE_TYPES.length; i++) {
 
 			// check for specific 2:1 harbor
-			if (hasHarbor(Resource.RESOURCE_TYPES[i])
+			if ((hasHarbor(Resource.RESOURCE_TYPES[i]) || isMerchantFleetActive)
 					&& getResources(Resource.RESOURCE_TYPES[i]) >= 2 && trade[i] >= 2)
 			{
 				return true;
 			}
-
 			// deduct from number of resource cards needed
 			int number = getResources(Resource.RESOURCE_TYPES[i]);
 			if (number >= trade[i])
@@ -2355,7 +2402,7 @@ public class Player {
 		for (int i = 0; i < trade.length; i++) {
 
 			// check for specific 2:1 harbor
-			if (hasHarbor(Resource.RESOURCE_TYPES[i])
+			if ((hasHarbor(Resource.RESOURCE_TYPES[i]) || isMerchantFleetActive)
 					&& getResources(Resource.RESOURCE_TYPES[i]) >= 2 && trade[i] >= 2) {
 				addResources(resourceType, 1, false);
 				useResources(Resource.RESOURCE_TYPES[i], 2);

@@ -104,7 +104,8 @@ public class TradeRequestFragment extends Fragment {
 			int ratio = player.getTradeValue();
 			//Everyone has the gold discount by default
 			if (player.hasHarbor(Resource.RESOURCE_TYPES[i]) ||
-					Resource.RESOURCE_TYPES[i] == Resource.ResourceType.GOLD ){
+					Resource.RESOURCE_TYPES[i] == Resource.ResourceType.GOLD ||
+					board.getIsMerchantFleetActive()){
 				ratio = 2;
 			}
 

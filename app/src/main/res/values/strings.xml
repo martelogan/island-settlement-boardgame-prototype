@@ -303,9 +303,20 @@
 	<!-- Progress Cards -->
 	<string name="merchant">Merchant</string>
 	<string name="bishop">Bishop</string>
+	<string name="saboteur">Saboteur</string>
+	<string name="commercial_harbor">Commercial Harbor</string>
+	<string name="spy">Spy</string>
+	<string name="intrigue">Intrigue</string>
+	<string name="master_merchant">Master Merchant</string>
+	<string name="alchemist">Alchemist</string>
 
 	<!-- Progress Card Description -->
 	<string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
 	<string name="bishop_description">String holder</string>
+	<string name="commercial_harbor_description">String holder</string>
+	<string name="spy_description">String Holder</string>
+
+	<!-- Progress Card Titles and Default Headers -->
+	<string name="commercial_harbor_trade_title">Pick the resource to trade with each player</string>
 
 </resources>

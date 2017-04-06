@@ -180,6 +180,10 @@ public class Board {
 		this.activeGameFragment = activeGameFragment;
 	}
 
+	public void setIsMerchantFleetActive(boolean isActive) {
+		isMerchantFleetActive = isActive;
+	}
+
 	private void commonInit() {
 		curPlayerNumber = 0;
 		gameRoundNumber = 1;
@@ -252,6 +256,10 @@ public class Board {
 
 	public Stack<Integer> getPlayerIdsYetToAct() {
 		return playerIdsYetToAct;
+	}
+
+	public void addPlayerIdsYetToAct(int playerId) {
+		playerIdsYetToAct.add(playerId);
 	}
 	/**
 	 * Get a reference to the player for current game turn
@@ -349,6 +357,12 @@ public class Board {
 		return getVertexById(tempVertexIdMemory);
 	}
 
+	private boolean isMerchantFleetActive = false;
+
+	public boolean getIsMerchantFleetActive() {
+		return isMerchantFleetActive;
+	}
+
 	/**
 	 * Distribute resources for a given dice roll number
 	 *  @param diceRollNumber1
@@ -358,8 +372,8 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = 7;
-//		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
+		//int diceRollNumber = 7;
+		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
@@ -625,7 +639,7 @@ public class Board {
 				break;
 			case PROGRESS_CARD_STEP_2:
 				phase = returnPhase;
-				toast("Return phase");
+				//toast("Return phase");
 				break;
 			case MOVING_ROBBER:
 				phase = returnPhase;
@@ -1623,20 +1637,20 @@ public class Board {
 		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
 		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		scienceDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
 
 
 		//@TODO Implement all these progress cards

@@ -54,6 +54,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
@@ -87,6 +91,11 @@ public class ActiveGameFragment extends Fragment {
 	public String myParticipantId;
 
 	public ActiveGameFragment(){ }
+
+	//Dice Rolls for Alchemist
+	private boolean playedIsAlchemist = false;
+	private int roll1;
+	private int roll2;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -129,11 +138,19 @@ public class ActiveGameFragment extends Fragment {
 				if (board.hasPlayersYetToAct()) {
 					//show popup if we are the ones that should discard
 					if(board.checkNextPlayerToAct().getGooglePlayParticipantId().equals(myParticipantId)
-							&& board.getPhase() == Board.Phase.CHOOSE_ROBBER_PIRATE){
+							&& (board.getPhase() == Board.Phase.CHOOSE_ROBBER_PIRATE || board.isRobberPhase())){
 						Message discard = new Message();
 						discard.what = DISCARD_MESSAGE;
 						turnHandler.sendMessage(discard);
 					}
+
+					if(board.checkNextPlayerToAct().getGooglePlayParticipantId().equals(myParticipantId)
+						&& board.getPhase() == Board.Phase.PROGRESS_CARD_STEP_2) {
+						//TODO
+						//fill up a method through which player picks progress card.
+
+					}
+
 					//show card choose if defended catan
 					Player p = board.checkNextPlayerToAct();
 					if(p.getGooglePlayParticipantId().equals(myParticipantId)
@@ -687,9 +704,14 @@ public class ActiveGameFragment extends Fragment {
 				// enter build phase
 				board.nextPhase();
 
-				int roll1 = (int) (Math.random() * 6) + 1;
-				int roll2 = (int) (Math.random() * 6) + 1;
-				int event = (int) (Math.random() * 6) + 1;
+				if(!playedIsAlchemist) {
+					roll1 = (int) (Math.random() * 6) + 1;
+					roll2 = (int) (Math.random() * 6) + 1;
+				} else {
+					playedIsAlchemist = false;
+				}
+				int event = (int) (
+						Math.random() * 6) + 1;
 				int roll = roll1 + roll2;
 				board.getPlayerOfCurrentGameTurn().rollDice(roll1, roll2 , event);
 				if(!board.isMyPseudoTurn()){
@@ -709,7 +731,8 @@ public class ActiveGameFragment extends Fragment {
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 					builder.setTitle("Aqueduct: Choose your free resource!");
-					builder.setItems(items, new DialogInterface.OnClickListener() {
+					builder.setItems(items,
+							new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int item) {
 							board.getPlayerOfCurrentGameTurn().addResources(Resource.RESOURCE_TYPES[item], 1, false);
 						}
@@ -834,7 +857,11 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case PLAY_PROGRESS_CARD:
-				progressCardDialog();
+				if (board.isProduction()) {
+					progressCardDialog(true);
+				} else {
+					progressCardDialog(false);
+				}
 
 				break;
 
@@ -1024,6 +1051,11 @@ public class ActiveGameFragment extends Fragment {
 				break;
 
 			case END_TURN:
+				if(board.getIsMerchantFleetActive()
+						&& player.getIsMerchantFleetActive()) {
+					board.setIsMerchantFleetActive(false);
+					player.setIsMerchantFleetActive(false);
+				}
 				player.gotResourcesSinceLastTurn = false;
 				board.nextPhase();
 				showState(true);
@@ -1256,6 +1288,19 @@ public class ActiveGameFragment extends Fragment {
 			view.addButton(ButtonType.CANCEL_ACTION);
 		} else if (board.isProduction()) {
 			view.addButton(ButtonType.DICE_ROLL);
+
+			final Player me = board.getPlayerOfCurrentGameTurn();
+			final Vector<ProgressCard.ProgressCardType> cards = me.getHand();
+			String cardType = "";
+			for (int i = 0; i < cards.size(); i++) {
+				ProgressCard.ProgressCardType type = cards.get(i);
+				cardType = getString(ProgressCard.getCardStringResource(type));
+
+				if (cardType.equals(getString(R.string.alchemist))) {
+					view.addButton(ButtonType.PLAY_PROGRESS_CARD);
+					break;
+				}
+			}
 		} else if (board.isPlayerTurnPhase()) {
 			view.addButton(ButtonType.TRADE);
 			view.addButton(UIButton.ButtonType.END_TURN);
@@ -1524,7 +1569,7 @@ public class ActiveGameFragment extends Fragment {
 					"shouldn't be calling chooseRobberPirate() out of choice phase");
 			return;
 		}
-
+/*
 		Hexagon robbing = board.getCurRobberHex();
 		if (robbing == null) {
 			Log.w(getActivity().getClass().getName(),
@@ -1540,7 +1585,7 @@ public class ActiveGameFragment extends Fragment {
 			showState(false);
 			return;
 		}
-
+*/
 		CharSequence[] items = new CharSequence[2];
 		items[0] = getString(R.string.game_choose_robber);
 		items[1] = getString(R.string.game_choose_pirate);
@@ -1914,17 +1959,26 @@ public class ActiveGameFragment extends Fragment {
 		showState(false);
 	}
 
-	private void progressCardDialog() {
+	private void progressCardDialog(boolean hasAlchemist) {
 		final Player me = board.getPlayerOfCurrentGameTurn();
 		final Vector<ProgressCard.ProgressCardType> cards = me.getHand();
 
 		CharSequence[] list = new CharSequence[cards.size()+1];
 		int index = 0;
+		if(hasAlchemist) {
+			String cardType = "";
+			for (int i = 0; i < cards.size(); i++) {
+				ProgressCard.ProgressCardType type = cards.get(i);
+				cardType = getString(ProgressCard.getCardStringResource(type));
+				if(cardType.equals(getString(R.string.alchemist)));
+				list[index++] = cardType;
+			}
+		} else {
+			for (int i = 0; i < cards.size(); i++) {
+				ProgressCard.ProgressCardType type = cards.get(i);
 
-		for (int i = 0; i < cards.size(); i++) {
-			ProgressCard.ProgressCardType type = cards.get(i);
-
-			list[index++] = getString(ProgressCard.getCardStringResource(type));
+				list[index++] = getString(ProgressCard.getCardStringResource(type));
+			}
 		}
 
 		list[index++] = getString(R.string.game_cancel_str);
@@ -2053,15 +2107,52 @@ public class ActiveGameFragment extends Fragment {
 	private void playAlchemist(){
 		//@TODO
 		//add merchant placement logic
+		playedIsAlchemist = true;
+		final CharSequence[] items = new CharSequence[6];
+		for (int i = 0; i < 6; i++) {
+			items[i] = Integer.toString(i+1);
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("Choose the number for Dice 1");
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+				dialog.dismiss();
+				roll1 = item + 1;
+
+				AlertDialog.Builder secondBuilder = new AlertDialog.Builder(getActivity());
+				secondBuilder.setTitle("Choose the number for Dice 2");
+				secondBuilder.setItems(items, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int item) {
+						dialog.dismiss();
+						roll2 = item + 1;
+
+						buttonPress(ButtonType.DICE_ROLL);
+
+					}
+				});
+				secondBuilder.setCancelable(false);
+				secondBuilder.create().show();
+			}
+		});
+
+		builder.setCancelable(false);
+		builder.create().show();
+
 
 		toast("Played the Alchemist");
 	}
 
 	private void playBishop(){
 		//@TODO
-		//add merchant placement logic
+		//add bishop placement logic
 		board.setReturnPhase(board.getPhase());
 		board.startRobberPhase();
+		showState(false);
+		/*while(board.getCurRobberHex() == null) {
+
+		}
+		rob();*/
 		showState(false);
 		board.nextPhase();
 		toast("Played the Bishop");
@@ -2081,6 +2172,8 @@ public class ActiveGameFragment extends Fragment {
 	private void playSaboteur(){
 		//@TODO
 		//add Saboteur placement logic
+		board.setReturnPhase(board.getPhase());
+		board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
 		Player currentPlayer = board.getPlayerOfCurrentGameTurn();
 		Player opponentPlayer;
 		int currentPlayerVictoryPoints = currentPlayer.getVictoryPoints();
@@ -2112,21 +2205,214 @@ public class ActiveGameFragment extends Fragment {
 
 		// Something to consider about how to pass the turn around.
 		if(!board.getPlayerIdsYetToAct().isEmpty()) {
-			mListener.endTurn(
-					board.getPlayerById(currentPlayer.getPlayerNumber()).getGooglePlayParticipantId(), false);
+			mListener.endTurn(board.getPlayerById(currentPlayer.getPlayerNumber()).getGooglePlayParticipantId(), false);
 		}
+
+		board.nextPhase();
 
 	}
 
 	private void playSpy(){
 		//@TODO
 		//add merchant placement logic
+
+		final Player current = board.getPlayerOfCurrentGameTurn();
+		List<String> playerList = new ArrayList<>();
+
+		final Map<CharSequence, Integer> playerNameToPlayerId = new HashMap<>();
+
+
+		for (int i = 0; i< board.getNumPlayers(); i++) {
+			Player player = board.getPlayerById(i);
+			if (player == current) {
+				continue;
+			}
+
+			Vector<ProgressCard.ProgressCardType> cards = player.getHand();
+			if (cards.size() == 0) {
+				continue;
+			}
+			playerList.add(player.getPlayerName());
+			playerNameToPlayerId.put(player.getPlayerName(), player.getPlayerNumber());
+		}
+
+		final CharSequence[] playerListToShow = new CharSequence[playerList.size()];
+		for (int i = 0; i < playerList.size(); i++) {
+			playerListToShow[i] = playerList.get(i);
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("Select Player");
+		builder.setItems(playerListToShow, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+				dialog.dismiss();
+
+				final Player opponentPlayer = board.getPlayerById(playerNameToPlayerId.get(playerListToShow[item]));
+
+				final Vector<ProgressCard.ProgressCardType> cards = opponentPlayer.getHand();
+
+				CharSequence[] list = new CharSequence[cards.size()];
+				int index = 0;
+
+				for (int i = 0; i < cards.size(); i++) {
+					ProgressCard.ProgressCardType type = cards.get(i);
+
+					list[index++] = getString(ProgressCard.getCardStringResource(type));
+				}
+
+				CharSequence[] items = new CharSequence[index];
+				for (int i = 0; i < index; i++)
+				{
+					items[i] = list[i];
+				}
+
+				AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+				alertDialogBuilder.setTitle("Pick Progress Card");
+				alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener(){
+					public void onClick(DialogInterface dialog, int item) {
+						dialog.dismiss();
+						final ProgressCard.ProgressCardType card = cards.get(item);
+						cards.remove(card);
+						board.getPlayerOfCurrentGameTurn().getHand().add(card);
+
+						toast("Got Progress Card " + getString(ProgressCard.getCardStringResource(card)) + " from " + opponentPlayer.getPlayerName());
+					}
+				});
+				alertDialogBuilder.setCancelable(false);
+				alertDialogBuilder.create().show();
+			}
+		});
+		builder.setCancelable(true);
+		builder.create().show();
+
 		toast("Played the Spy");
 	}
 
 	private void playCommercialHarbor(){
 		//@TODO
-		//add merchant placement logic
+		//add commercial harbor placement logic
+		board.setReturnPhase(board.getPhase());
+		board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
+
+		CharSequence[] playerList = new CharSequence[board.getNumPlayers()];
+		boolean somethingToStealFrom = false;
+
+		final Player current = board.getPlayerOfCurrentGameTurn();
+		//storing opponent player in this
+
+		int playerIndex = 0;
+		int resourceIndex = 0;
+
+		int totalResources = current.getBaseGameResourceCount();
+
+		if (totalResources == 0) {
+			toast("No resources to trade, progress card void");
+			return;
+		}
+
+		final Map<CharSequence,Integer> resourcePointerMap = new HashMap<>();
+
+		resourcePointerMap.put("Lumber", 0);
+		resourcePointerMap.put("Wool", 1);
+		resourcePointerMap.put("Grain", 2);
+		resourcePointerMap.put("Brick", 3);
+		resourcePointerMap.put("Ore", 4);
+
+		int totalCommodities = 0;
+		int lumberCount = 0;
+		int woolCount = 0;
+		int grainCount = 0;
+		int brickCount = 0;
+		int oreCount = 0;
+
+		for (int i= 0; i < board.getNumPlayers(); i++) {
+			totalCommodities = 0;
+			resourceIndex = 0;
+
+			//ArrayList in which we store the resources that the cur player has
+			final List<String> currentlyContainedResources = new ArrayList<>();
+			final Player player = board.getPlayerById(i);
+
+			lumberCount = current.getResources(Resource.ResourceType.LUMBER);
+			if(lumberCount != 0) {
+				currentlyContainedResources.add(resourceIndex++, "Lumber");
+			}
+			woolCount = current.getResources(Resource.ResourceType.WOOL);
+			if(woolCount != 0) {
+				currentlyContainedResources.add(resourceIndex++, "Wool");
+			}
+			grainCount = current.getResources(Resource.ResourceType.GRAIN);
+			if(grainCount != 0) {
+				currentlyContainedResources.add(resourceIndex++, "Grain");
+			}
+			brickCount = current.getResources(Resource.ResourceType.BRICK);
+			if(brickCount != 0) {
+				currentlyContainedResources.add(resourceIndex++, "Brick");
+			}
+			oreCount = current.getResources(Resource.ResourceType.ORE);
+			if(oreCount != 0) {
+				currentlyContainedResources.add(resourceIndex, "Ore");
+			}
+
+			CharSequence[] items = new CharSequence[resourceIndex];
+			items = currentlyContainedResources.toArray(items);
+
+			if (player == current) {
+				//just move onto the next player
+				continue;
+			} else {
+				totalCommodities = player.getResources(Resource.ResourceType.PAPER) +
+						player.getResources(Resource.ResourceType.COIN) +
+						player.getResources(Resource.ResourceType.CLOTH) +
+						player.getResources(Resource.ResourceType.GOLD);
+				if (totalCommodities > 0) {
+					String playerInfo = "Trade Resource with commodity with \n" + player.getPlayerName() + " " + player.getPlayerNumber();
+
+					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					builder.setTitle(playerInfo);
+					builder.setItems(items, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int item) {
+							dialog.dismiss();
+							Resource.ResourceType resourceType = Resource.RESOURCE_TYPES[resourcePointerMap.get(currentlyContainedResources.get(item))];
+							player.addResources(resourceType, 1, false);
+							current.decreaseResources(resourceType);
+							toast("Gave 1 resource of " + currentlyContainedResources.get(item) + "to " + player.getPlayerName());
+							board.getPlayerIdsYetToAct().add(player.getPlayerNumber());
+						}
+					});
+					builder.setCancelable(true);
+					builder.create().show();
+
+				}
+			}
+		}
+
+		mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
+		board.nextPhase();
+		/*
+		CharSequence[] items = new CharSequence[playerIndex];
+		for (int i = 0; i < playerIndex; i++) {
+			items[i] = playerList[i];
+		}
+		for (int i = 0; i < playerIndex; i++) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(playerList[i]);
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+
+				}
+			});
+
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.commercial_harbor_trade_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+
+			}
+		});
+		*/
 
 		toast("Played the Commercial Harbor");
 	}
@@ -2134,6 +2420,8 @@ public class ActiveGameFragment extends Fragment {
 	private void playMerchantFleet(){
 		//@TODO
 		//add merchant placement logic
+		board.setIsMerchantFleetActive(true);
+		board.getPlayerOfCurrentGameTurn().setIsMerchantFleetActive(true);
 		toast("Played the Merchant Fleet");
 	}
 

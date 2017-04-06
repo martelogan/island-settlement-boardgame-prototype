@@ -24,7 +24,7 @@ import com.catandroid.app.common.components.BoardGeometry;
 import com.catandroid.app.common.logistics.AppSettings;
 import com.catandroid.app.common.logistics.multiplayer.CatandroidTurn;
 import com.catandroid.app.common.ui.fragments.ActiveGameFragment;
-import com.catandroid.app.R;
+import com.catandroid.app.R;;
 import com.catandroid.app.common.components.Board;
 
 //***************
