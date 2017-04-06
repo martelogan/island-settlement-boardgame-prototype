@@ -82,6 +82,7 @@ public class ActiveGameFragment extends Fragment {
 	private GameRenderer renderer;
 
 	private boolean isActive;
+	private boolean showedPlayerGameCreationStats = false;
 
 	private static final String[] ROLL_STRINGS = { "", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" };
 	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
@@ -361,6 +362,7 @@ public class ActiveGameFragment extends Fragment {
 		switch (action) {
 			case MOVE_ROBBER:
 			case MOVE_PIRATE:
+            case PLACE_MERCHANT:
 				select(action, board.getHexagonById(id));
 				break;
 
@@ -423,6 +425,23 @@ public class ActiveGameFragment extends Fragment {
 				showState(false);
 			}
 		}
+		else if(action == Action.PLACE_MERCHANT) {
+            boolean ownsBuildableOnHex = hexagon.getPlayers().contains(board.getActiveFragmentPlayer());
+            if (hexagon.getTerrainType() == Hexagon.TerrainType.SEA) {
+                popup(getString(R.string.game_cant_move_merchant),
+                        getString(R.string.game_merchant_sea));
+            }
+            else if(!ownsBuildableOnHex){
+                popup("Can't Place Merchant",
+                        "You don't own a City/Settlement on that Hexagon");
+            }
+            else {
+                board.setCurMerchantHex(hexagon);
+                board.setMerchantOwner(board.getActiveFragmentPlayer().getPlayerNumber());
+				board.nextPhase();
+                showState(false);
+            }
+        }
 	}
 
 	private void select(Action action, Vertex vertex) {
@@ -437,7 +456,7 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if (action == Action.BUILD_CITY_WALL)
 		{
-			vertexUnitType = Vertex.CITY_WALL;
+			vertexUnitType = Vertex.WALLED_CITY;
 		}
 		else if(action == Action.BUILD_METROPOLIS)
 		{
@@ -461,7 +480,7 @@ public class ActiveGameFragment extends Fragment {
 		switch(vertexUnitType) {
 			case Vertex.SETTLEMENT:
 			case Vertex.CITY:
-			case Vertex.CITY_WALL:
+			case Vertex.WALLED_CITY:
 			    // selecting buildable vertex unit
 				if (player.buildVertexUnit(vertex, vertexUnitType)) {
 					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
@@ -1165,6 +1184,12 @@ public class ActiveGameFragment extends Fragment {
 		if (board.isSetupSettlement())
 		{
 			action = Action.BUILD_SETTLEMENT;
+			if(!showedPlayerGameCreationStats) {
+				showedPlayerGameCreationStats = true;
+				popup("Current Game", "Number players: " + board.getNumPlayers() + "\n" +
+						"VP to win: " + board.getMaxPoints() + "\n\nTo reject, quit game and reject invite.");
+			}
+
 		}
 		else if (board.isSetupCity())
 		{
@@ -1197,6 +1222,9 @@ public class ActiveGameFragment extends Fragment {
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
+        else if(board.isPlaceMerchantPhase()){
+            action = Action.PLACE_MERCHANT;
+        }
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -1282,6 +1310,8 @@ public class ActiveGameFragment extends Fragment {
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
+        } else if (board.isPlaceMerchantPhase()) {
+            // do nothing
 		} else if (action != Action.NONE && action != Action.BUILD_METROPOLIS
 				&& action != Action.MOVE_DISPLACED_KNIGHT) {
 			// cancel the action
@@ -1355,7 +1385,7 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canMoveSomeKnight()) {
 				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
-			if(player.getNumFishOwned() > 0){
+			if(player.getNumOwnedFish() > 0){
 				view.addButton(ButtonType.USE_FISH);
 			}
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);
@@ -2067,6 +2097,9 @@ public class ActiveGameFragment extends Fragment {
 		//add merchant placement logic
 
 		toast("Played the merchant");
+        getActivity().setTitle("Place Merchant");
+        board.setPhase(Board.Phase.PLACE_MERCHANT);
+		showState(true);
 	}
 
 	private void confirmDisplaceKnightDialog(Vertex vertex) {

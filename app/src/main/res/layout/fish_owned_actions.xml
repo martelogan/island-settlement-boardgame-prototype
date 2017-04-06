@@ -10,9 +10,19 @@
         android:orientation="vertical"
         android:padding="10dip" >
 
+        <Button
+            android:id="@+id/giveBoot"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="Give Away Boot"
+            android:enabled="false"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="20dp"
             android:text="@string/reference_fishImprovement"
             android:textSize="24sp" >
         </TextView>
@@ -42,6 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 2 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -81,6 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 3 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -120,6 +132,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 4 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -159,6 +172,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 5 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>
@@ -198,6 +212,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:text="Use 7 Fish"
+                android:enabled="false"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"/>
         </LinearLayout>

@@ -108,6 +108,10 @@ public class TradeRequestFragment extends Fragment {
 					board.getIsMerchantFleetActive()){
 				ratio = 2;
 			}
+			if(board.getMerchantOwner() == player.getPlayerNumber() &&
+                    Resource.RESOURCE_TYPES[i] == board.getMerchantType()){
+                ratio = 2;
+            }
 
 			TextView text = (TextView) tradeView.findViewById(RESOURCES[i]);
 			text.setText(Integer.toString(count));

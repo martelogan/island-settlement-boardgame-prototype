@@ -226,7 +226,7 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				alertDialogBuilder.create().show();
 
 			} else {
-				catandroidTurn.currentBoard = null;
+                catandroidTurn.currentBoard = null;
 				ActionBar actionBar = getActionBar();
 				actionBar.setDisplayHomeAsUpEnabled(false);
 				actionBar.setDisplayShowCustomEnabled(false);
