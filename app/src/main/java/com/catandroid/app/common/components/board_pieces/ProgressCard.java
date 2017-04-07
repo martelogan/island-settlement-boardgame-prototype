@@ -1,7 +1,6 @@
 package com.catandroid.app.common.components.board_pieces;
 
 import com.catandroid.app.R;
-import com.catandroid.app.common.components.board_pieces.InventoryItem;
 
 /**
  * Created by logan on 2017-03-05.
@@ -29,12 +28,30 @@ public class ProgressCard extends InventoryItem {
                 return R.string.spy;
             case INTRIGUE:
                 return R.string.intrigue;
-            case MASTER_MERCHANT:
-                return R.string.master_merchant;
             case ALCHEMIST:
                 return R.string.alchemist;
             case MERCHANT_FLEET:
                 return R.string.merchant_fleet;
+            case CRANE:
+                return R.string.crane;
+            case ENGINEER:
+                return R.string.engineer;
+            case IRRIGIATION:
+                return R.string.irrigation;
+            case MINING:
+                return R.string.mining;
+            case DESERTER:
+                return R.string.deserter;
+            case WARLORD:
+                return R.string.warlord;
+            case MASTER_MERCHANT:
+                return R.string.master_merchant;
+            case RESOURCE_MONOPOLY:
+                return R.string.resource_monopoly;
+            case TRADE_MONOPOLY:
+                return R.string.trade_monopoly;
+            case MEDICINE:
+                return R.string.medicine;
             default:
                 return R.string.empty_string;
         }
@@ -55,6 +72,39 @@ public class ProgressCard extends InventoryItem {
             case COMMERCIAL_HARBOR:
                 return R.string.commercial_harbor_description;
             case INTRIGUE:
+                return R.string.intrigue_description;
+            case CRANE:
+                return R.string.crane_description;
+            case ENGINEER:
+                return R.string.engineer_description;
+            case IRRIGIATION:
+                return R.string.irrigation_description;
+            case MINING:
+                return R.string.mining_description;
+            case DESERTER:
+                return R.string.deserter_description;
+            case WARLORD:
+                return R.string.warlord_description;
+            case MASTER_MERCHANT:
+                return R.string.master_merchant_description;
+            case RESOURCE_MONOPOLY:
+                return R.string.resource_monopoly_description;
+            case TRADE_MONOPOLY:
+                return R.string.trade_monopoly;
+            case PRINTER:
+                return R.string.printer;
+            case MEDICINE:
+                return R.string.medicine_description;
+            case ALCHEMIST:
+                return R.string.alchemist_description;
+            case SPY:
+                return R.string.spy_description;
+            case MERCHANT_FLEET:
+                return R.string.merchant_fleet_description;
+            case SABOTEUR:
+                return R.string.saboteur;
+
+
             default:
                 return R.string.empty_string;
         }
@@ -73,7 +123,7 @@ public class ProgressCard extends InventoryItem {
             case CRANE:
             case ENGINEER:
             case INVENTOR:
-            case IRIGIATION:
+            case IRRIGIATION:
             case MEDICINE:
             case MINING:
             case PRINTER:
@@ -98,7 +148,7 @@ public class ProgressCard extends InventoryItem {
     public enum ProgressCardType {
         COMMERCIAL_HARBOR, MASTER_MERCHANT, MERCHANT, MERCHANT_FLEET, RESOURCE_MONOPOLY, TRADE_MONOPOLY,
 
-        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
+        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
 
         BISHOP, CONSTITUTION, DESERTER, DIPLOMAT, INTRIGUE, SABOTEUR, SPY, WARLORD, WEDDING
     }

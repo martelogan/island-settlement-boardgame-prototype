@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<!-- Application name and misc strings-->
-	<string name="app_name">CatAndroid</string>
-	<string name="empty_string"></string>
-	<string name="acknowledgements">A game by Hitpeeps</string>
+    <!-- Application name and misc strings-->
+    <string name="app_name">CatAndroid</string>
+    <string name="empty_string"></string>
+    <string name="acknowledgements">A game by Hitpeeps</string>
 
-	<!-- StartScreenActivity menu -->
-	<string name="login_button">Login</string>
-	<string name="rules_button">Game Rules</string>
-	<string name="rules_failed">Sorry :( . We can\'t seem to load the rules file</string>
-	<string name="about_button">About this game</string>
-	<string name="about_text">COMP 361 Project - Catan + Cities and Knights + Seafarers</string>
+    <!-- StartScreenActivity menu -->
+    <string name="login_button">Login</string>
+    <string name="rules_button">Game Rules</string>
+    <string name="rules_failed">Sorry :( . We can\'t seem to load the rules file</string>
+    <string name="about_button">About this game</string>
+    <string name="about_text">COMP 361 Project - Catan + Cities and Knights + Seafarers</string>
 
     <!-- Launch game screen -->
     <string name="options">Options</string>
     <string name="start">Start</string>
     <string name="resume_button">Resume</string>
     <string name="option_victory_points_to_win">Points to win</string>
-	<string name="option_predefined_board">Predefined Board States</string>
+    <string name="option_predefined_board">Predefined Board States</string>
     <string name="option_num_players">Number of Players</string>
     <string name="victory_points_to_win">Victory points to win</string>
     <string name="option_auto_discard">Discard automatically when 7 is rolled</string>
@@ -26,33 +26,33 @@
     <string name="standard_game">(standard game)</string>
     <string name="long_game">(long game)</string>
 
-	<!-- Colors -->
-	<string name="red">red</string>
-	<string name="yellow">yellow</string>
-	<string name="green">green</string>
-	<string name="blue">blue</string>
+    <!-- Colors -->
+    <string name="red">red</string>
+    <string name="yellow">yellow</string>
+    <string name="green">green</string>
+    <string name="blue">blue</string>
 
-	<!-- Skeleton Multiplayer -->
-	<string name="sign_out">Sign Out</string>
-	<string name="match_instructions">Type in a new word for the data in this game, then hit done.</string>
-	<string name="quick_match">Quick match</string>
-	<string name="done">Done</string>
-	<string name="leave">Leave</string>
-	<string name="cancel">Cancel</string>
-	<string name="finish">Finish</string>
-	<string name="welcome_to_our_skeleton_app_">Welcome to Catandroid. Please Sign In</string>
-	<string name="check_games">View Open Games</string>
-	<string name="start_match">Start New Game</string>
-	<string name="turn_counter">Turn counter</string>
-	<string name="signin_other_error">There was an issue with sign in.  Please try again later.</string>
+    <!-- Skeleton Multiplayer -->
+    <string name="sign_out">Sign Out</string>
+    <string name="match_instructions">Type in a new word for the data in this game, then hit done.</string>
+    <string name="quick_match">Quick match</string>
+    <string name="done">Done</string>
+    <string name="leave">Leave</string>
+    <string name="cancel">Cancel</string>
+    <string name="finish">Finish</string>
+    <string name="welcome_to_our_skeleton_app_">Welcome to Catandroid. Please Sign In</string>
+    <string name="check_games">View Open Games</string>
+    <string name="start_match">Start New Game</string>
+    <string name="turn_counter">Turn counter</string>
+    <string name="signin_other_error">There was an issue with sign in.  Please try again later.</string>
 
-	<!-- CityImprovement cityImprovementTypes -->
-	<string name="tradeImprovement">trade</string>
-	<string name="politicsImprovement">politics</string>
-	<string name="scienceImprovement">science</string>
-	<string name="current_improvements">Your Current Improvements</string>
-	<string name="shop_improvements">Purchase City Improvements</string>
-	<string name="city_improvements">City Improvements</string>
+    <!-- CityImprovement cityImprovementTypes -->
+    <string name="tradeImprovement">trade</string>
+    <string name="politicsImprovement">politics</string>
+    <string name="scienceImprovement">science</string>
+    <string name="current_improvements">Your Current Improvements</string>
+    <string name="shop_improvements">Purchase City Improvements</string>
+    <string name="city_improvements">City Improvements</string>
 
 	<!-- Resource resourceTypes -->
 	<string name="desert">desert</string>
@@ -72,54 +72,54 @@
     <string name="knight_strong">strong knight</string>
     <string name="knight_mighty">mighty knight</string>
 
-	<!-- Trade screen -->
-	<string name="trade">Trade</string>
-	<string name="bankratio"><u>Bank Trade Ratio</u></string>
-	<string name="trade_bank">Trade with the bank</string>
-	<string name="trade_requesting">Requesting</string>
-	<string name="trade_offering">Offering</string>
-	<string name="trade_counterproposal">You are requesting:</string>
-	<string name="trade_confirm">Confirm</string>
-	<string name="trade_cancel">Cancel</string>
-	<string name="trade_for_resource">Trade for %s</string> 
-	<string name="trade_for_prior">Traded for</string>
-	<string name="trade_invalid">Invalid trade</string>
-	<string name="trade_plus">+</string>
-	<string name="trade_minus">-</string>
-	<string name="trade_zero">0</string>
-	<string name="resources">Road: lumber, brick
+    <!-- Trade screen -->
+    <string name="trade">Trade</string>
+    <string name="bankratio"><u>Bank Trade Ratio</u></string>
+    <string name="trade_bank">Trade with the bank</string>
+    <string name="trade_requesting">Requesting</string>
+    <string name="trade_offering">Offering</string>
+    <string name="trade_counterproposal">You are requesting:</string>
+    <string name="trade_confirm">Confirm</string>
+    <string name="trade_cancel">Cancel</string>
+    <string name="trade_for_resource">Trade for %s</string>
+    <string name="trade_for_prior">Traded for</string>
+    <string name="trade_invalid">Invalid trade</string>
+    <string name="trade_plus">+</string>
+    <string name="trade_minus">-</string>
+    <string name="trade_zero">0</string>
+    <string name="resources">Road: lumber, brick
 		\nSettlement: lumber, wool, grain,
 		brick
 		\nCity: 2 grain, 3 ore
     </string>
-	<string name="trade_your_resources">Your resources</string>
-	<string name="trade_propose">Propose trade</string>
-	<string name="trade_make_offer">Make offer</string>
-	<string name="trade_accept_offer">Accept offer</string>
-	<string name="trade_decline_offer">Decline offer</string>
-	<string name="trade_accepted">Trade with %s</string>
-	<string name="trade_counter">%s proposed a counter-offer</string>
-	<string name="trade_counter_offer">Counter-offer</string>
-	<string name="trade_counter_make">Make counter-offer</string>
-	<string name="trade_rejected">%s has rejected the offer</string>
-	<string name="trade_pending_offers">Pending offers</string>
-	<string name="trade_player_wants">Trade request for %s</string>
-	<string name="trade_ratio" formatted="false">%s (%d:1)</string>
-	<string name="trade_player_offer">%s is offering</string>
+    <string name="trade_your_resources">Your resources</string>
+    <string name="trade_propose">Propose trade</string>
+    <string name="trade_make_offer">Make offer</string>
+    <string name="trade_accept_offer">Accept offer</string>
+    <string name="trade_decline_offer">Decline offer</string>
+    <string name="trade_accepted">Trade with %s</string>
+    <string name="trade_counter">%s proposed a counter-offer</string>
+    <string name="trade_counter_offer">Counter-offer</string>
+    <string name="trade_counter_make">Make counter-offer</string>
+    <string name="trade_rejected">%s has rejected the offer</string>
+    <string name="trade_pending_offers">Pending offers</string>
+    <string name="trade_player_wants">Trade request for %s</string>
+    <string name="trade_ratio" formatted="false">%s (%d:1)</string>
+    <string name="trade_player_offer">%s is offering</string>
 
-	<!-- DiscardResourcesFragment screen -->
-	<string name="discard_reason">%s rolled a 7</string>
-	<string name="discard_instruction">discard %d resources</string>
-	<string name="discard_select">Select resources to discard</string>
-	<string name="discard_button">Discard Resources</string>
+    <!-- DiscardResourcesFragment screen -->
+    <string name="discard_reason">%s rolled a 7</string>
+    <string name="discard_instruction">discard %d resources</string>
+    <string name="discard_select">Select resources to discard</string>
+    <string name="discard_button">Discard Resources</string>
 
     <!-- Player turn log messages -->
     <string name="player_roll">Rolled %s</string>
     <string name="player_road">Built a road</string>
-	<string name="player_ship">Built a ship</string>
+    <string name="player_ship">Built a ship</string>
     <string name="player_settlement">Built a settlement</string>
     <string name="player_city">Built a city</string>
-	<string name="player_city_wall">Built a city wall</string>
+    <string name="player_city_wall">Built a city wall</string>
     <string name="player_place_knight">Dispatched a knight</string>
 	<string name="player_activate_knight">Activated a knight</string>
 	<string name="player_promote_knight">Promoted a knight</string>
@@ -139,6 +139,41 @@
     <string name="player_discarded">Discarded %s</string>
     <string name="player_traded_with">Traded with %s</string>
     <string name="player_traded_for">Traded for %s</string>
+
+    <!-- PlayerStatsFragment screen -->
+    <string name="status">Status</string>
+    <string name="status_points_str">points</string>
+    <string name="status_victory_points">Victory points</string>
+    <string name="status_color">Color</string>
+    <string name="status_this_turn">This turn</string>
+    <string name="status_last_turn">Last turn</string>
+    <string name="status_turn">Turn</string>
+    <string name="status_resources">Resources</string>
+    <string name="status_settlements">Settlements (1 point)</string>
+    <string name="status_cities">Cities (2 points)</string>
+    <string name="status_roads">Total roads</string>
+    <string name="status_ships">Total ships</string>
+    <string name="status_best_road_length">Your longest road length</string>
+    <string name="status_has_longest_road">Longest road</string>
+    <string name="status_progress_cards">Progress cards</string>
+    <string name="status_harbor">harbor</string>
+
+    <!-- Quick costs_reference screen -->
+    <string name="reference">Costs Reference</string>
+    <string name="development_costs">Development Costs</string>
+    <string name="reference_road">Road</string>
+    <string name="reference_settlement">Settlement</string>
+    <string name="reference_city">City</string>
+    <string name="reference_city_wall">City Wall</string>
+    <string name="reference_ship">Ship</string>
+    <string name="reference_tradeImprovement">Trade</string>
+    <string name="reference_scienceImprovement">Science</string>
+    <string name="reference_politicsImprovement">Politics</string>
+    <string name="reference_costs">Road:\n1 lumber, 1 brick\n
+		\nSettlement:\n1 lumber, 1
+		wool, 1 grain, 1 brick\n
+		\nCity:\n2 grain, 3 ore\n
+    </string>
 	<string name="player_tradeImp">Purchased Trade Improvement Level: %s</string>
 	<string name="player_scienceImp">Purchased Science Improvement Level: %s</string>
 	<string name="player_politicsImp">Purchased Politics Improvement Level: %s</string>
@@ -191,16 +226,16 @@
 	<string name="costs_reference_politicsImprovement">Politics</string>
 	<string name="reference_fishImprovement">Use Earned Fish</string>
 
-	<!-- In-game buttons -->
-	<string name="button_cards">Buy or use cards</string>
-	<string name="button_settlement">Build settlement</string>
-	<string name="button_city">Build city</string>
-	<string name="button_road">Build road</string>
-	<string name="button_status">Status</string>
-	<string name="button_roll">Roll dice</string>
-	<string name="button_end">End turn</string>
-	<string name="button_trade">Trade</string>
-	<string name="button_cancel">Cancel</string>
+    <!-- In-game buttons -->
+    <string name="button_cards">Buy or use cards</string>
+    <string name="button_settlement">Build settlement</string>
+    <string name="button_city">Build city</string>
+    <string name="button_road">Build road</string>
+    <string name="button_status">Status</string>
+    <string name="button_roll">Roll dice</string>
+    <string name="button_end">End turn</string>
+    <string name="button_trade">Trade</string>
+    <string name="button_cancel">Cancel</string>
 
     <!-- Prompt strings -->
     <string name="phase_first_settlement">Place a settlement</string>
@@ -214,7 +249,7 @@
 	<string name="phase_displacing_knight">Displacing Knight!</string>
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
-	<string name="phase_move_pirate">Move the pirate</string>
+    <string name="phase_move_pirate">Move the pirate</string>
     <string name="phase_game_over">Game over</string>
 
 	<!-- Various strings in the game -->
@@ -234,11 +269,27 @@
 	<string name="game_confirm_chase_robber">Chase the robber</string>
 	<string name="game_confirm_chase_pirate">Chase the pirate</string>
 	<string name="game_confirm_displace_knight">Displace knight</string>
+    <string name="game_confirm_remove_knight">Which player would you like to remove a knight?</string>
 	<string name="game_chase_robber_title">Chase robber with...</string>
 	<string name="game_chase_pirate_title">Chase pirate with...</string>
 	<string name="game_confirm_chase_robber_title">Want to chase the robber?</string>
 	<string name="game_confirm_chase_pirate_title">Want to chase the pirate?</string>
 	<string name="game_confirm_displace_knight_title">Displace opponent knight?</string>
+    <string name="game_confirm_choose_opponent">Choose opponent to remove knight</string>
+    <string name="game_choose_victory_opponent">Choose opponent</string>
+    <string name="game_choose_resource">Pick first resource</string>
+    <string name="victory_points_opponent">None of your opponents have more victory points than you</string>
+    <string name="no_city_wall">Cannot build a city wall</string>
+    <string name="no_improve_city">Cannot improve your city</string>
+    <string name="game_resource_warning">WARNING: choose a resource with a count greater than 0</string>
+    <string name="game_chosen_resources">The chosen resources have been added to your resource count</string>
+    <string name="game_remove_knight">No knight to remove</string>
+    <string name="game_remove_knight_final">Remove Knight</string>
+    <string name="game_choose_resource2">Pick second resource</string>
+    <string name="game_player_1">Player 1</string>
+    <string name="game_player_2">Player 2</string>
+    <string name="game_player_3">Player 3</string>
+    <string name="game_player_4">Player 4</string>
 	<string name="game_cancel_str">Cancel</string>
 	<string name="game_resources_str">resources</string>
 	<string name="game_chooseRobberPirate_title">Move the Robber or Pirate?</string>
@@ -282,27 +333,29 @@
 	<string name="game_pirate_same">You must move the pirate to a new location</string>
 	<string name="game_pirate_land">The land is no place for a pirate!</string>
     <string name="game_build_settlements_max">Reached the maximum number of settlements.</string>
-	<string name="game_build_city_max">Reached the maximum number of cities.</string>
-	<string name="game_build_wall_max">Reached the maximum number of walls.</string>
-	<string name="game_build_edge_unit_max">Reached the maximum number of edge units.</string>
-	<string name="game_build_road_max">Reached the maximum number of roads.</string>
-	<string name="game_build_ship_max">Reached the maximum number of ships.</string>
-	<string name="game_basic_knight_max">No basic knights available to hire.</string>
+    <string name="game_build_city_max">Reached the maximum number of cities.</string>
+    <string name="game_build_wall_max">Reached the maximum number of walls.</string>
+    <string name="game_build_edge_unit_max">Reached the maximum number of edge units.</string>
+    <string name="game_build_road_max">Reached the maximum number of roads.</string>
+    <string name="game_build_ship_max">Reached the maximum number of ships.</string>
+    <string name="game_basic_knight_max">No basic knights available to hire.</string>
     <string name="game_total_knights_max">No remaining knights to play.</string>
-	<string name="game_nowhere_available_settlement">No buildable settlement locations.</string>
-	<string name="game_nowhere_available_city">No buildable city locations.</string>
-	<string name="game_nowhere_available_city_wall">No buildable wall locations.</string>
-	<string name="game_nowhere_available_edge_unit_build">No buildable road/ship locations</string>
-	<string name="game_nowhere_available_road_build">No buildable road locations</string>
-	<string name="game_nowhere_available_ship_build">No buildable ship locations</string>
-	<string name="game_nowhere_available_ship_move">Ship movement would not be possible right now</string>
+    <string name="game_nowhere_available_settlement">No buildable settlement locations.</string>
+    <string name="game_nowhere_available_city">No buildable city locations.</string>
+    <string name="game_nowhere_available_city_wall">No buildable wall locations.</string>
+    <string name="game_nowhere_available_edge_unit_build">No buildable road/ship locations</string>
+    <string name="game_nowhere_available_road_build">No buildable road locations</string>
+    <string name="game_nowhere_available_ship_build">No buildable ship locations</string>
+    <string name="game_nowhere_available_ship_move">Ship movement would not be possible right now</string>
     <string name="game_nowhere_available_hire_knight">No locations available to dispatch a knight</string>
+
 	<string name="game_nowhere_available_activate_knight">No locations available to activate a knight</string>
 	<string name="game_nowhere_available_promote_knight">No locations available to promote a knight</string>
 	<string name="game_nowhere_available_chase_robber">No knights positioned to chase the robber</string>
 	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
 	<string name="game_nowhere_available_knight_move">No moveable knights at the ready</string>
 	<string name="game_won">won</string>
+
 
 	<!-- Progress Cards -->
 	<string name="merchant">Merchant</string>
@@ -311,21 +364,42 @@
 	<string name="commercial_harbor">Commercial Harbor</string>
 	<string name="spy">Spy</string>
 	<string name="intrigue">Intrigue</string>
-	<string name="master_merchant">Master Merchant</string>
 	<string name="alchemist">Alchemist</string>
 	<string name="merchant_fleet">Merchant Fleet</string>
+    <string name="crane">Crane</string>
+    <string name="engineer">Engineer</string>
+    <string name="irrigation">Irrigation</string>
+    <string name="mining">Mining</string>
+    <string name="deserter">Deserter</string>
+    <string name="warlord">Warlord</string>
+    <string name="master_merchant">Master_merchant</string>
+    <string name="resource_monopoly">Resource Monopoly</string>
+    <string name="trade_monopoly">Trade Monopoly</string>
+    <string name="printer">Printer</string>
+    <string name="medicine">Medicine</string>
 
 	<!-- Progress Card Description -->
 	<string name="alchemist_description">This is the only progress card that you can play before you roll the dice. It allows you to choose the results of both production dice. Then, roll the event die as normal, and resolve the event.</string>
-	<string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
-	<string name="bishop_description">String holder</string>
 	<string name="commercial_harbor_description">You may force each of the other players to make a special trade. You may offer each opponent any 1 resource card from your hand. He must exchange it for any 1 commodity card from his hand, if he has any. </string>
 	<string name="spy_description">Look at another player\'s progress cards. You may choose 1 card and take and add it to your hand.</string>
 	<string name="intrigue_description">You may displace an opponent\'s knight. The knight must be on an intersection connected to at least one of your roads.</string>
 	<string name="saboteur_description">When you play this card, each player who has as many or more victory points must discard half (round down) of his cards to the bank (resource and/or commodity cards)</string>
 	<string name="merchant_fleet_description">You may use one resource or commodity of your choice to make any number of 2:1 trades with the supply during the turn that you play the card.</string>
+    <string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
+    <string name="crane_description">The Crane can only be used to reduce the cost of building one city improvement. If you build a city, you must pay the normal resource costs. You may use a Crane to reduce the cost of a first level improvement (to nothing). You may not combine 2 Crane cards on the same improvement.</string>
+    <string name="engineer_description">You may build one city wall for free. Take a city wall and put it under one of your cities. A city wall increases the number of cards you can safely hold in your hand when a “7” is rolled, by 2 cards. Each city can only have 1 city wall, and you cannot have more than 3 city walls at a time. </string>
+    <string name="irrigation_description">You receive 2 grain cards for each fields hex next to any of your settlements and cities. Unlike normal production, cities do not increase this bonus.</string>
+    <string name="mining_description">You receive 2 ore cards for each mountains hex next to any of your settlements and cities. Unlike normal production, cities do not increase this bonus.</string>
+    <string name="deserter_description">Choose another player. That player must remove one of his knights from the board. You may then place one of your own knights, of equal strength, on the board for free (the normal rules for placing knights apply).</string>
+    <string name="bishop_description">Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or city next to the robbers new hex</string>
+    <string name="warlord_description">When you play this card, you can activate your knights without paying any grain. Remember that a knight may not perform any actions during the turn after he is activated, but he can be activated after performing an action that turn.</string>
+    <string name="master_merchant_description">Choose another player who has more victory points than you do. Look at the player’s hand of Resource and Commodity Cards and choose 2 cards to take and add to your hand.</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="resource_monopoly_description">Name a resource. Each player must give you 2 of that type of resource if they have them.</string>
+    <string name="trade_monopoly_description">Name a commodity. Each player must give you 1 of that type of commodity if they have them.</string>
+    <string name="medicine_description">You may upgrade a settlement to a city for two ores and 1 grain</string>
 
-	<!-- Progress Card Titles and Default Headers -->
+    <!-- Progress Card Titles and Default Headers -->
 	<string name="commercial_harbor_trade_title">Pick the resource to trade with each player</string>
 
 </resources>

@@ -26,8 +26,15 @@ import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
 
+import static com.catandroid.app.common.components.Board.Phase.DISPLACING_KNIGHT;
+import static com.catandroid.app.common.components.Board.Phase.MOVING_KNIGHT;
+import static com.catandroid.app.common.components.Board.Phase.MOVING_SHIP;
+import static com.catandroid.app.common.components.Board.Phase.REMOVING_KNIGHT;
+import static com.catandroid.app.common.components.board_pieces.CityImprovement.CityImprovementType.POLITICS;
+
 public class Board {
 
+	int playerNo;
 	private transient ActiveGameFragment activeGameFragment;
 
 	private ArrayList<String> gameParticipantIds;
@@ -69,14 +76,19 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
+		PRODUCTION, MY_PlAYER_TURN, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
 		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
 		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAY_INTRIGUE, DONE
+		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAY_INTRIGUE, PRODUCTION1, REMOVING_KNIGHT, MY_PRODUCTION, MY_MOVING_ROBBER, DONE;
 	}
 
 	public void setPhase(Phase phase) {
 		this.phase = phase;
+	}
+
+	public void setPlayerNo(int playerNo)
+	{
+		this.playerNo = playerNo;
 	}
 
 	public Phase getPhase() {
@@ -320,13 +332,30 @@ public class Board {
 		return players[playerNumber];
 	}
 
+	public Player getPlayerByName(CharSequence playerName)
+	{
+		for(int i = 0; i < this.getNumPlayers(); i++)
+		{
+			Player player = this.getPlayerById(i);
+			if(player.getPlayerName().equals(playerName+""))
+			{
+				return players[i];
+			}
+			else
+			{
+				continue;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Get a reference to the currently moving ship
 	 *
 	 * @return the currently moving ship (or null)
 	 */
 	public Edge getCurrentlyMovingShip() {
-		if (phase != Phase.MOVING_SHIP) {
+		if (phase != MOVING_SHIP) {
 			return null;
 		}
 
@@ -339,7 +368,7 @@ public class Board {
 	 * @return the currently moving knight (or null)
 	 */
 	public Knight getCurrentlyMovingKnight() {
-		if (phase != Phase.MOVING_KNIGHT && phase != Phase.DISPLACING_KNIGHT) {
+		if (phase != MOVING_KNIGHT && phase != DISPLACING_KNIGHT) {
 			return null;
 		}
 
@@ -352,10 +381,19 @@ public class Board {
 	 * @return the player that needs to move their displaced knight
 	 */
 	public Player getPlayerToDisplaceKnight() {
-		if (phase != Phase.DISPLACING_KNIGHT) {
+		if (phase != DISPLACING_KNIGHT) {
 			return null;
 		}
 
+		return getPlayerById(tempPlayerNumberMemory);
+	}
+
+	public Player getPlayerToRemoveKnight()
+	{
+		if(phase != REMOVING_KNIGHT)
+		{
+			return null;
+		}
 		return getPlayerById(tempPlayerNumberMemory);
 	}
 
@@ -365,7 +403,7 @@ public class Board {
 	 * @return previous location of the currently moving knight
 	 */
 	public Vertex getStartLocationOfMovingKnight() {
-		if (phase != Phase.MOVING_KNIGHT && phase != Phase.DISPLACING_KNIGHT) {
+		if (phase != MOVING_KNIGHT && phase != DISPLACING_KNIGHT) {
 			return null;
 		}
 
@@ -389,7 +427,6 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-
 		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 
 		CityImprovement.CityImprovementType disciplineRolled;
@@ -401,7 +438,7 @@ public class Board {
 				disciplineRolled = CityImprovement.CityImprovementType.SCIENCE;
 				break;
 			case 6:
-				disciplineRolled = CityImprovement.CityImprovementType.POLITICS;
+				disciplineRolled = POLITICS;
 				break;
 			default:
 				disciplineRolled = null;
@@ -486,7 +523,7 @@ public class Board {
 	private void startAIRobberPhase(AutomatedPlayer current) {
 		int hexId = current.placeRobber(hexagons,
 				prevRobberHexId != null ? hexagons[prevRobberHexId] : null);
-        Hexagon hex = hexagons[hexId];
+		Hexagon hex = hexagons[hexId];
 		setCurRobberHex(hex);
 
 		int count = 0;
@@ -561,6 +598,7 @@ public class Board {
 				case CHOOSE_ROBBER_PIRATE:
 				case MOVING_ROBBER:
 				case MOVING_PIRATE:
+				case MY_MOVING_ROBBER:
 					startAIRobberPhase(current);
 					return;
 
@@ -632,7 +670,7 @@ public class Board {
 					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber),false);
 				}
 				break;
-            case MOVING_SHIP:
+			case MOVING_SHIP:
                 phase = returnPhase;
 				tempEdgeIdMemory = -1;
 				break;
@@ -642,6 +680,22 @@ public class Board {
 				tempKnightIdMemory = -1;
 				tempVertexIdMemory = -1;
 				break;
+			case REMOVING_KNIGHT:
+				/**
+				players[curPlayerNumber].endTurn();
+				curPlayerNumber = playerNo;
+				gameTurnNumber++;
+				turnChanged = true;
+				phase = returnPhase;
+				players[curPlayerNumber].beginTurn();
+				 **/
+				tempKnightIdMemory = -1;
+				tempVertexIdMemory = -1;
+				tempPlayerNumberMemory = -1; /** Not sure about this **/
+				// pass the turn back to the active turn player
+				activeGameFragment.mListener.endTurn( /** Not sure about this turn change **/
+						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
+				break;
 			case DISPLACING_KNIGHT:
 				// TODO: what else when ending knight displacement?
 				phase = returnPhase;
@@ -649,8 +703,8 @@ public class Board {
 				tempVertexIdMemory = -1;
 				tempPlayerNumberMemory = -1;
 				// pass the turn back to the active turn player
-				activeGameFragment.mListener.endTurn(
-						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
+				//activeGameFragment.mListener.endTurn(
+						//getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				break;
 			case PROGRESS_CARD_STEP_1:
 				phase = Phase.PROGRESS_CARD_STEP_2;
@@ -664,6 +718,8 @@ public class Board {
 				phase = returnPhase;
 				//toast("Return phase");
 				break;
+			case MY_MOVING_ROBBER:
+				phase = returnPhase;
 			case MOVING_PIRATE:
 				phase = returnPhase;
 				break;
@@ -754,7 +810,7 @@ public class Board {
      */
     public void startMovingShipPhase(Edge prevShipLocation) {
         returnPhase = phase;
-        phase = Phase.MOVING_SHIP;
+        phase = MOVING_SHIP;
         tempEdgeIdMemory = prevShipLocation.getId();
         runAITurn();
     }
@@ -773,7 +829,7 @@ public class Board {
 	 */
 	public void startMovingKnightPhase(Knight toMove) {
 		returnPhase = phase;
-		phase = Phase.MOVING_KNIGHT;
+		phase = MOVING_KNIGHT;
 		tempKnightIdMemory = toMove.getId();
 		tempVertexIdMemory = toMove.getCurrentVertexLocation().getId();
 		runAITurn();
@@ -804,7 +860,7 @@ public class Board {
 		//TODO: what else when moving knight?
 		// set return phase to the player turn of current active player
 		returnPhase = phase;
-		phase = Phase.DISPLACING_KNIGHT;
+		phase = DISPLACING_KNIGHT;
 		tempKnightIdMemory = toDisplace.getId();
 		tempVertexIdMemory = toDisplace.getCurrentVertexLocation().getId();
 		Player displacedKnightOwner = toDisplace.getOwnerPlayer();
@@ -818,6 +874,25 @@ public class Board {
 					displacedKnightOwner.getGooglePlayParticipantId(), false);
 		}
 		toast("Your turn will resume when your opponent moves the displaced knight! Check back later.");
+	}
+
+	public void startKnightRemovementPhase(Knight toRemove)
+	{
+		returnPhase = phase;
+		phase = REMOVING_KNIGHT;
+		tempKnightIdMemory = toRemove.getId();
+		tempVertexIdMemory = toRemove.getCurrentVertexLocation().getId();
+		Player removedKnightOwner = toRemove.getOwnerPlayer();
+		tempPlayerNumberMemory = playerNo;
+		toRemove.displaceFromPost();
+		if(removedKnightOwner.isBot()) {
+			runAITurn();
+		}
+		else
+		{
+			activeGameFragment.mListener.endTurn(getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
+		}
+		toast("Your turn will resume when your opponent removes his knight! Check back later.");
 	}
 
 	/**
@@ -972,6 +1047,8 @@ public class Board {
 		return (phase == Phase.MOVING_ROBBER);
 	}
 
+	public boolean isMyRobberPhase() {return (phase == Phase.MY_MOVING_ROBBER); }
+
 	public boolean isPiratePhase() {
 		return (phase == Phase.MOVING_PIRATE);
 	}
@@ -985,14 +1062,16 @@ public class Board {
 	}
 
     public boolean isMovingShipPhase() {
-		return (phase == Phase.MOVING_SHIP);
+		return (phase == MOVING_SHIP);
 	}
 
 	public boolean isMovingKnightPhase() {
-		return (phase == Phase.MOVING_KNIGHT);
+		return (phase == MOVING_KNIGHT);
 	}
 
-	public boolean isKnightDisplacementPhase() { return (phase == Phase.DISPLACING_KNIGHT);}
+	public boolean isKnightDisplacementPhase() { return (phase == DISPLACING_KNIGHT);}
+
+	public boolean isRemoveKnightPhase() { return (phase == REMOVING_KNIGHT);}
 
 	public boolean isProgressPhase() {
 		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
@@ -1226,6 +1305,17 @@ public class Board {
 		this.prevRobberHexId = this.curRobberHexId;
 		this.curRobberHexId = null;
 		phase = Phase.MOVING_ROBBER;
+		// run AI's turn
+		runAITurn();
+	}
+
+	public void  startMyRobberPhase() {
+		if(this.curRobberHexId != null) {
+			hexagons[this.curRobberHexId].removeRobber();
+		}
+		this.prevRobberHexId = this.curRobberHexId;
+		this.curRobberHexId = null;
+		phase = Phase.MY_MOVING_ROBBER;
 		// run AI's turn
 		runAITurn();
 	}
@@ -1546,6 +1636,8 @@ public class Board {
                 return R.string.phase_move_ship;
 			case MOVING_KNIGHT:
 				return R.string.phase_move_knight;
+			case REMOVING_KNIGHT:
+				return R.string.game_remove_knight;
 			case DISPLACING_KNIGHT:
 				return R.string.phase_displacing_knight;
 			case PROGRESS_CARD_STEP_1:
@@ -1815,9 +1907,15 @@ public class Board {
                         activeGameFragment.myParticipantId)) {
             return true;
         }
-        else if(phase == Phase.DISPLACING_KNIGHT &&
+        else if(phase == DISPLACING_KNIGHT &&
 				getPlayerToDisplaceKnight().getGooglePlayParticipantId().equals(
 						activeGameFragment.myParticipantId)) {
+			return true;
+		}
+		else if(phase == REMOVING_KNIGHT &&
+				getPlayerToRemoveKnight().getGooglePlayParticipantId().equals(
+						activeGameFragment.myParticipantId))
+		{
 			return true;
 		}
 		return false;

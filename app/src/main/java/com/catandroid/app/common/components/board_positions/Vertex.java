@@ -1106,6 +1106,18 @@ public class Vertex {
 		}
 	}
 
+	public boolean canRemoveKnightOffBoardHere(Player player)
+	{
+		if(curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player)
+		{
+			return getPlacedKnight().canMoveOffBoard();
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	/**
 	 * Check if the player can place the currently moving knight at this vertex
 	 *
@@ -1304,7 +1316,8 @@ public class Vertex {
 	 * @param player
 	 *            which player intends to activate a knight here
 	 */
-	public boolean activateKnight(Player player) {
+	public boolean activateKnight(Player player)
+	{
 		if (!this.canActivateKnightHere(player))
 		{
 			return false;
@@ -1349,6 +1362,25 @@ public class Vertex {
 		placedKnightRank = null;
 		ownerPlayerNumber = -1;
 		curUnitType = NONE;
+		return true;
+	}
+
+	public boolean removeKnightOffBoardFromHere(Player player)
+	{
+		if(!this.canRemoveKnightOffBoardHere(player))
+		{
+			return false;
+		}
+
+		//remove knight from this vertex
+		placedKnightId = -1;
+		placedKnightRank = null;
+		ownerPlayerNumber = -1;
+		curUnitType = NONE;
+
+		//HERE?????
+		//board.nextPhase();
+
 		return true;
 	}
 

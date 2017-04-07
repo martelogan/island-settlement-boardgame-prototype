@@ -436,7 +436,7 @@ public class CityImprovementFragment extends Fragment {
 			scienceButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					// Perform buy on click because only pressable if they can afford it
-					currentPlayer.appendAction(R.string.player_scienceImp, Integer.toString((playerTradeLevel + 1)));
+					currentPlayer.appendAction(R.string.player_scienceImp, Integer.toString((playerScienceLevel + 1)));
 					// increase their discipline level
 					playerCityImprovementLevels[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] = playerScienceLevel + 1;
 					// Remove the resources from the player

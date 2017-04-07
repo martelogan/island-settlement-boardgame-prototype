@@ -158,6 +158,15 @@ public class Knight extends OwnableUnit {
         return true;
     }
 
+    public boolean canMoveOffBoard()
+    {
+        if(hasMovedThisTurn())
+        {
+            return false;
+        }
+        return true;
+    }
+
 
     public boolean canMoveTo(Vertex target, boolean isPeaceful) {
         if (!canMakeMove() || hasMovedThisTurn()) {

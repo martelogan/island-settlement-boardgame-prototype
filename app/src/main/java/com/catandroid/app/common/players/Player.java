@@ -1,23 +1,23 @@
 package com.catandroid.app.common.players;
 
-import java.util.Random;
-import java.util.Vector;
-
 import android.content.Context;
 import android.util.Log;
 
+import com.catandroid.app.CatAndroidApp;
+import com.catandroid.app.R;
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.ProgressCard.ProgressCardType;
+import com.catandroid.app.common.components.board_pieces.Resource;
+import com.catandroid.app.common.components.board_pieces.Resource.ResourceType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
-import com.catandroid.app.common.components.board_pieces.Resource.ResourceType;
-import com.catandroid.app.R;
-import com.catandroid.app.CatAndroidApp;
-import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Vertex;
+
+import java.util.Random;
+import java.util.Vector;
 
 public class Player {
 
@@ -32,6 +32,7 @@ public class Player {
 	public static final int MAX_CITY_WALLS = 3;
 	public static final int MAX_ROADS = 15;
 	public static final int MAX_SHIPS = 15;
+
 	public static final int MAX_BASIC_KNIGHTS = 2;
 	public static final int MAX_STRONG_KNIGHTS = 2;
 	public static final int MAX_MIGHTY_KNIGHTS = 2;
@@ -45,6 +46,7 @@ public class Player {
 	private int playerNumber;
 	private Color color;
 	private String playerName;
+	private int PCVictoryPointsCount;
 	protected int numOwnedSettlements;
 	protected int numOwnedCities;
 	protected int numOwnedCityWalls;
@@ -56,12 +58,12 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
-	private int numOwnedFish = 100;
+
+	private int numOwnedFish = 0;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
-	//
-	private int[] cityImprovementLevels = {3, 3, 3};
+	private int[] cityImprovementLevels = {0, 0, 0};
 	private boolean[] harbors;
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
@@ -120,6 +122,7 @@ public class Player {
 		actionLog = "";
 		latestBuiltCommunityId = -1;
 		metropolisTypeToBuild = -1;
+		PCVictoryPointsCount = 0;
 
 		hand = new Vector<ProgressCardType>();
         newCards = new Vector<ProgressCardType>();
@@ -200,6 +203,10 @@ public class Player {
 		actionLog = "";
 	}
 
+	public void incPCVictoryPointscount(int inc)
+	{
+		PCVictoryPointsCount = PCVictoryPointsCount + inc;
+	}
 	/**
 	 * Function called at the end of the trun (after build phase finishes)
 	 */
@@ -239,6 +246,7 @@ public class Player {
 	public void setFreeBuildUnit(int freeBuildVertexUnit) {
 		this.freeBuildUnit = freeBuildVertexUnit;
 	}
+
 
 	/**
 	* Attempt to build a road on an edge. Returns true on success
@@ -710,6 +718,28 @@ public class Player {
 		return true;
 	}
 
+	public boolean activateFreeKnightAt(Vertex vertex)
+    {
+        if (vertex == null || !canActivateKnightAt(vertex))
+        {
+            return false;
+        }
+
+        if (!canAffordToActivateKnight()) {
+            return false;
+        }
+
+        if (!vertex.activateKnight(this))
+        {
+            return false;
+        }
+
+        // append to the turn log
+        appendAction(R.string.player_activate_knight);
+
+        return true;
+    }
+
 	// TODO: implement promote knight
 	/**
 	 * Attempt to promote a knight at the vertex. Returns true on success
@@ -832,6 +862,27 @@ public class Player {
 		// NOTE: knight will update board to intermediately moving the knight
 
 		//TODO: we will update the longest trade route when knight is actually moved
+
+		return true;
+	}
+
+	public boolean removeKnightOffBoardFrom(Vertex vertex)
+	{
+		if(vertex == null || !canRemoveKnightOffBoard(vertex))
+		{
+			return false;
+		}
+
+		Knight toRemove = vertex.getPlacedKnight();
+
+		if(!vertex.removeKnightOffBoardFromHere(this))
+		{
+			return false;
+		}
+
+		board.nextPhase();
+
+		board.startKnightRemovementPhase(toRemove);
 
 		return true;
 	}
@@ -1477,6 +1528,7 @@ public class Player {
 		return vertex.canRemoveKnightFromHere(this);
 	}
 
+	//Abhi's Method
 	public boolean canRemoveKnightAtThisVertex(Vertex vertex) {
 		for (Vertex v : board.getVertices()) {
 			if (v.hasCommunity() && v.getOwnerPlayer() == this) {
@@ -1487,6 +1539,12 @@ public class Player {
 
 		}
 		return false;
+	}
+
+	//Phil's Method
+	public boolean canRemoveKnightOffBoard(Vertex vertex)
+	{
+		return vertex.canRemoveKnightOffBoardHere(this);
 	}
 
 	/**
@@ -2077,7 +2135,7 @@ public class Player {
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getVictoryPoints() {
-		return getPublicVictoryPoints() + privateVictoryPointsCount;
+		return getPublicVictoryPoints() + privateVictoryPointsCount + PCVictoryPointsCount;
 	}
 
 	/**
@@ -2854,6 +2912,17 @@ public class Player {
 	public void setNumOwnedFish(int numOwnedFish) {
 		this.numOwnedFish = numOwnedFish;
 	}
+
+	public void setNumOwnedCityWalls(int numOwnedCityWalls)
+	{
+		this.numOwnedCityWalls = this.numOwnedCityWalls + numOwnedCityWalls;
+	}
+
+	public void setNumOwnedBricks(int count)
+	{
+
+	}
+
 
 	/**
 	 * Add an action to the turn log

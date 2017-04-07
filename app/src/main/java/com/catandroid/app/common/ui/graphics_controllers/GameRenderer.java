@@ -1,8 +1,5 @@
 package com.catandroid.app.common.ui.graphics_controllers;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -13,8 +10,11 @@ import com.catandroid.app.common.components.board_pieces.Knight;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Vertex;
 import com.catandroid.app.common.players.Player;
-import com.catandroid.app.common.ui.views.GameView;
 import com.catandroid.app.common.ui.resources.Square;
+import com.catandroid.app.common.ui.views.GameView;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 public class GameRenderer implements Renderer {
 
@@ -23,7 +23,7 @@ public class GameRenderer implements Renderer {
 		BUILD_ROAD,	BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER,
 		CHASE_PIRATE, MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_DISPLACED_KNIGHT,
         MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE, PLACE_MERCHANT,
-		PLAY_INTRIGUE
+		PLAY_INTRIGUE, REMOVE_KNIGHT
 	}
 
 	private TextureManager texture;
@@ -51,6 +51,8 @@ public class GameRenderer implements Renderer {
 	public boolean isPsuedoTurnAction() {
 		switch(action) {
 			case MOVE_DISPLACED_KNIGHT:
+				return true;
+			case REMOVE_KNIGHT:
 				return true;
 			default:
 				return false;
@@ -261,6 +263,12 @@ public class GameRenderer implements Renderer {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 				}
+				/**
+				else if(action == Action.REMOVE_KNIGHT && activeTurnPlayer.canRemoveKnightOffBoard(vertex)) {
+					Knight toRemove = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toRemove.getKnightRank(), false);
+				}
+				 **/
 				else if (action == Action.PROMOTE_KNIGHT && activeTurnPlayer.canPromoteKnightAt(vertex)) {
 					Knight toHighlight = vertex.getPlacedKnight();
 					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
@@ -297,6 +305,15 @@ public class GameRenderer implements Renderer {
                         }
                     }
                 }
+                else if(action == Action.REMOVE_KNIGHT && board.isMyPseudoTurn())
+				{
+					Player player = view.getActivePlayer();
+					if(player.canRemoveKnightOffBoard(vertex))
+					{
+						Knight toRemove = vertex.getPlacedKnight();
+						selectableKnight = new Knight(toRemove.getKnightRank(), false);
+					}
+				}
 				if (selectableKnight != null || vertex.getCurUnitType() == Vertex.KNIGHT)
 				{
 					texture.drawKnight(vertex, selectableKnight, gl, boardGeometry);
