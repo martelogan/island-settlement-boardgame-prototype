@@ -73,7 +73,7 @@ public class Board {
 		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
 		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
 		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAYING_INVENTOR, REMOVING_OPEN_ROAD, DONE
+		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAYING_INVENTOR, REMOVING_OPEN_ROAD, SMITH_PHASE1, SMITH_PHASE2, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -241,7 +241,13 @@ public class Board {
 		//generate progress card decks
 		progressCardInit();
 	}
-    //Inventor: set hexes chosen to have number tokens switched
+
+	/**
+	 * Inventor: set hexes chosen by player - they need their number tokens switched
+	 * @param hexagon
+	 * @param num if first hex or second hex selected
+	 */
+
 	public void setHexInventor(Hexagon hexagon, int num){
         if(num == 1){
             this.hexInventor1 = hexagon;
@@ -250,9 +256,18 @@ public class Board {
             this.hexInventor2 = hexagon;
         }
     }
+
     public Hexagon getHexInventor1(){return this.hexInventor1;}
+
     public Hexagon getHexInventor2(){return this.hexInventor2;}
 
+	/**
+	 * Once tokens switched reset hexInventor values to null
+	 */
+	public void setHexInventorsNull(){
+		this.hexInventor1 = null;
+		this.hexInventor2 = null;
+	}
 	/**
 	 * Get a costs_reference to the board's geometry
 	 *
@@ -553,6 +568,10 @@ public class Board {
 				case MOVING_PIRATE:
 					startAIRobberPhase(current);
 					return;
+				case PLAYING_INVENTOR:
+				case REMOVING_OPEN_ROAD:
+				case SMITH_PHASE1:
+				case SMITH_PHASE2:
 
 				case DONE:
 					return;
@@ -968,6 +987,10 @@ public class Board {
 	}
 
 	public boolean isInventorPhase() {return (phase == Phase.PLAYING_INVENTOR);}
+
+	public boolean isSmithPhase1(){return(phase == Phase.SMITH_PHASE1);}
+
+	public boolean isSmithPhase2(){return(phase == Phase.SMITH_PHASE2);}
 
     public boolean isRemovingOpenRoadPhase() {return(phase == Phase.REMOVING_OPEN_ROAD);}
 
@@ -1574,6 +1597,8 @@ public class Board {
 				return R.string.game_defended_catan_wait_pick_card;
 			case PLACE_MERCHANT:
 				return R.string.game_place_merchant;
+			case PLAYING_INVENTOR:
+				return R.string.game_play_inventor;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -1716,27 +1741,27 @@ public class Board {
 		politicsDeck = new ArrayList<>();
 
 		//@TODO for testing purposes ONLY
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.SMITH);
+		tradeDeck.add(ProgressCard.ProgressCardType.SMITH);
+		tradeDeck.add(ProgressCard.ProgressCardType.SMITH);
+		tradeDeck.add(ProgressCard.ProgressCardType.SMITH);
+		tradeDeck.add(ProgressCard.ProgressCardType.SMITH);
+		tradeDeck.add(ProgressCard.ProgressCardType.SMITH);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		scienceDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
+		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
+		politicsDeck.add(ProgressCard.ProgressCardType.SMITH);
 
 
 		//@TODO Implement all these progress cards

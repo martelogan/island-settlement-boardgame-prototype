@@ -178,6 +178,13 @@ public class Vertex {
 	}
 
 	/**
+	 * Get the edge ids of this vertex
+	 *
+	 * @return the edgeids
+	 */
+	public int[] getEdgeIds(){return edgeIds;}
+
+	/**
 	 * Check if vertex has a current unit from any player
 	 * 
 	 * @return true if there is any vertex unit placed here

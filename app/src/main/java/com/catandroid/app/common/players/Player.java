@@ -1,5 +1,6 @@
 package com.catandroid.app.common.players;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 
@@ -24,6 +25,7 @@ public class Player {
 	private static boolean FREE_BUILD = false;
 
 	private int freeBuildUnit = -1;
+	private static boolean FREE_PROMOTE = false;
 
 	private static final String[] EVENT_ROLL_STRINGS = { "", "☠", "☠", "☠", "Trade", "Science", "Politics" };
 
@@ -40,7 +42,6 @@ public class Player {
 	public static final int[] ROAD_COST = { 1, 0, 0, 1, 0, 0 };
 	public static final int[] SETTLEMENT_COST = { 1, 1, 1, 1, 0, 0 };
 	public static final int[] CITY_COST = { 0, 0, 2, 0, 3, 0 };
-	private int ProgressCardVictoryPointsCount;
 	private String googlePlayParticipantId;
 	private int playerNumber;
 	private Color color;
@@ -56,11 +57,11 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
-	private int numOwnedFish = 0;
+	private int numOwnedFish = 200;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
-	private int[] cityImprovementLevels = {0, 0, 0};
+	private int[] cityImprovementLevels = {3, 3, 3};
 	private boolean[] harbors;
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
@@ -108,7 +109,6 @@ public class Player {
 		numOwnedMightyKnights = 0;
 		myLongestTradeRouteLength = 0;
 		privateVictoryPointsCount = 0;
-		ProgressCardVictoryPointsCount = 0;
 		tradeValue = 4;
 		usedCardThisTurn = false;
 		shipWasMovedThisTurn = false;
@@ -221,6 +221,8 @@ public class Player {
 	public void setFreeBuild(boolean freeBuild) {
 		FREE_BUILD = freeBuild;
 	}
+
+	public void setFreePromote(boolean freePromote){FREE_PROMOTE = freePromote;}
 
 	public boolean getFreeBuild() {return FREE_BUILD;}
 
@@ -500,7 +502,6 @@ public class Player {
 		}
 
 		boolean setup = board.isSetupPhase();
-		boolean playedMedicine = board.isProgressPhase2();
 
 		// check resources based on type we want to build
 		if (unitType == Vertex.SETTLEMENT) {
@@ -545,15 +546,10 @@ public class Player {
 			ownedCommunityIds.add(vertex.getId());
 			board.updateLongestTradeRoute();
 		} else if(vertex.getCurUnitType() == Vertex.CITY){ // city
-			if (!setup && !playedMedicine) { ///////////////////////////////////////////////////////////////////////
+			if (!setup) {
 				useResources(Resource.ResourceType.GRAIN, 2);
 				useResources(Resource.ResourceType.ORE, 3);
 				numOwnedSettlements -= 1;
-			}
-			else if (playedMedicine)
-			{
-				useResources(Resource.ResourceType.GRAIN, 2);
-				useResources(Resource.ResourceType.ORE, 1);
 			}
 			else {
 				ownedCommunityIds.add(vertex.getId());
@@ -738,8 +734,11 @@ public class Player {
 		}
 
 		// pay for the knight
-		useResources(ResourceType.WOOL, 1);
-		useResources(ResourceType.ORE, 1);
+		if(!FREE_PROMOTE) {
+			useResources(ResourceType.WOOL, 1);
+			useResources(ResourceType.ORE, 1);
+			setFreePromote(false);
+		}
 		// update our knight counts
 		Knight promotedKnight = vertex.getPlacedKnight();
 		switch(promotedKnight.getKnightRank()) {
@@ -1549,23 +1548,32 @@ public class Player {
 
 	public boolean RemoveOpenRoad(Edge edge) {
 		boolean isOpen = false;
+		int edgeId = edge.getId();
 		if (edge.hasEdgeUnit() && edge.getCurUnitType() == 1) {
 			int[] vertexIds = edge.getVertices();
 
-			for (int i = 0; i < 2; i++) {
+ 			for (int i = 0; i < 2; i++) {
 				//checks if either end of road is open
 				Vertex thisVertex = board.getVertexById(vertexIds[i]);
-				if (!thisVertex.hasVertexUnitPlacedHere()) {
+				int[] vertexEdgeids = thisVertex.getEdgeIds();
+
+				int count = 0;
+				for (int j = 0; j < 3; j++){
+					if(thisVertex.getEdge(vertexEdgeids[i]).getCurUnitType() == 1){
+						count++;
+					}
+				}
+
+				if (!thisVertex.hasVertexUnitPlacedHere() && count == 1) {
 					isOpen = true;
 				}
-				//also considered open if road/ship has city,settlement or knight of a different colour on one end
+					//also considered open if road/ship has city,settlement or knight of a different colour on one end
 				else if (thisVertex.getOwnerPlayer() != edge.getOwnerPlayer()) {
 					isOpen = true;
 				}
+
 			}
 		}
-		if(isOpen){edge.removeRoad();}
-
 		return isOpen;
 	}
 
@@ -2025,7 +2033,7 @@ public class Player {
 	 * @return true if the player can afford to promote a knight
 	 */
 	public boolean canAffordToPromoteKnight() {
-		return (FREE_BUILD || (numTotalOwnedKnights < MAX_TOTAL_KNIGHTS
+		return (FREE_PROMOTE || (numTotalOwnedKnights < MAX_TOTAL_KNIGHTS
 				&& getResources(Resource.ResourceType.WOOL) >= 1
 				&& getResources(Resource.ResourceType.ORE) >= 1));
 	}
@@ -2061,20 +2069,13 @@ public class Player {
 		return points;
 	}
 
-	public int getProgressCardVictoryPointsCount(){
-		return ProgressCardVictoryPointsCount;
-	}
-
-	public void incProgressCardVictoryPointsCount(int inc){
-		ProgressCardVictoryPointsCount = ProgressCardVictoryPointsCount + inc;
-	}
 	/**
 	 * Return player's current total privateVictoryPointsCount points
 	 *
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getVictoryPoints() {
-		return getPublicVictoryPoints() + privateVictoryPointsCount + ProgressCardVictoryPointsCount;
+		return getPublicVictoryPoints() + privateVictoryPointsCount;
 	}
 
 	/**
