@@ -284,6 +284,10 @@ public class GameRenderer implements Renderer {
 						selectableKnight = new Knight(toHighlight.getKnightRank(), false);
 					}
 				}
+				else if(action == Action.PLAY_INTRIGUE && activeTurnPlayer.canRemoveKnightAtThisVertex(vertex)) {
+					Knight toHighlight = vertex.getPlacedKnight();
+					selectableKnight = new Knight(toHighlight.getKnightRank(), false);
+				}
                 else if(action == Action.MOVE_DISPLACED_KNIGHT && board.isMyPseudoTurn()) {
                     Player player = view.getActivePlayer();
                     if (player.canDisplaceKnightTo(vertex)) {

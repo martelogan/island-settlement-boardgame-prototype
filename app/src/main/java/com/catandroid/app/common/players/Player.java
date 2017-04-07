@@ -56,7 +56,7 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
-	private int numOwnedFish = 0;
+	private int numOwnedFish = 100;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
@@ -885,22 +885,27 @@ public class Player {
 		if(toDisplace.getOwnerPlayer() == this) {
 			return false;
 		}
+		if(!isIntrigue) {
+			Knight toMove = board.getCurrentlyMovingKnight();
 
-		Knight toMove = board.getCurrentlyMovingKnight();
+			if(toMove == null || !toMove.canDisplace(toDisplace)) {
+				return false;
+			}
 
-		if(toMove == null || !toMove.canDisplace(toDisplace)) {
-			return false;
-		}
-
-		if(!target.displaceKnightFromHere(this, toMove)) {
-			return false;
+			if(!target.displaceKnightFromHere(this, toMove)) {
+				return false;
+			}
+		} else {
+			target.displaceKnightFromHereDuringIntrigue();
 		}
 
 		board.updateLongestTradeRoute();
 
 		//TODO: is this safe?
 		// clear temporary memory and intermediately return to player turn phase
-		board.nextPhase();
+		if (!isIntrigue) {
+			board.nextPhase();
+		}
 
 		boolean displacedKnightHasSomewhereToRelocate = false;
 		for (Vertex candidateRelocation : board.getVertices()) {
@@ -1472,6 +1477,18 @@ public class Player {
 		return vertex.canRemoveKnightFromHere(this);
 	}
 
+	public boolean canRemoveKnightAtThisVertex(Vertex vertex) {
+		for (Vertex v : board.getVertices()) {
+			if (v.hasCommunity() && v.getOwnerPlayer() == this) {
+				if (v.canRemoveKnightAtThisVertex(vertex, this, false)) {
+					return true;
+				}
+			}
+
+		}
+		return false;
+	}
+
 	/**
 	 * Can you place the currently moving knight at this vertex?
 	 *
@@ -1531,14 +1548,15 @@ public class Player {
 		}
 		if(isIntrigue) {
 			return vertex.canDisplaceKnightFromHere(this);
-		}
-		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+		} else {
+			Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
 
-		if(!isMyKnight(currentlyMovingKnight)) {
-			return false;
-		}
+			if(!isMyKnight(currentlyMovingKnight)) {
+				return false;
+			}
 
-		return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
+			return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
+		}
 	}
 
 	/**
@@ -1825,12 +1843,16 @@ public class Player {
 		return resourceType;
 	}
 
+	public void incVictoryPoints() {
+		privateVictoryPointsCount += 1;
+	}
 	/**
 	 * DiscardResourcesFragment one resource of a given resourceType
 	 *
 	 * @param resourceType
 	 *            or null for random
 	 */
+
 	public void discard(Resource.ResourceType resourceType) {
 		Resource.ResourceType choice = resourceType;
 
@@ -2748,6 +2770,7 @@ public class Player {
 			int playerDisciplineLevel = cityImprovementLevels[CityImprovement.toCityImprovementIndex(type)];
 			boolean mustGiveProgresCard = playerDisciplineLevel != 0 && diceRollNumber2 <= playerDisciplineLevel+1;
 			if(mustGiveProgresCard){
+				ProgressCardType progressCard;
 				switch(type){
 					case TRADE:
 						//distribute trade Progress Card
@@ -2755,11 +2778,21 @@ public class Player {
 						break;
 					case SCIENCE:
 						//distribute science Progress Card
-						hand.add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+						progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE);
+						if (progressCard == ProgressCardType.PRINTER) {
+							playPrinter();
+						} else {
+							hand.add(progressCard);
+						}
 						break;
 					case POLITICS:
 						//distribute politics Progress Card
-						hand.add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+						progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS);
+						if (progressCard == ProgressCardType.CONSTITUTION) {
+							playConstitution();
+						} else {
+							hand.add(progressCard);
+						}
 						break;
 					default:
 						//DO NOT GIVE THE PLAYER ANY PROGRESS CARDS
@@ -2769,9 +2802,25 @@ public class Player {
 		}
 	}
 
+	public void playConstitution() {
+		incVictoryPoints();
+		board.toast("Played Constitution");
+	}
+
+	public void playPrinter() {
+		incVictoryPoints();
+		board.toast("Played Printer");
+	}
+
 	public ProgressCard.ProgressCardType gainProgressCard(CityImprovement.CityImprovementType type){
 		ProgressCard.ProgressCardType picked = board.pickNewProgressCard(type);
-		hand.add(picked);
+		if(picked == ProgressCardType.CONSTITUTION) {
+			playConstitution();
+		} else if (picked == ProgressCardType.PRINTER) {
+			playPrinter();
+		} else {
+			hand.add(picked);
+		}
 		return picked;
 	}
 

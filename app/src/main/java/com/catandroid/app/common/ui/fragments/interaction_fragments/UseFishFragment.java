@@ -333,7 +333,9 @@ public class UseFishFragment extends Fragment {
 								ProgressCard.ProgressCardType gained = currentPlayer.gainProgressCard(CityImprovement.CITY_IMPROVEMENT_TYPES[item]);
 								getFragmentManager().popBackStack();
 								currentPlayer.appendAction(R.string.player_received_card);
-								toast("Received: " + getString(ProgressCard.getCardStringResource(gained)));
+								if(gained != (ProgressCard.ProgressCardType.CONSTITUTION) && gained != ProgressCard.ProgressCardType.PRINTER) {
+									toast("Received: " + getString(ProgressCard.getCardStringResource(gained)));
+								}
 								currentPlayer.setNumOwnedFish(numFishOWned-7);
 
 							} else{

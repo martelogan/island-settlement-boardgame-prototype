@@ -72,7 +72,7 @@ public class Board {
 		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
 		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
 		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, PLACE_MERCHANT, DONE
+		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAY_INTRIGUE, DONE
 	}
 
 	public void setPhase(Phase phase) {
@@ -192,6 +192,8 @@ public class Board {
 	public void setIsMerchantFleetActive(boolean isActive) {
 		isMerchantFleetActive = isActive;
 	}
+
+	public void setIsBishop(boolean isActive) { isBishopActive = isActive;};
 
 	private void commonInit() {
 		curPlayerNumber = 0;
@@ -371,11 +373,13 @@ public class Board {
 	}
 
 	private boolean isMerchantFleetActive = false;
+	private boolean isBishopActive = false;
 
 	public boolean getIsMerchantFleetActive() {
 		return isMerchantFleetActive;
 	}
 
+	public boolean getIsBishopActive() { return isBishopActive; }
 	/**
 	 * Distribute resources for a given dice roll number
 	 *  @param diceRollNumber1
@@ -658,7 +662,7 @@ public class Board {
 				break;
 			case MOVING_ROBBER:
 				phase = returnPhase;
-				toast("Return phase");
+				//toast("Return phase");
 				break;
 			case MOVING_PIRATE:
 				phase = returnPhase;
@@ -701,6 +705,8 @@ public class Board {
 				}
             case PLACE_MERCHANT:
                 phase = Phase.PLAYER_TURN;
+			case PLAY_INTRIGUE:
+				phase = Phase.PLAYER_TURN;
 			case DONE:
 				return false;
 		}
@@ -1008,6 +1014,8 @@ public class Board {
 
     public boolean isPlaceMerchantPhase() { return (phase == Phase.PLACE_MERCHANT);}
 
+	public boolean isPlayIntrigue() { return (phase == Phase.PLAY_INTRIGUE);
+	}
 	/**
 	 * Get the dice number token value for a hexagons
 	 * 
@@ -1711,20 +1719,20 @@ public class Board {
 		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
 		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-		scienceDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
+		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
 
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-		politicsDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
+		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
 
 
 		//@TODO Implement all these progress cards
@@ -1819,7 +1827,7 @@ public class Board {
 		return players[gameParticipantIds.indexOf(pId)];
 	}
 
-    private void toast(String message) {
+    public void toast(String message) {
         Toast.makeText(activeGameFragment.getActivity().getApplicationContext(), message, Toast.LENGTH_LONG)
                 .show();
     }

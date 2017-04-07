@@ -255,13 +255,25 @@ public class ActiveGameFragment extends Fragment {
 					builder.setTitle(getString(R.string.game_defended_catan));
 					builder.setItems(items, new OnClickListener() {
 						public void onClick(DialogInterface dialog, int item) {
+							ProgressCard.ProgressCardType progressCard;
 							Player currentPlayer = board.getPlayerFromParticipantId(myParticipantId);
 							if (item == 0) {
-								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.TRADE));
+								progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.TRADE);
+								currentPlayer.getHand().add(progressCard);
 							} else if(item == 1){
-								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE));
+								progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.SCIENCE);
+								if (progressCard == ProgressCard.ProgressCardType.PRINTER) {
+									currentPlayer.playPrinter();
+								} else {
+									currentPlayer.getHand().add(progressCard);
+								}
 							} else if(item == 2){
-								currentPlayer.getHand().add(board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS));
+								progressCard = board.pickNewProgressCard(CityImprovement.CityImprovementType.POLITICS);
+								if (progressCard == ProgressCard.ProgressCardType.CONSTITUTION) {
+									currentPlayer.playConstitution();
+								} else {
+									currentPlayer.getHand().add(progressCard);
+								}
 							}
 
 							//pass turn
@@ -378,9 +390,9 @@ public class ActiveGameFragment extends Fragment {
 			case MOVE_KNIGHT_1:
 			case MOVE_KNIGHT_2:
 			case MOVE_DISPLACED_KNIGHT:
+			case PLAY_INTRIGUE:
 				select(action, board.getVertexById(id));
 				break;
-
 			case BUILD_EDGE_UNIT:
 			case BUILD_ROAD:
 			case BUILD_SHIP:
@@ -465,7 +477,7 @@ public class ActiveGameFragment extends Fragment {
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
                 || action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
-				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT) {
+				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT || action == Action.PLAY_INTRIGUE) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -548,7 +560,12 @@ public class ActiveGameFragment extends Fragment {
 					case PLAY_INTRIGUE:
 						if(vertex.getCurUnitType() == Vertex.KNIGHT
 								&& vertex.getOwnerPlayer() != player
-								&& player.canDisplaceKnightAt(vertex)) {
+								&& //player.canDisplaceKnightAt(vertex)
+									player.canRemoveKnightAtThisVertex(vertex) ) {
+							confirmDisplaceKnightDialog(vertex);
+							board.nextPhase();
+							//renderer.setAction(Action.MOVE_KNIGHT_2);
+							showState(true);
 
 						}
 				}
@@ -619,7 +636,7 @@ public class ActiveGameFragment extends Fragment {
 //
 //					showState(false);
 //				}
-				else {toast("Played the Saboteur");
+				else {
 					showState(false);
 				}
 			}
@@ -1230,7 +1247,9 @@ public class ActiveGameFragment extends Fragment {
 		}
         else if(board.isPlaceMerchantPhase()){
             action = Action.PLACE_MERCHANT;
-        }
+        } else if(board.isPlayIntrigue()) {
+			action = Action.PLAY_INTRIGUE;
+		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -1760,19 +1779,21 @@ public class ActiveGameFragment extends Fragment {
 		{
 			items[i] = list[i];
 		}
+		if(board.getIsBishopActive()) {
+			steal(index-1);
+		} else {
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(getString(R.string.game_steal_title));
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int item) {
+					steal(item);
+				}
+			});
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getString(R.string.game_steal_title));
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int item) {
-				steal(item);
-			}
-		});
-
-		AlertDialog stealDialog = builder.create();
-		stealDialog.setCancelable(false);
-		stealDialog.show();
-
+			AlertDialog stealDialog = builder.create();
+			stealDialog.setCancelable(false);
+			stealDialog.show();
+		}
 	}
 
 	private void steal(int victim) {
@@ -1808,7 +1829,29 @@ public class ActiveGameFragment extends Fragment {
 				}
 			}
 
-			if (index == victim) {
+			if (board.getIsBishopActive()) {
+				Resource.ResourceType resourceType = board.getPlayerOfCurrentGameTurn().steal(player);
+
+				if (resourceType != null)
+				{
+					toast(getString(R.string.game_stole_str) + " "
+							+ getActivity().getString(Resource.toRString(resourceType))
+							+ " " + getString(R.string.game_from_str) + " "
+							+ player.getPlayerName());
+				}
+				else
+				{
+					toast(getString(R.string.game_player_couldnt_steal) + " "
+							+ player.getPlayerName());
+				}
+				if (index == victim) {
+					board.setIsBishop(false);
+					board.nextPhase();
+					mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
+					showState(false);
+					return;
+				}
+			} else if (index == victim) {
 				Resource.ResourceType resourceType = board.getPlayerOfCurrentGameTurn().steal(player);
 
 				if (resourceType != null)
@@ -1829,10 +1872,8 @@ public class ActiveGameFragment extends Fragment {
 				showState(false);
 				return;
 			}
-
 			index++;
 		}
-
 	}
 
 	private void cantAct(Action action) {
@@ -2064,16 +2105,16 @@ public class ActiveGameFragment extends Fragment {
 													playBishop();
 													break;
 												case INTRIGUE:
-													playIntrigue();
+													//playIntrigue();
 													break;
 												case SABOTEUR:
-													playSaboteur();
+													//playSaboteur();
 													break;
 												case SPY:
 													playSpy();
 													break;
 												case COMMERCIAL_HARBOR:
-													playCommercialHarbor();
+													//playCommercialHarbor();
 													break;
 												case MERCHANT_FLEET:
 													playMerchantFleet();
@@ -2109,7 +2150,6 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void confirmDisplaceKnightDialog(Vertex vertex) {
-
 		if (vertex.getCurUnitType() != Vertex.KNIGHT) {
 			return;
 		}
@@ -2131,8 +2171,12 @@ public class ActiveGameFragment extends Fragment {
 					dialog.dismiss();
 				} else if (item == confirm) {
 					dialog.dismiss();
-					if (board.getPlayerOfCurrentGameTurn().displaceKnightAt(displacementTarget)) {
+					Player current = board.getPlayerOfCurrentGameTurn();
+					if (current.displaceKnightAt(displacementTarget)) {
 						// finish moving the knight
+						if(current.getIsIntrigue()) {
+							current.setIsIntrigue(false);
+						}
 						renderer.setAction(Action.NONE);
 						showState(true);
 					}
@@ -2182,34 +2226,38 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played the Alchemist");
 	}
 
-	private void playBishop(){
-		//@TODO
-		//add bishop placement logic
-		board.setReturnPhase(board.getPhase());
-		board.startRobberPhase();
-		showState(false);
-		/*while(board.getCurRobberHex() == null) {
+	private void playConstitution() {
 
-		}
-		rob();*/
-		showState(false);
-		board.nextPhase();
-		toast("Played the Bishop");
 	}
 
+	private void playBishop(){
+		//@TODO
+		board.setIsBishop(true);
+		board.setPhase(Board.Phase.CHOOSE_ROBBER_PIRATE);
+		this.chooseRobberPirate(0);
+
+		toast("Played the Bishop");
+	}
+	/*
 	private void playIntrigue(){
+
 		//@TODO
 		Player player = board.getPlayerOfCurrentGameTurn();
 		player.setIsIntrigue(true);
+		getActivity().setTitle("Displace opponent's knight");
+		board.setPhase(Board.Phase.PLAY_INTRIGUE);
+		showState(false);
 		//add merchant placement logic
 		toast("Played the Intrigue");
+
 	}
+	*/
 
 	@Override
 	public String toString() {
 		return super.toString();
 	}
-
+	/*
 	private void playSaboteur(){
 		//@TODO
 		//add Saboteur placement logic
@@ -2251,12 +2299,12 @@ public class ActiveGameFragment extends Fragment {
 
 		board.nextPhase();
 
-	}
+	}*/
 
 	private void playSpy(){
 		//@TODO
 		//add merchant placement logic
-
+		toast("Played the Spy");
 		final Player current = board.getPlayerOfCurrentGameTurn();
 		List<String> playerList = new ArrayList<>();
 
@@ -2275,6 +2323,11 @@ public class ActiveGameFragment extends Fragment {
 			}
 			playerList.add(player.getPlayerName());
 			playerNameToPlayerId.put(player.getPlayerName(), player.getPlayerNumber());
+		}
+
+		if (playerList.size() == 0) {
+			toast("Other player's don't have any progress cards");
+			return;
 		}
 
 		final CharSequence[] playerListToShow = new CharSequence[playerList.size()];
@@ -2325,10 +2378,9 @@ public class ActiveGameFragment extends Fragment {
 		});
 		builder.setCancelable(true);
 		builder.create().show();
-
-		toast("Played the Spy");
 	}
 
+	/*
 	private void playCommercialHarbor(){
 		//@TODO
 		//add commercial harbor placement logic
@@ -2430,33 +2482,10 @@ public class ActiveGameFragment extends Fragment {
 
 		mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 		board.nextPhase();
-		/*
-		CharSequence[] items = new CharSequence[playerIndex];
-		for (int i = 0; i < playerIndex; i++) {
-			items[i] = playerList[i];
-		}
-		for (int i = 0; i < playerIndex; i++) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-			builder.setTitle(playerList[i]);
-			builder.setItems(items, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int item) {
-
-				}
-			});
-
-		}
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getString(R.string.commercial_harbor_trade_title));
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int item) {
-
-			}
-		});
-		*/
 
 		toast("Played the Commercial Harbor");
 	}
+	*/
 
 	private void playMerchantFleet(){
 		//@TODO
