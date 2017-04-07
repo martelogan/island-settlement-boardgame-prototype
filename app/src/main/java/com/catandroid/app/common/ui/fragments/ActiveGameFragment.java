@@ -54,9 +54,7 @@ import com.catandroid.app.common.ui.views.GameView;
 import com.catandroid.app.common.ui.views.ResourceView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 public class ActiveGameFragment extends Fragment {
@@ -452,7 +450,8 @@ public class ActiveGameFragment extends Fragment {
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
 				|| action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
-				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT) {
+				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT
+				|| action == Action.REMOVE_KNIGHT) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -491,12 +490,6 @@ public class ActiveGameFragment extends Fragment {
 							showState(false);
 						}
 						break;
-					//PROBLEM MIGHT BE HERE
-					case REMOVE_KNIGHT:
-						if(player.removeKnightFrom(vertex))
-						{
-							showState(false);
-						}
 					case PROMOTE_KNIGHT:
 						if (player.promoteKnightAt(vertex)) {
 							showState(false);
@@ -538,6 +531,12 @@ public class ActiveGameFragment extends Fragment {
 							showState(true);
 						}
 						break;
+					case REMOVE_KNIGHT:
+						if(player.removeKnightOffBoardFrom(vertex))
+						{
+							renderer.setAction(Action.REMOVE_KNIGHT);
+							showState(true);
+						}
 				}
 		}
 	}
@@ -924,7 +923,7 @@ public class ActiveGameFragment extends Fragment {
 
 			case REMOVE_KNIGHT:
 				for (Vertex vertex : board.getVertices()) {
-					if(player.canRemoveKnightFrom(vertex))
+					if(player.canRemoveKnightOffBoard(vertex))
 					{
 						canAct = true;
 						break;
@@ -1218,6 +1217,10 @@ public class ActiveGameFragment extends Fragment {
 		else if (board.isKnightDisplacementPhase()) {
 			action = Action.MOVE_DISPLACED_KNIGHT;
 		}
+		else if(board.isRemoveKnightPhase())
+		{
+			action = Action.REMOVE_KNIGHT;
+		}
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
@@ -1364,13 +1367,9 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canActivateSomeKnight()) {
 				view.addButton(ButtonType.ACTIVATE_KNIGHT);
 			}
-			//PROBLEM IS HERE
-			for (Vertex vertex : board.getVertices())
+			if(player.canMoveSomeKnight())
 			{
-				if(player.removeKnightFrom(vertex))
-				{
-					view.addButton(ButtonType.REMOVE_KNIGHT);
-				}
+				view.addButton(ButtonType.REMOVE_KNIGHT);
 			}
 			if(player.canPromoteSomeKnight()) {
 				view.addButton(ButtonType.PROMOTE_KNIGHT);
@@ -1761,7 +1760,6 @@ public class ActiveGameFragment extends Fragment {
 				steal(item);
 			}
 		});
-
 		AlertDialog stealDialog = builder.create();
 		stealDialog.setCancelable(false);
 		stealDialog.show();
@@ -1828,7 +1826,6 @@ public class ActiveGameFragment extends Fragment {
 
 	}
 
-	//should be private without static **testing
 	private void cantAct(Action action) {
 		Player player = board.getPlayerOfCurrentGameTurn();
 
@@ -2044,31 +2041,30 @@ public class ActiveGameFragment extends Fragment {
 											//play the card
 											switch (card) {
 												case MERCHANT:
-													playDeserter();
+													playMasterMerchant();
 													break;
 												case CRANE:
-													playDeserter();
-													break;
+													playMasterMerchant();
 												case ENGINEER:
-													playDeserter();
+													playMasterMerchant();
 													break;
 												case IRRIGIATION:
-													playDeserter();
+													playMasterMerchant();
 													break;
 												case MINING:
-													playDeserter();
+													playMasterMerchant();
 													break;
 												case DESERTER:
-													playDeserter();
+													playMasterMerchant();
 													break;
-												case WEDDING:
-													playDeserter();
+												case BISHOP:
+													playMasterMerchant();
 													break;
 												case WARLORD:
-													playDeserter();
+													playMasterMerchant();
 													break;
 												case MASTER_MERCHANT:
-													playDeserter();
+													playMasterMerchant();
 													break;
 												default:
 													break;
@@ -2304,19 +2300,6 @@ public class ActiveGameFragment extends Fragment {
 			return;
 		}
 
-		//CharSequence[] playerList = new CharSequence[board.getNumPlayers()];
-		final Map<CharSequence,Integer> resourcePointerMap = new HashMap<>();
-
-		resourcePointerMap.put("Lumber", 0);
-		resourcePointerMap.put("Wool", 1);
-		resourcePointerMap.put("Grain", 2);
-		resourcePointerMap.put("Brick", 3);
-		resourcePointerMap.put("Ore", 4);
-		resourcePointerMap.put("Gold", 5);
-		resourcePointerMap.put("Paper", 6);
-		resourcePointerMap.put("Coin", 7);
-		resourcePointerMap.put("Cloth", 8);
-
 		final CharSequence[] items = new CharSequence[l+1];
 
 		for(int i = 0; i < board.getNumPlayers(); i++)
@@ -2360,7 +2343,6 @@ public class ActiveGameFragment extends Fragment {
 					int grainCount;
 					int brickCount;
 					int oreCount;
-					int goldCount;
 					int paperCount;
 					int coinCount;
 					int clothCount;
@@ -2388,10 +2370,6 @@ public class ActiveGameFragment extends Fragment {
 						if(oreCount != 0) {
 							currentlyContainedResources.add(resourceIndex++, "Ore: " + player1.getResources(Resource.ResourceType.ORE));
 						}
-						goldCount = player1.getResources(Resource.ResourceType.GOLD);
-						if(goldCount != 0) {
-							currentlyContainedResources.add(resourceIndex++, "Gold: " + player1.getResources(Resource.ResourceType.GOLD));
-						}
 						grainCount = player1.getResources(Resource.ResourceType.GRAIN);
 						if(grainCount != 0) {
 							currentlyContainedResources.add(resourceIndex++, "Grain: " + player1.getResources(Resource.ResourceType.GRAIN));
@@ -2408,6 +2386,13 @@ public class ActiveGameFragment extends Fragment {
 						if(clothCount != 0) {
 							currentlyContainedResources.add(resourceIndex, "Cloth: " + player1.getResources(Resource.ResourceType.CLOTH));
 						}
+
+						if(currentlyContainedResources.size() == 0)
+						{
+							popup("Message", "Selected opponent has no resources");
+							return;
+						}
+						
 
 						CharSequence[] myCount = new CharSequence[currentlyContainedResources.size()];
 						myCount = currentlyContainedResources.toArray(myCount);
@@ -2444,11 +2429,6 @@ public class ActiveGameFragment extends Fragment {
 									player.addResources(Resource.ResourceType.BRICK, 1, false);
 									player1.useResources(Resource.ResourceType.BRICK, 1);
 								}
-								if(currentlyContainedResources.get(item).startsWith("Gold"))
-								{
-									player.addResources(Resource.ResourceType.GOLD, 1, false);
-									player1.useResources(Resource.ResourceType.GOLD, 1);
-								}
 								if(currentlyContainedResources.get(item).startsWith("Paper"))
 								{
 									player.addResources(Resource.ResourceType.PAPER, 1, false);
@@ -2467,54 +2447,55 @@ public class ActiveGameFragment extends Fragment {
 
 								dialog.dismiss();
 
-
 								int woolCount;
 								int grainCount;
 								int brickCount;
 								int oreCount;
-								int goldCount;
 								int paperCount;
 								int coinCount;
 								int clothCount;
 								int lumberCount;
+								int resourceIndex = 0;
 
 								final List<String> currentlyContainedResources = new ArrayList<>();
 
 								woolCount = player1.getResources(Resource.ResourceType.WOOL);
 								if(woolCount != 0) {
-									currentlyContainedResources.add("Wool: " + player1.getResources(Resource.ResourceType.WOOL));
+									currentlyContainedResources.add(resourceIndex++, "Wool: " + player1.getResources(Resource.ResourceType.WOOL));
 								}
 								lumberCount = player1.getResources(Resource.ResourceType.LUMBER);
 								if(lumberCount != 0) {
-									currentlyContainedResources.add("Lumber: " + player1.getResources(Resource.ResourceType.LUMBER));
+									currentlyContainedResources.add(resourceIndex++, "Lumber: " + player1.getResources(Resource.ResourceType.LUMBER));
 								}
 								brickCount = player1.getResources(Resource.ResourceType.BRICK);
 								if(brickCount != 0) {
-									currentlyContainedResources.add("Brick: " + player1.getResources(Resource.ResourceType.BRICK));
+									currentlyContainedResources.add(resourceIndex++, "Brick: " + player1.getResources(Resource.ResourceType.BRICK));
 								}
 								oreCount = player1.getResources(Resource.ResourceType.ORE);
 								if(oreCount != 0) {
-									currentlyContainedResources.add("Ore: " + player1.getResources(Resource.ResourceType.ORE));
-								}
-								goldCount = player1.getResources(Resource.ResourceType.GOLD);
-								if(goldCount != 0) {
-									currentlyContainedResources.add("Gold: " + player1.getResources(Resource.ResourceType.GOLD));
+									currentlyContainedResources.add(resourceIndex++, "Ore: " + player1.getResources(Resource.ResourceType.ORE));
 								}
 								grainCount = player1.getResources(Resource.ResourceType.GRAIN);
 								if(grainCount != 0) {
-									currentlyContainedResources.add("Grain: " + player1.getResources(Resource.ResourceType.GRAIN));
+									currentlyContainedResources.add(resourceIndex++, "Grain: " + player1.getResources(Resource.ResourceType.GRAIN));
 								}
 								paperCount = player1.getResources(Resource.ResourceType.PAPER);
 								if(paperCount != 0) {
-									currentlyContainedResources.add("Paper: " + player1.getResources(Resource.ResourceType.PAPER));
+									currentlyContainedResources.add(resourceIndex++, "Paper: " + player1.getResources(Resource.ResourceType.PAPER));
 								}
 								coinCount = player1.getResources(Resource.ResourceType.COIN);
 								if(coinCount != 0) {
-									currentlyContainedResources.add("Coin: " + player1.getResources(Resource.ResourceType.COIN));
+									currentlyContainedResources.add(resourceIndex++, "Coin: " + player1.getResources(Resource.ResourceType.COIN));
 								}
 								clothCount = player1.getResources(Resource.ResourceType.CLOTH);
 								if(clothCount != 0) {
-									currentlyContainedResources.add("Cloth: " + player1.getResources(Resource.ResourceType.CLOTH));
+									currentlyContainedResources.add(resourceIndex, "Cloth: " + player1.getResources(Resource.ResourceType.CLOTH));
+								}
+
+								if(currentlyContainedResources.size() == 0)
+								{
+									popup("Message", "Selected opponent has no resources");
+									return;
 								}
 
 								CharSequence[] myCount = new CharSequence[currentlyContainedResources.size()];
@@ -2552,11 +2533,6 @@ public class ActiveGameFragment extends Fragment {
 											player.addResources(Resource.ResourceType.BRICK, 1, false);
 											player1.useResources(Resource.ResourceType.BRICK, 1);
 										}
-										if(currentlyContainedResources.get(item).startsWith("Gold"))
-										{
-											player.addResources(Resource.ResourceType.GOLD, 1, false);
-											player1.useResources(Resource.ResourceType.GOLD, 1);
-										}
 										if(currentlyContainedResources.get(item).startsWith("Paper"))
 										{
 											player.addResources(Resource.ResourceType.PAPER, 1, false);
@@ -2582,6 +2558,7 @@ public class ActiveGameFragment extends Fragment {
 						});
 						builder.create().show();
 					}
+					continue;
 				}
 			}
 		});
@@ -2600,6 +2577,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	//Working on this
+	/**
 	private void playDeserter()
 	{
 		final Player currentPlayer = board.getPlayerOfCurrentGameTurn();
@@ -2660,27 +2638,310 @@ public class ActiveGameFragment extends Fragment {
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int item)
 			{
-						board.setPlayerNo(2);
-						board.setPhase(Board.Phase.REMOVE_KNIGHT);
-						currentPlayer.gotResourcesSinceLastTurn = false;
-						//board.setReturnPhase(Board.Phase.PROGRESS_CARD_STEP_2);
-						board.nextPhase();
-						showState(true);
+				Player player = board.getPlayerByName(playersWithKnightsList.get(item));
+				int playerNo = player.getPlayerNumber();
+				board.setPlayerNo(playerNo);
+				//renderer.setAction(Action.REMOVE_KNIGHT);
+				//setButtons(Action.REMOVE_KNIGHT);
+				//getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
+						//+ getString(R.string.game_remove_knight_final));
 
+
+				 board.setPhase(Board.Phase.REMOVING_KNIGHT);
+				 currentPlayer.gotResourcesSinceLastTurn = false;
+				 board.nextPhase();
+				 showState(true);
+
+
+				//renderer.setAction(Action.REMOVE_KNIGHT);
+				//setButtons(Action.REMOVE_KNIGHT);
+				//getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
+				//+ getString(R.string.game_remove_knight_final));
 			}
 		});
 		builder.create().show();
 
 		toast("Played the deserter");
 	}
-
-	/**
-	 private void playWedding()
-	 {
-	 toast("Played the wedding");
-	 }
 	 **/
 
+
+	//Working
+	 private void playResourceMonopoly()
+	 {
+		 final Player current = board.getPlayerOfCurrentGameTurn();
+		 final int ore = 0;
+		 final int grain = 1;
+		 final int wool = 2;
+		 final int lumber = 3;
+		 final int brick = 4;
+		 CharSequence[] items = new CharSequence[5];
+		 items[0] = "ore";
+		 items[1] = "grain";
+		 items[2] = "wool";
+		 items[3] = "lumber";
+		 items[4] = "brick";
+
+		 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		 builder.setTitle("Select a resource to steal");
+		 builder.setItems(items, new OnClickListener() {
+			 @Override
+			 public void onClick(DialogInterface dialog, int item) {
+				 dialog.dismiss();
+				 if(item == ore)
+				 {
+					 for(int i = 0; i < board.getNumPlayers(); i++)
+					 {
+						 Player opponent = board.getPlayerById(i);
+						 if(opponent == current)
+						 {
+							 continue;
+						 }
+						 else
+						 {
+							 if(opponent.getResources(Resource.ResourceType.ORE) > 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.ORE, 2);
+								 current.addResources(Resource.ResourceType.ORE, 2, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 2 Ores");
+							 }
+							 else if(opponent.getResources(Resource.ResourceType.ORE) == 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.ORE, 1);
+								 current.addResources(Resource.ResourceType.ORE, 1, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 1 Ore");
+							 }
+							 else
+							 {
+								 popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Ore to give you");
+							 }
+						 }
+					 }
+				 }
+				 if(item == grain)
+				 {
+					 for(int i = 0; i < board.getNumPlayers(); i++)
+					 {
+						 Player opponent = board.getPlayerById(i);
+						 if(opponent == current)
+						 {
+							 continue;
+						 }
+						 else
+						 {
+							 if(opponent.getResources(Resource.ResourceType.GRAIN) > 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.GRAIN, 2);
+								 current.addResources(Resource.ResourceType.GRAIN, 2, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 2 Grains");
+							 }
+							 else if(opponent.getResources(Resource.ResourceType.GRAIN) == 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.GRAIN, 1);
+								 current.addResources(Resource.ResourceType.GRAIN, 1, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 1 Grain");
+							 }
+							 else
+							 {
+								 popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Grain to give you");
+							 }
+						 }
+					 }
+				 }
+				 if(item == wool)
+				 {
+					 for(int i = 0; i < board.getNumPlayers(); i++)
+					 {
+						 Player opponent = board.getPlayerById(i);
+						 if(opponent == current)
+						 {
+							 continue;
+						 }
+						 else
+						 {
+							 if(opponent.getResources(Resource.ResourceType.WOOL) > 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.WOOL, 2);
+								 current.addResources(Resource.ResourceType.WOOL, 2, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 2 Wools");
+							 }
+							 else if(opponent.getResources(Resource.ResourceType.WOOL) == 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.WOOL, 1);
+								 current.addResources(Resource.ResourceType.WOOL, 1, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 1 Wool");
+							 }
+							 else
+							 {
+								 popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Wool to give you");
+							 }
+						 }
+					 }
+				 }
+				 if(item == lumber)
+				 {
+					 for(int i = 0; i < board.getNumPlayers(); i++)
+					 {
+						 Player opponent = board.getPlayerById(i);
+						 if(opponent == current)
+						 {
+							 continue;
+						 }
+						 else
+						 {
+							 if(opponent.getResources(Resource.ResourceType.LUMBER) > 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.LUMBER, 2);
+								 current.addResources(Resource.ResourceType.LUMBER, 2, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 2 Lumbers");
+							 }
+							 else if(opponent.getResources(Resource.ResourceType.LUMBER) == 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.LUMBER, 1);
+								 current.addResources(Resource.ResourceType.LUMBER, 1, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 1 Lumber");
+							 }
+							 else
+							 {
+								 popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Lumber to give you");
+							 }
+						 }
+					 }
+				 }
+				 if(item == brick)
+				 {
+					 for(int i = 0; i < board.getNumPlayers(); i++)
+					 {
+						 Player opponent = board.getPlayerById(i);
+						 if(opponent == current)
+						 {
+							 continue;
+						 }
+						 else
+						 {
+							 if(opponent.getResources(Resource.ResourceType.BRICK) > 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.BRICK, 2);
+								 current.addResources(Resource.ResourceType.BRICK, 2, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 2 Bricks");
+							 }
+							 else if(opponent.getResources(Resource.ResourceType.BRICK) == 1)
+							 {
+								 opponent.useResources(Resource.ResourceType.BRICK, 1);
+								 current.addResources(Resource.ResourceType.BRICK, 1, false);
+								 popup("Message", "" + opponent.getPlayerName() + " gave you 1 Brick");
+							 }
+							 else
+							 {
+								 popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Brick to give you");
+							 }
+						 }
+					 }
+				 }
+			 }
+		 });
+		 builder.create().show();
+
+		 toast("Played resource monopoly");
+	 }
+
+	//Working
+	private void playTradeMonopoly()
+	{
+		final Player current = board.getPlayerOfCurrentGameTurn();
+		final int paper = 0;
+		final int coin = 1;
+		final int cloth = 2;
+
+		CharSequence[] items = new CharSequence[3];
+		items[0] = "paper";
+		items[1] = "coin";
+		items[2] = "cloth";
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("Select a commodity to steal");
+		builder.setItems(items, new OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int item) {
+				dialog.dismiss();
+				if(item == paper)
+				{
+					for(int i = 0; i < board.getNumPlayers(); i++)
+					{
+						Player opponent = board.getPlayerById(i);
+						if(opponent == current)
+						{
+							continue;
+						}
+						else
+						{
+							if(opponent.getResources(Resource.ResourceType.PAPER) > 0)
+							{
+								opponent.useResources(Resource.ResourceType.PAPER, 1);
+								current.addResources(Resource.ResourceType.PAPER, 1, false);
+								popup("Message", "" + opponent.getPlayerName() + " gave you 1 Paper");
+							}
+							else
+							{
+								popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Paper to give you");
+							}
+						}
+					}
+				}
+				if(item == coin)
+				{
+					for(int i = 0; i < board.getNumPlayers(); i++)
+					{
+						Player opponent = board.getPlayerById(i);
+						if(opponent == current)
+						{
+							continue;
+						}
+						else
+						{
+							if(opponent.getResources(Resource.ResourceType.COIN) > 0)
+							{
+								opponent.useResources(Resource.ResourceType.COIN, 1);
+								current.addResources(Resource.ResourceType.COIN, 1, false);
+								popup("Message", "" + opponent.getPlayerName() + " gave you 1 Coin");
+							}
+							else
+							{
+								popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Coin to give you");
+							}
+						}
+					}
+				}
+				if(item == cloth)
+				{
+					for(int i = 0; i < board.getNumPlayers(); i++)
+					{
+						Player opponent = board.getPlayerById(i);
+						if(opponent == current)
+						{
+							continue;
+						}
+						else
+						{
+							if(opponent.getResources(Resource.ResourceType.CLOTH) > 0)
+							{
+								opponent.useResources(Resource.ResourceType.CLOTH, 1);
+								current.addResources(Resource.ResourceType.CLOTH, 1, false);
+								popup("Message", "" + opponent.getPlayerName() + " gave you 1 Cloth");
+							}
+							else
+							{
+								popup("Message", "Sorry, " + opponent.getPlayerName() + " has no Cloth to give you");
+							}
+						}
+					}
+				}
+			}
+		});
+		builder.create().show();
+
+		toast("Played trade monopoly");
+	}
 
 	private void confirmDisplaceKnightDialog(Vertex vertex) {
 
@@ -2715,6 +2976,27 @@ public class ActiveGameFragment extends Fragment {
 		});
 
 		builder.create().show();
+	}
+
+	//Working
+	private void playMedicine()
+	{
+		Player player = board.getPlayerOfCurrentGameTurn();
+		if(player.getResources(Resource.ResourceType.ORE) < 2 && player.getResources(Resource.ResourceType.GRAIN) < 1)
+		{
+			popup("Message", "Sorry, you cannot afford to build a City");
+			return;
+		}
+		else
+		{
+			player.addResources(Resource.ResourceType.GRAIN, 1, false);
+			player.addResources(Resource.ResourceType.ORE, 1, false);
+			renderer.setAction(Action.BUILD_CITY);
+			setButtons(Action.BUILD_CITY);
+			getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
+					+ getActivity().getString(R.string.game_build_city));
+		}
+		toast("Played medicine");
 	}
 
 	private void confirmChaseRobberDialog() {

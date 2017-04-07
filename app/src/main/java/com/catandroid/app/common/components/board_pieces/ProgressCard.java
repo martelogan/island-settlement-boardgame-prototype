@@ -1,7 +1,6 @@
 package com.catandroid.app.common.components.board_pieces;
 
 import com.catandroid.app.R;
-import com.catandroid.app.common.components.board_pieces.InventoryItem;
 
 /**
  * Created by logan on 2017-03-05.
@@ -29,12 +28,16 @@ public class ProgressCard extends InventoryItem {
                 return R.string.mining;
             case DESERTER:
                 return R.string.deserter;
-            case WEDDING:
-                return R.string.wedding;
+            case BISHOP:
+                return R.string.bishop;
             case WARLORD:
                 return R.string.warlord;
             case MASTER_MERCHANT:
                 return R.string.master_merchant;
+            case RESOURCE_MONOPOLY:
+                return R.string.resource_monopoly;
+            case TRADE_MONOPOLY:
+                return R.string.trade_monopoly;
             default:
                 return R.string.empty_string;
         }
@@ -60,12 +63,18 @@ public class ProgressCard extends InventoryItem {
                 return R.string.mining_description;
             case DESERTER:
                 return R.string.deserter_description;
-            case WEDDING:
-                return R.string.wedding_description;
+            case BISHOP:
+                return R.string.bishop_description;
             case WARLORD:
                 return R.string.warlord_description;
             case MASTER_MERCHANT:
                 return R.string.master_merchant_description;
+            case RESOURCE_MONOPOLY:
+                return R.string.resource_monopoly_description;
+            case TRADE_MONOPOLY:
+                return R.string.trade_monopoly;
+            case PRINTER:
+                return R.string.printer;
             default:
                 return R.string.empty_string;
         }

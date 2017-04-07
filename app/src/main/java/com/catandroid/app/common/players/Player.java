@@ -46,6 +46,7 @@ public class Player {
 	private int playerNumber;
 	private Color color;
 	private String playerName;
+	private int PCVictoryPointsCount;
 	protected int numOwnedSettlements;
 	protected int numOwnedCities;
 	protected int numOwnedCityWalls;
@@ -57,11 +58,11 @@ public class Player {
 	protected Vector<Integer> roadIds, shipIds;
 	protected Vector<Integer> myActiveKnightIds, myOffDutyKnightIds;
 	private int defenderOfCatan = 0;
-	private int numOwnedFish = 0;
+	private int numOwnedFish = 200;
 	private int playerType, privateVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
-	private int[] cityImprovementLevels = {0, 0, 0};
+	private int[] cityImprovementLevels = {3, 3, 3};
 	private boolean[] harbors;
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
@@ -115,6 +116,7 @@ public class Player {
 		actionLog = "";
 		latestBuiltCommunityId = -1;
 		metropolisTypeToBuild = -1;
+		PCVictoryPointsCount = 0;
 
 		hand = new Vector<ProgressCardType>();
         newCards = new Vector<ProgressCardType>();
@@ -195,6 +197,10 @@ public class Player {
 		actionLog = "";
 	}
 
+	public void incPCVictoryPointscount(int inc)
+	{
+		PCVictoryPointsCount = PCVictoryPointsCount + inc;
+	}
 	/**
 	 * Function called at the end of the trun (after build phase finishes)
 	 */
@@ -854,6 +860,27 @@ public class Player {
 		return true;
 	}
 
+	public boolean removeKnightOffBoardFrom(Vertex vertex)
+	{
+		if(vertex == null || !canRemoveKnightOffBoard(vertex))
+		{
+			return false;
+		}
+
+		Knight toRemove = vertex.getPlacedKnight();
+
+		if(!vertex.removeKnightOffBoardFromHere(this))
+		{
+			return false;
+		}
+
+		board.nextPhase();
+
+		board.startKnightRemovementPhase(toRemove);
+
+		return true;
+	}
+
 	/**
 	 * Attempt to move a knight peacefully to this vertex. Returns true on success
 	 *
@@ -1490,6 +1517,11 @@ public class Player {
 		return vertex.canRemoveKnightFromHere(this);
 	}
 
+	public boolean canRemoveKnightOffBoard(Vertex vertex)
+	{
+		return vertex.canRemoveKnightOffBoardHere(this);
+	}
+
 	/**
 	 * Can you place the currently moving knight at this vertex?
 	 *
@@ -2033,7 +2065,7 @@ public class Player {
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getVictoryPoints() {
-		return getPublicVictoryPoints() + privateVictoryPointsCount;
+		return getPublicVictoryPoints() + privateVictoryPointsCount + PCVictoryPointsCount;
 	}
 
 	/**

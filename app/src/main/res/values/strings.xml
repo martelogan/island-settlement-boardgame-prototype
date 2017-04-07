@@ -363,9 +363,12 @@
     <string name="irrigation">Irrigation</string>
     <string name="mining">Mining</string>
     <string name="deserter">Deserter</string>
-    <string name="wedding">Wedding</string>
+    <string name="bishop">Bishop</string>
     <string name="warlord">Warlord</string>
     <string name="master_merchant">Master_merchant</string>
+    <string name="resource_monopoly">Resource Monopoly</string>
+    <string name="trade_monopoly">Trade Monopoly</string>
+    <string name="printer">Printer</string>
 
     <!-- Progress Card Description -->
     <string name="merchant_description">Place the merchant piece on one of your hexes. You can trade that resource 2:1 as long as the merchant is there, plus you get a temporary victory point.</string>
@@ -374,9 +377,11 @@
     <string name="irrigation_description">You receive 2 grain cards for each fields hex next to any of your settlements and cities. Unlike normal production, cities do not increase this bonus.</string>
     <string name="mining_description">You receive 2 ore cards for each mountains hex next to any of your settlements and cities. Unlike normal production, cities do not increase this bonus.</string>
     <string name="deserter_description">Choose another player. That player must remove one of his knights from the board. You may then place one of your own knights, of equal strength, on the board for free (the normal rules for placing knights apply).</string>
-    <string name="wedding_description">Each of your opponents who has more victory points than you must give you 2 Resource/Commodity Cards of his choice.</string>
+    <string name="bishop_description">Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or city next to the robbers new hex</string>
     <string name="warlord_description">When you play this card, you can activate your knights without paying any grain. Remember that a knight may not perform any actions during the turn after he is activated, but he can be activated after performing an action that turn.</string>
     <string name="master_merchant_description">Choose another player who has more victory points than you do. Look at the player’s hand of Resource and Commodity Cards and choose 2 cards to take and add to your hand.</string>
     <string name="title_activity_maps">Map</string>
+    <string name="resource_monopoly_description">Name a resource. Each player must give you 2 of that type of resource if they have them.</string>
+    <string name="trade_monopoly_description">Name a commodity. Each player must give you 1 of that type of commodity if they have them.</string>
 
 </resources>
