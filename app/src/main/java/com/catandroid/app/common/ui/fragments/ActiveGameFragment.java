@@ -2338,6 +2338,8 @@ public class ActiveGameFragment extends Fragment {
 												case SMITH:
 													playSmith();
 													break;
+												case WEDDING:
+													//playWedding();
 												default:
 													break;
 											}
@@ -2850,7 +2852,8 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	//Working on this
-	/**
+	/*
+	//FIXME: NOT WORKING PROGRESS CARD
 	private void playDeserter()
 	{
 		final Player currentPlayer = board.getPlayerOfCurrentGameTurn();
@@ -2936,7 +2939,7 @@ public class ActiveGameFragment extends Fragment {
 
 		toast("Played the deserter");
 	}
-	 **/
+	 */
 
 
 	//Working
@@ -3306,6 +3309,7 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played the Bishop");
 	}
 	/*
+	//FIXME: NOT WORKING PROGRESS CARD
 	private void playIntrigue(){
 
 		//@TODO
@@ -3325,6 +3329,7 @@ public class ActiveGameFragment extends Fragment {
 		return super.toString();
 	}
 	/*
+	//FIXME: NOT WORKING PROGRESS CARD
 	private void playSaboteur(){
 		//@TODO
 		//add Saboteur placement logic
@@ -3448,6 +3453,7 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	/*
+	//FIXME: NOT WORKING PROGRESS CARD
 	private void playCommercialHarbor(){
 		//@TODO
 		//add commercial harbor placement logic
@@ -3614,6 +3620,15 @@ public class ActiveGameFragment extends Fragment {
 
 	}
 
+	/*
+	//FIXME: NOT WORKING PROGRESS CARD
+	private void playWedding() {
+		toast("Played Wedding");
+	}
+	 */
+
+	/*
+	//FIXME: NOT WORKING PROGRESS CARD
 	private void playDiplomat(){//not working
 
 		Player player = board.getPlayerOfCurrentGameTurn();
@@ -3626,7 +3641,7 @@ public class ActiveGameFragment extends Fragment {
 		player.appendAction(R.string.player_removedOpenRoad);
 
 		toast("Played Diplomat");
-	}
+	}*/
 
 	private void playInventor(){ //works
 		Player player = board.getPlayerOfCurrentGameTurn();
