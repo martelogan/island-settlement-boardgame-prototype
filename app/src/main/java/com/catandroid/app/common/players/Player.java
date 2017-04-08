@@ -2911,12 +2911,12 @@ public class Player {
 
 	public void playConstitution() {
 		incVictoryPoints();
-		board.toast("Played Constitution");
+		board.toast("Received and Played Constitution");
 	}
 
 	public void playPrinter() {
 		incVictoryPoints();
-		board.toast("Played Printer");
+		board.toast("Received and Played Printer");
 	}
 
 	public ProgressCard.ProgressCardType gainProgressCard(CityImprovement.CityImprovementType type){

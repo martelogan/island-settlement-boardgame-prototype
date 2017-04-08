@@ -3296,9 +3296,6 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played the Alchemist");
 	}
 
-	private void playConstitution() {
-
-	}
 
 	private void playBishop(){
 		//@TODO
