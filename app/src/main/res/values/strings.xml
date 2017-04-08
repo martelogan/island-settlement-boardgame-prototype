@@ -187,6 +187,11 @@
 	<string name="player_barbarians_tie">Players %s tied for defender of Catan!</string>
 	<string name="player_removed_robber">Removed the Robber from the board!</string>
 	<string name="player_removedPirate">Removed the Pirate from the board!</string>
+	<string name="player_removedOpenRoad">Removed an open road!</string>
+	<string name="player_stole_x">Stole %s!</string>
+    <string name="player_switched_numToken">Switched two number tokens</string>
+
+
 
 
 	<!-- PlayerStatsFragment screen -->
@@ -355,6 +360,11 @@
 	<string name="game_nowhere_available_chase_pirate">No knights positioned to chase the pirate</string>
 	<string name="game_nowhere_available_knight_move">No moveable knights at the ready</string>
 	<string name="game_won">won</string>
+	<string name="game_play_trade_monopoly">Select a commodity to steal</string>
+	<string name="game_play_resource_monopoly">Select a resource to steal</string>
+	<string name="game_play_diplomat">Select an open road to remove</string>
+    <string name="game_play_inventor">Pick a Hex</string>
+
 
 
 	<!-- Progress Cards -->
@@ -377,6 +387,10 @@
     <string name="trade_monopoly">Trade Monopoly</string>
     <string name="printer">Printer</string>
     <string name="medicine">Medicine</string>
+    <string name="constitution">Constitution</string>
+    <string name="road_building">Road Building</string>
+    <string name="inventor">Inventor</string>
+    <string name="diplomat">Diplomat</string>
 
 	<!-- Progress Card Description -->
 	<string name="alchemist_description">This is the only progress card that you can play before you roll the dice. It allows you to choose the results of both production dice. Then, roll the event die as normal, and resolve the event.</string>
@@ -398,6 +412,10 @@
     <string name="resource_monopoly_description">Name a resource. Each player must give you 2 of that type of resource if they have them.</string>
     <string name="trade_monopoly_description">Name a commodity. Each player must give you 1 of that type of commodity if they have them.</string>
     <string name="medicine_description">You may upgrade a settlement to a city for two ores and 1 grain</string>
+    <string name="printer_constitution_description">You are awarded 1 Victory Point. You must play this card as soon as you draw it.</string>
+    <string name="road_building_description">Build 2 roads for free.</string>
+    <string name="inventor_description">Switch two number tokens of your choice, except 2, 12, 6 or 8.</string>
+    <string name="diplomat_description">You may remove 1 open road. If it is your own road you may or may not choose to replace it immediately.</string>
 
     <!-- Progress Card Titles and Default Headers -->
 	<string name="commercial_harbor_trade_title">Pick the resource to trade with each player</string>

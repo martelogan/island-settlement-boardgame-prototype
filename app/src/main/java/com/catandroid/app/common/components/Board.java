@@ -5,6 +5,7 @@ import android.widget.Toast;
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Knight;
+import com.catandroid.app.common.components.board_pieces.NumberToken;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
@@ -79,7 +80,8 @@ public class Board {
 		PRODUCTION, MY_PlAYER_TURN, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
 		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
 		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAY_INTRIGUE, PRODUCTION1, REMOVING_KNIGHT, MY_PRODUCTION, MY_MOVING_ROBBER, DONE;
+		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAY_INTRIGUE, PRODUCTION1, REMOVING_KNIGHT, MY_PRODUCTION, MY_MOVING_ROBBER, DONE,
+		PLAYING_INVENTOR, REMOVING_OPEN_ROAD, SMITH_PHASE1, SMITH_PHASE2;
 	}
 
 	public void setPhase(Phase phase) {
@@ -118,6 +120,8 @@ public class Board {
 	private Stack<Integer> playerIdsYetToAct;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
+    private Hexagon hexInventor1; //for inventor progress card
+    private Hexagon hexInventor2; //for inventor progress card
 
 	private ArrayList<ProgressCard.ProgressCardType> tradeDeck;
 	private ArrayList<ProgressCard.ProgressCardType> scienceDeck;
@@ -176,6 +180,8 @@ public class Board {
 		this.numPlayers = gameParticipantIds.size();
 		this.numTotalPlayableKnights = numPlayers * 6;
 		nextAvailableKnightId = 0;
+        this.hexInventor1 = null;
+        this.hexInventor2 = null;
 
 		// initialize players
 		players = new Player[numPlayers];
@@ -255,6 +261,32 @@ public class Board {
 		progressCardInit();
 	}
 
+	/**
+	 * Inventor: set hexes chosen by player - they need their number tokens switched
+	 * @param hexagon
+	 * @param num if first hex or second hex selected
+	 */
+
+	public void setHexInventor(Hexagon hexagon, int num){
+        if(num == 1){
+            this.hexInventor1 = hexagon;
+        }
+        else if(num == 2){
+            this.hexInventor2 = hexagon;
+        }
+    }
+
+    public Hexagon getHexInventor1(){return this.hexInventor1;}
+
+    public Hexagon getHexInventor2(){return this.hexInventor2;}
+
+	/**
+	 * Once tokens switched reset hexInventor values to null
+	 */
+	public void setHexInventorsNull(){
+		this.hexInventor1 = null;
+		this.hexInventor2 = null;
+	}
 	/**
 	 * Get a costs_reference to the board's geometry
 	 *
@@ -601,6 +633,10 @@ public class Board {
 				case MY_MOVING_ROBBER:
 					startAIRobberPhase(current);
 					return;
+				case PLAYING_INVENTOR:
+				case REMOVING_OPEN_ROAD:
+				case SMITH_PHASE1:
+				case SMITH_PHASE2:
 
 				case DONE:
 					return;
@@ -723,6 +759,12 @@ public class Board {
 			case MOVING_PIRATE:
 				phase = returnPhase;
 				break;
+            case PLAYING_INVENTOR:
+                phase = returnPhase;
+                break;
+            case REMOVING_OPEN_ROAD:
+                phase = returnPhase;
+                break;
 			case TRADE_PROPOSED:
 				if(!tradeProposal.isTradeReplied()){
 					//we did not accept or counteroffer. we should pass to the next player in the queue to propse to
@@ -1052,6 +1094,14 @@ public class Board {
 	public boolean isPiratePhase() {
 		return (phase == Phase.MOVING_PIRATE);
 	}
+
+	public boolean isInventorPhase() {return (phase == Phase.PLAYING_INVENTOR);}
+
+	public boolean isSmithPhase1(){return(phase == Phase.SMITH_PHASE1);}
+
+	public boolean isSmithPhase2(){return(phase == Phase.SMITH_PHASE2);}
+
+    public boolean isRemovingOpenRoadPhase() {return(phase == Phase.REMOVING_OPEN_ROAD);}
 
 	public boolean isProduction() {
 		return (phase == Phase.PRODUCTION);
@@ -1460,6 +1510,17 @@ public class Board {
         return merchantType;
     }
 
+    public boolean playInventor(){ //switch the number tokens of two hexagons
+        //already checked to make sure not token 2,6,8,12
+        if(this.hexInventor1!=null && this.hexInventor2!=null) {
+            NumberToken token1 = hexInventor1.getNumberTokenAsObject();
+            NumberToken token2 = hexInventor2.getNumberTokenAsObject();
+            hexInventor1.placeNumberToken(token2);
+            hexInventor2.placeNumberToken(token1);
+            return true;
+        }
+        else return false;
+    }
 	/**
 	 * Get the number of points required to win
 	 * 
@@ -1662,6 +1723,8 @@ public class Board {
 				return R.string.game_defended_catan_wait_pick_card;
 			case PLACE_MERCHANT:
 				return R.string.game_place_merchant;
+			case PLAYING_INVENTOR:
+				return R.string.game_play_inventor;
 			case DONE:
 				return R.string.phase_game_over;
 			}
@@ -1861,8 +1924,8 @@ public class Board {
 //		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
 //		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
 //		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
-//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILLDING);
-//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILLDING);
+//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILDING);
+//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILDING);
 //		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
 //		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
 //

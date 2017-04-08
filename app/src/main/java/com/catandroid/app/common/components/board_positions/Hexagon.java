@@ -48,6 +48,7 @@ public class Hexagon {
 		this.numberToken = new NumberToken(0);
 		this.id = id;
 		this.board = board;
+
 	}
 
 	/**

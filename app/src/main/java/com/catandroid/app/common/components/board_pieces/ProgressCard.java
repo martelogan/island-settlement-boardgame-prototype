@@ -46,12 +46,22 @@ public class ProgressCard extends InventoryItem {
                 return R.string.warlord;
             case MASTER_MERCHANT:
                 return R.string.master_merchant;
+            case PRINTER:
+                return R.string.printer;
+            case CONSTITUTION:
+                return R.string.constitution;
             case RESOURCE_MONOPOLY:
                 return R.string.resource_monopoly;
             case TRADE_MONOPOLY:
                 return R.string.trade_monopoly;
             case MEDICINE:
                 return R.string.medicine;
+            case ROAD_BUILDING:
+                return R.string.road_building;
+            case INVENTOR:
+                return R.string.inventor;
+            case DIPLOMAT:
+                return R.string.diplomat;
             default:
                 return R.string.empty_string;
         }
@@ -103,7 +113,12 @@ public class ProgressCard extends InventoryItem {
                 return R.string.merchant_fleet_description;
             case SABOTEUR:
                 return R.string.saboteur;
-
+            case ROAD_BUILDING:
+                return R.string.road_building_description;
+            case INVENTOR:
+                return R.string.inventor_description;
+            case DIPLOMAT:
+                return R.string.diplomat_description;
 
             default:
                 return R.string.empty_string;
@@ -127,7 +142,7 @@ public class ProgressCard extends InventoryItem {
             case MEDICINE:
             case MINING:
             case PRINTER:
-            case ROAD_BUILLDING:
+            case ROAD_BUILDING:
             case SMITH:
                 return CityImprovement.CityImprovementType.SCIENCE;
             case BISHOP:
@@ -148,7 +163,7 @@ public class ProgressCard extends InventoryItem {
     public enum ProgressCardType {
         COMMERCIAL_HARBOR, MASTER_MERCHANT, MERCHANT, MERCHANT_FLEET, RESOURCE_MONOPOLY, TRADE_MONOPOLY,
 
-        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILLDING, SMITH,
+        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILDING, SMITH,
 
         BISHOP, CONSTITUTION, DESERTER, DIPLOMAT, INTRIGUE, SABOTEUR, SPY, WARLORD, WEDDING
     }

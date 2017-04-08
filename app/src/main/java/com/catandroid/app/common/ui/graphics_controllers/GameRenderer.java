@@ -23,7 +23,7 @@ public class GameRenderer implements Renderer {
 		BUILD_ROAD,	BUILD_SHIP, HIRE_KNIGHT, ACTIVATE_KNIGHT, PROMOTE_KNIGHT, CHASE_ROBBER,
 		CHASE_PIRATE, MOVE_KNIGHT_1, MOVE_KNIGHT_2, MOVE_DISPLACED_KNIGHT,
         MOVE_SHIP_1, MOVE_SHIP_2, CHOOSE_ROBBER_PIRATE, MOVE_ROBBER, MOVE_PIRATE, PLACE_MERCHANT,
-		PLAY_INTRIGUE, REMOVE_KNIGHT
+		PLAY_INTRIGUE, REMOVE_KNIGHT, REMOVE_OPEN_ROAD, PLAY_INVENTOR
 	}
 
 	private TextureManager texture;
@@ -232,6 +232,10 @@ public class GameRenderer implements Renderer {
 				else if(action == Action.MOVE_SHIP_2) {
 					selectable = activeTurnPlayer.canMoveShipTo(edge);
 					edgeUnitType = Edge.SHIP;
+				}
+				else if (action == Action.REMOVE_OPEN_ROAD){ //for playing diplomat
+					selectable = activeTurnPlayer.RemoveOpenRoad(edge);
+					edgeUnitType = Edge.ROAD;
 				}
 				if (selectable || edge.getOwnerPlayer() != null)
 				{

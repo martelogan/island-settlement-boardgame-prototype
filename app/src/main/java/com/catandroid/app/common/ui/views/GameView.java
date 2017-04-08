@@ -314,7 +314,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 		switch (action) {
 			case NONE:
 				return false;
-
+			case PLAY_INVENTOR:
 			case MOVE_ROBBER:
 			case MOVE_PIRATE:
 			case PLACE_MERCHANT:
@@ -348,6 +348,7 @@ public class GameView extends GLSurfaceView implements OnGestureListener,
 				// select an edge
 				select = boardGeometry.getNearestEdge(x, y);
 				break;
+			case REMOVE_OPEN_ROAD:
 			}
 
 			if (select >= 0) {
