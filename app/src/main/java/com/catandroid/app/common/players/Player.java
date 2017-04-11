@@ -1,12 +1,10 @@
 package com.catandroid.app.common.players;
 
 
-import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.catandroid.app.CatAndroidApp;
 import com.catandroid.app.R;
@@ -20,9 +18,6 @@ import com.catandroid.app.common.components.board_pieces.Resource.ResourceType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
-
-import java.util.Random;
-import java.util.Vector;
 
 public class Player {
 
@@ -51,7 +46,6 @@ public class Player {
 	private int playerNumber;
 	private Color color;
 	private String playerName;
-	private int PCVictoryPointsCount;
 	protected int numOwnedSettlements;
 	protected int numOwnedCities;
 	protected int numOwnedCityWalls;
@@ -65,10 +59,10 @@ public class Player {
 	private int defenderOfCatan = 0;
 	private int numOwnedFish = 0;
 
-	private int playerType, privateVictoryPointsCount,
+	private int playerType, privateVictoryPointsCount, progressCardVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
-	private int[] cityImprovementLevels = {3, 3, 3};
+	private int[] cityImprovementLevels = {0, 0, 0};
 	private boolean[] harbors;
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
@@ -127,7 +121,7 @@ public class Player {
 		actionLog = "";
 		latestBuiltCommunityId = -1;
 		metropolisTypeToBuild = -1;
-		PCVictoryPointsCount = 0;
+		progressCardVictoryPointsCount = 0;
 
 		hand = new Vector<ProgressCardType>();
         newCards = new Vector<ProgressCardType>();
@@ -208,10 +202,6 @@ public class Player {
 		actionLog = "";
 	}
 
-	public void incPCVictoryPointscount(int inc)
-	{
-		PCVictoryPointsCount = PCVictoryPointsCount + inc;
-	}
 	/**
 	 * Function called at the end of the trun (after build phase finishes)
 	 */
@@ -879,27 +869,6 @@ public class Player {
 		return true;
 	}
 
-	public boolean removeKnightOffBoardFrom(Vertex vertex)
-	{
-		if(vertex == null || !canRemoveKnightOffBoard(vertex))
-		{
-			return false;
-		}
-
-		Knight toRemove = vertex.getPlacedKnight();
-
-		if(!vertex.removeKnightOffBoardFromHere(this))
-		{
-			return false;
-		}
-
-		board.nextPhase();
-
-		board.startKnightRemovementPhase(toRemove);
-
-		return true;
-	}
-
 	/**
 	 * Attempt to move a knight peacefully to this vertex. Returns true on success
 	 *
@@ -949,27 +918,18 @@ public class Player {
 		if(toDisplace.getOwnerPlayer() == this) {
 			return false;
 		}
-		if(!isIntrigue) {
-			Knight toMove = board.getCurrentlyMovingKnight();
 
-			if(toMove == null || !toMove.canDisplace(toDisplace)) {
-				return false;
-			}
+		Knight toMove = board.getCurrentlyMovingKnight();
 
-			if(!target.displaceKnightFromHere(this, toMove)) {
-				return false;
-			}
-		} else {
-			target.displaceKnightFromHereDuringIntrigue();
+		if(toMove == null || !toMove.canDisplace(toDisplace)) {
+			return false;
+		}
+
+		if(!target.displaceKnightFromHere(this, toMove)) {
+			return false;
 		}
 
 		board.updateLongestTradeRoute();
-
-		//TODO: is this safe?
-		// clear temporary memory and intermediately return to player turn phase
-		if (!isIntrigue) {
-			board.nextPhase();
-		}
 
 		boolean displacedKnightHasSomewhereToRelocate = false;
 		for (Vertex candidateRelocation : board.getVertices()) {
@@ -1541,25 +1501,6 @@ public class Player {
 		return vertex.canRemoveKnightFromHere(this);
 	}
 
-	//Abhi's Method
-	public boolean canRemoveKnightAtThisVertex(Vertex vertex) {
-		for (Vertex v : board.getVertices()) {
-			if (v.hasCommunity() && v.getOwnerPlayer() == this) {
-				if (v.canRemoveKnightAtThisVertex(vertex, this, false)) {
-					return true;
-				}
-			}
-
-		}
-		return false;
-	}
-
-	//Phil's Method
-	public boolean canRemoveKnightOffBoard(Vertex vertex)
-	{
-		return vertex.canRemoveKnightOffBoardHere(this);
-	}
-
 	/**
 	 * Can you place the currently moving knight at this vertex?
 	 *
@@ -1599,10 +1540,6 @@ public class Player {
 			return false;
 		}
 
-		if(vertex.getId() == 54) {
-			Log.d("test","here");
-		}
-
 		return vertex.canDisplaceKnightToHere(this, currentlyMovingKnight);
 	}
 
@@ -1617,52 +1554,13 @@ public class Player {
 		{
 			return false;
 		}
-		if(isIntrigue) {
-			return vertex.canDisplaceKnightFromHere(this);
-		} else {
-			Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
 
-			if(!isMyKnight(currentlyMovingKnight)) {
-				return false;
-			}
-
-			return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
+		if(!isMyKnight(currentlyMovingKnight)) {
+			return false;
 		}
-	}
-	/**
- 	* Can you remove this road? (is it open)
- 	*
- 	*/
 
-	public boolean RemoveOpenRoad(Edge edge) {
-		boolean isOpen = false;
-		int edgeId = edge.getId();
-		if (edge.hasEdgeUnit() && edge.getCurUnitType() == 1) {
-			int[] vertexIds = edge.getVertices();
-
- 			for (int i = 0; i < 2; i++) {
-				//checks if either end of road is open
-				Vertex thisVertex = board.getVertexById(vertexIds[i]);
-				int[] vertexEdgeids = thisVertex.getEdgeIds();
-
-				int count = 0;
-				for (int j = 0; j < 3; j++){
-					if(thisVertex.getEdge(vertexEdgeids[i]).getCurUnitType() == 1){
-						count++;
-					}
-				}
-
-				if (!thisVertex.hasVertexUnitPlacedHere() && count == 1) {
-					isOpen = true;
-				}
-					//also considered open if road/ship has city,settlement or knight of a different colour on one end
-				else if (thisVertex.getOwnerPlayer() != edge.getOwnerPlayer()) {
-					isOpen = true;
-				}
-
-			}
-		}
-		return isOpen;
+		return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
 	}
 
 	/**
@@ -1713,19 +1611,6 @@ public class Player {
 		int sum = 0;
 		for (int i = 0; i < countPerResource.length; i++)
 			sum += countPerResource[i];
-		return sum;
-	}
-
-	/**
-	 * Relies on the ordering of resources
-	 *
-	 * @return sum of player's main resources only (lumber, wheat, brick, wool, ore)
-	 */
-	public int getBaseGameResourceCount() {
-		int sum = 0;
-		for (int i = 0; i < 4; i++) {
-			sum += countPerResource[i];
-		}
 		return sum;
 	}
 
@@ -1804,32 +1689,6 @@ public class Player {
 		}
 	}
 
-	public void decreaseResources(ResourceType resourceType) {
-		if (countPerResource[resourceType.ordinal()] > 0) {
-			countPerResource[resourceType.ordinal()] -= 1;
-		/*
-		switch(resourceType) {
-			case LUMBER:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case WOOL:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case GRAIN:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case BRICK:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case ORE:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case GOLD:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case CLOTH:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case COIN:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case PAPER:
-				countPerResource[resourceType.ordinal()] -= 1;
-				*/
-		}
-	}
 	/**
 	 * Add fish to the player
 	 * @param curUnitType
@@ -1947,10 +1806,6 @@ public class Player {
 		}
 
 		return resourceType;
-	}
-
-	public void incVictoryPoints() {
-		privateVictoryPointsCount += 1;
 	}
 
 	/**
@@ -2176,6 +2031,8 @@ public class Player {
 		}
 		points += defenderOfCatan;
 
+		points += progressCardVictoryPointsCount;
+
 		return points;
 	}
 	/**
@@ -2184,7 +2041,7 @@ public class Player {
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getVictoryPoints() {
-		return getPublicVictoryPoints() + privateVictoryPointsCount + PCVictoryPointsCount;
+		return getPublicVictoryPoints() + privateVictoryPointsCount;
 	}
 
 	/**
@@ -2315,14 +2172,6 @@ public class Player {
 
 	public boolean getIsMerchantFleetActive() {
 		return isMerchantFleetActive;
-	}
-
-	public void setIsIntrigue(boolean isActive) {
-		isIntrigue = isActive;
-	}
-
-	public boolean getIsIntrigue() {
-		return isIntrigue;
 	}
 
 //TODO: see how we can use this similar code for progress cards
@@ -2910,12 +2759,12 @@ public class Player {
 	}
 
 	public void playConstitution() {
-		incVictoryPoints();
+		progressCardVictoryPointsCount += 1;
 		board.toast("Received and Played Constitution");
 	}
 
 	public void playPrinter() {
-		incVictoryPoints();
+		progressCardVictoryPointsCount += 1;
 		board.toast("Received and Played Printer");
 	}
 
@@ -2960,16 +2809,6 @@ public class Player {
 
 	public void setNumOwnedFish(int numOwnedFish) {
 		this.numOwnedFish = numOwnedFish;
-	}
-
-	public void setNumOwnedCityWalls(int numOwnedCityWalls)
-	{
-		this.numOwnedCityWalls = this.numOwnedCityWalls + numOwnedCityWalls;
-	}
-
-	public void setNumOwnedBricks(int count)
-	{
-
 	}
 
 

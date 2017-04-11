@@ -145,19 +145,11 @@ public class ActiveGameFragment extends Fragment {
 				if (board.hasPlayersYetToAct()) {
 					//show popup if we are the ones that should discard
 					if(board.checkNextPlayerToAct().getGooglePlayParticipantId().equals(myParticipantId)
-							&& (board.getPhase() == Board.Phase.CHOOSE_ROBBER_PIRATE || board.isRobberPhase())){
+							&& (board.getPhase() == Board.Phase.CHOOSE_ROBBER_PIRATE )){
 						Message discard = new Message();
 						discard.what = DISCARD_MESSAGE;
 						turnHandler.sendMessage(discard);
 					}
-
-					if(board.checkNextPlayerToAct().getGooglePlayParticipantId().equals(myParticipantId)
-						&& board.getPhase() == Board.Phase.PROGRESS_CARD_STEP_2) {
-						//TODO
-						//fill up a method through which player picks progress card.
-
-					}
-
 					//show card choose if defended catan
 					Player p = board.checkNextPlayerToAct();
 					if(p.getGooglePlayParticipantId().equals(myParticipantId)
@@ -383,23 +375,18 @@ public class ActiveGameFragment extends Fragment {
 			case PLACE_MERCHANT:
 				select(action, board.getHexagonById(id));
 				break;
-			case PLAY_INVENTOR:
-				select(action, board.getHexagonById(id));
-				break;
 			case BUILD_SETTLEMENT:
 			case BUILD_CITY:
 			case BUILD_CITY_WALL:
 			case BUILD_METROPOLIS:
 			case HIRE_KNIGHT:
 			case ACTIVATE_KNIGHT:
-			case REMOVE_KNIGHT: //This might be problem
 			case PROMOTE_KNIGHT:
 			case CHASE_ROBBER:
 			case CHASE_PIRATE:
 			case MOVE_KNIGHT_1:
 			case MOVE_KNIGHT_2:
 			case MOVE_DISPLACED_KNIGHT:
-			case PLAY_INTRIGUE:
 				select(action, board.getVertexById(id));
 				break;
 			case BUILD_EDGE_UNIT:
@@ -407,9 +394,6 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_SHIP:
 			case MOVE_SHIP_1:
 			case MOVE_SHIP_2:
-				select(action, board.getEdgeById(id));
-				break;
-			case REMOVE_OPEN_ROAD:
 				select(action, board.getEdgeById(id));
 				break;
 
@@ -466,39 +450,6 @@ public class ActiveGameFragment extends Fragment {
                 showState(false);
             }
         }
-        else if(action == Action.PLAY_INVENTOR){
-
-			if (board.getHexInventor1() == null){
-				if (hexagon.getNumberTokenAsInt()!= 2 && hexagon.getNumberTokenAsInt()!= 6 &&
-						hexagon.getNumberTokenAsInt()!= 8 && hexagon.getNumberTokenAsInt()!= 12)
-				{
-					board.setHexInventor(hexagon,1);
-					popup("Select a second hex","The number token may not be 2,6,8 or 12");
-					showState(true);
-				}
-				else {
-					popup("Select a different hex","The number token may not be 2,6,8 or 12");
-					showState(true);}
-			}
-			//switch number tokens once second hex has been selected
-			else if(board.getHexInventor1() != null && board.getHexInventor2() == null){
-				if (hexagon.getNumberTokenAsInt()!= 2 && hexagon.getNumberTokenAsInt()!= 6 &&
-						hexagon.getNumberTokenAsInt()!= 8 && hexagon.getNumberTokenAsInt()!= 12){
-					board.setHexInventor(hexagon,2);
-					board.playInventor();
-					board.setPhase(Board.Phase.PLAYER_TURN);
-					showState(false);
-					board.setHexInventorsNull();
-					popup("Success","The number tokens have been switched");
-
-					}
-				else {
-					popup("Select a different hex","The number token may not be 2,6,8 or 12");
-					showState(true);
-				}
-			}
-			else popup("Not available","");
-        }
 	}
 
 	private void select(Action action, Vertex vertex) {
@@ -522,8 +473,7 @@ public class ActiveGameFragment extends Fragment {
 		else if (action == Action.HIRE_KNIGHT || action == Action.ACTIVATE_KNIGHT
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
 				|| action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
-				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT
-				|| action == Action.PLAY_INTRIGUE || action == Action.REMOVE_KNIGHT) {
+				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -545,7 +495,6 @@ public class ActiveGameFragment extends Fragment {
 					{
 						board.nextPhase();
 					}
-					if(board.isProgressPhase2()){board.setPhase(Board.Phase.PLAYER_TURN);}
 
 					showState(false);
 				}
@@ -565,24 +514,6 @@ public class ActiveGameFragment extends Fragment {
 						break;
 					case PROMOTE_KNIGHT:
 						if (player.promoteKnightAt(vertex)) {
-								if(player.getNumOwnedBasicKnights()+player.getNumOwnedStrongKnights() >= 1 && board.isSmithPhase1()){
-									popup("Promote a second knight","free of charge");
-									player.setFreePromote(true);
-									board.setPhase(Board.Phase.SMITH_PHASE2);
-									showState(true);
-								}
-								else {
-									popup("No more knights can be promoted","");
-									player.setFreePromote(false);
-									renderer.setAction(Action.NONE);
-									board.setPhase(Board.Phase.PLAYER_TURN);
-									showState(false);
-								}
-						}
-						else
-						{
-							popup("Invalid","");
-							board.setPhase(Board.Phase.PLAYER_TURN);
 							showState(false);
 						}
 						break;
@@ -619,24 +550,6 @@ public class ActiveGameFragment extends Fragment {
 						if(player.displaceKnightTo(vertex)) {
 							// pass turn back to attacker
 							board.nextPhase();
-							showState(true);
-						}
-						break;
-					case PLAY_INTRIGUE:
-						if(vertex.getCurUnitType() == Vertex.KNIGHT
-								&& vertex.getOwnerPlayer() != player
-								&& //player.canDisplaceKnightAt(vertex)
-									player.canRemoveKnightAtThisVertex(vertex) ) {
-							confirmDisplaceKnightDialog(vertex);
-							board.nextPhase();
-							//renderer.setAction(Action.MOVE_KNIGHT_2);
-							showState(true);
-						}
-						break;
-					case REMOVE_KNIGHT:
-						if(player.removeKnightOffBoardFrom(vertex))
-						{
-							renderer.setAction(Action.REMOVE_KNIGHT);
 							showState(true);
 						}
 						break;
@@ -689,21 +602,6 @@ public class ActiveGameFragment extends Fragment {
 					board.nextPhase();
 					showState(true);
 				}
-				if(board.isProgressPhase1()){
-					popup("Build your second road","for free!");
-					board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
-					player.setFreeBuild(true);
-					renderer.setAction(Action.BUILD_EDGE_UNIT);
-					showState(true);
-				}
-				if(board.isProgressPhase2()){
-					board.setPhase(Board.Phase.PLAYER_TURN);
-					showState(false);
-				}
-				if(board.isRemovingOpenRoadPhase()){
-					board.setPhase(Board.Phase.PLAYER_TURN);
-					showState(false);
-				}
 				//TODO: special progress card shit?
 //				else if (board.isProgressPhase()) {
 //					board.nextPhase();
@@ -736,36 +634,6 @@ public class ActiveGameFragment extends Fragment {
 					board.nextPhase();
 					showState(true);
 				}
-				if(board.isProgressPhase1()){
-					popup("Build your second road","for free!");
-					board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
-					player.setFreeBuild(true);
-					renderer.setAction(Action.BUILD_EDGE_UNIT);
-					showState(true);
-				}
-				if(board.isProgressPhase2()){
-					board.setPhase(Board.Phase.PLAYER_TURN);
-					showState(false);
-				}
-				//TODO: special progress card shit?
-//				else if (board.isProgressPhase()) {
-//					board.nextPhase();
-//
-//					boolean canBuild = false;
-//					for (Edge other : board.getEdges()) {
-//						if (other.canBuildShip(player))
-//						{
-//							canBuild = true;
-//						}
-//					}
-//
-//					if (!canBuild) {
-//						board.nextPhase();
-//						cantAct(Action.BUILD_SHIP);
-//					}
-//
-//					showState(false);
-//				}
 				else {
 					showState(false);
 				}
@@ -784,23 +652,6 @@ public class ActiveGameFragment extends Fragment {
                 showState(true);
             }
         }
-        else if (action == Action.REMOVE_OPEN_ROAD){
-			if(edge.removeRoad()){
-				diplomatComplete = true;
-				//if removes their own road they may immediately replace it
-				if(edge.getOwnerPlayer() == player){
-					toast("Rebuild your road for free");
-					player.setFreeBuild(true);
-					renderer.setAction(Action.BUILD_ROAD);
-					showState(true);
-				}
-				else {
-					board.setPhase(Board.Phase.PLAYER_TURN);
-					renderer.setAction(Action.NONE);
-					showState(false);
-				}
-			}
-		}
 	}
 
 
@@ -1077,27 +928,6 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_activate_knight));
 				break;
 
-			case REMOVE_KNIGHT:
-				for (Vertex vertex : board.getVertices()) {
-					if(player.canRemoveKnightOffBoard(vertex))
-					{
-						canAct = true;
-						break;
-					}
-				}
-
-				if(!canAct)
-				{
-					cantAct(Action.REMOVE_KNIGHT);
-					break;
-				}
-
-				renderer.setAction(Action.REMOVE_KNIGHT);
-				setButtons(Action.REMOVE_KNIGHT);
-				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
-						+ getString(R.string.game_remove_knight_final));
-				break;
-
 			case PROMOTE_KNIGHT:
 				canAct = player.canPromoteSomeKnight();
 
@@ -1354,14 +1184,8 @@ public class ActiveGameFragment extends Fragment {
 		{
 			action = Action.BUILD_CITY;
 		}
-		else if (board.isSetupRoadOrShip() || board.isProgressPhase())
-		{ //TODO: does progress phase matter?
-			action = Action.BUILD_EDGE_UNIT;
-		}
-		else if(board.isProgressPhase1()) { ////////////////////
-			action = Action.BUILD_EDGE_UNIT;
-		}
-		else if(board.isProgressPhase2()){
+		else if (board.isSetupRoadOrShip() )
+		{
 			action = Action.BUILD_EDGE_UNIT;
 		}
 		else if (board.isChooseRobberPiratePhase()) {
@@ -1384,37 +1208,12 @@ public class ActiveGameFragment extends Fragment {
 		else if (board.isKnightDisplacementPhase()) {
 			action = Action.MOVE_DISPLACED_KNIGHT;
 		}
-		else if(board.isRemoveKnightPhase())
-		{
-			action = Action.REMOVE_KNIGHT;
-		}
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
-
         else if(board.isPlaceMerchantPhase()){
             action = Action.PLACE_MERCHANT;
         }
-        else if(board.isRemovingOpenRoadPhase()){
-			action = Action.REMOVE_OPEN_ROAD;
-			if(diplomatComplete == true){
-				action = Action.BUILD_ROAD;
-			}
-		}
-        else if (board.isInventorPhase()){
-			action = Action.PLAY_INVENTOR;
-		}
-		else if(board.isSmithPhase1()){
-			action = Action.PROMOTE_KNIGHT;
-		}
-		else if(board.isSmithPhase2()){
-			action = Action.PROMOTE_KNIGHT;
-		}
-
-        //TODO: Condition for Intrigue
-        else if(board.isPlayIntrigue()) {
-			action = Action.PLAY_INTRIGUE;
-		}
 
 		renderer.setAction(action);
 		setButtons(action);
@@ -1499,9 +1298,6 @@ public class ActiveGameFragment extends Fragment {
 			// anonymous mode
 		} else if (board.isSetupPhase()) {
 			// no extra buttons in showState phase
-		} else if (board.isProgressPhase()) {
-			// TODO: add ability to cancel card use
-			// consider what happens if there's nowhere to build a road
 		} else if (board.isChooseRobberPiratePhase() ||
 				board.isRobberPhase() || board.isPiratePhase()) {
 			// do nothing
@@ -1567,10 +1363,6 @@ public class ActiveGameFragment extends Fragment {
 			}
 			if(player.canActivateSomeKnight()) {
 				view.addButton(ButtonType.ACTIVATE_KNIGHT);
-			}
-			if(player.canMoveSomeKnight())
-			{
-				view.addButton(ButtonType.REMOVE_KNIGHT);
 			}
 			if(player.canPromoteSomeKnight()) {
 				view.addButton(ButtonType.PROMOTE_KNIGHT);
@@ -1953,21 +1745,17 @@ public class ActiveGameFragment extends Fragment {
 		{
 			items[i] = list[i];
 		}
-		if(board.getIsBishopActive()) {
-			steal(index-1);
-		} else {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-			builder.setTitle(getString(R.string.game_steal_title));
-			builder.setItems(items, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int item) {
-					steal(item);
-				}
-			});
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(getString(R.string.game_steal_title));
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int item) {
+				steal(item);
+			}
+		});
 
-			AlertDialog stealDialog = builder.create();
-			stealDialog.setCancelable(false);
-			stealDialog.show();
-		}
+		AlertDialog stealDialog = builder.create();
+		stealDialog.setCancelable(false);
+		stealDialog.show();
 	}
 
 	private void steal(int victim) {
@@ -2003,29 +1791,7 @@ public class ActiveGameFragment extends Fragment {
 				}
 			}
 
-			if (board.getIsBishopActive()) {
-				Resource.ResourceType resourceType = board.getPlayerOfCurrentGameTurn().steal(player);
-
-				if (resourceType != null)
-				{
-					toast(getString(R.string.game_stole_str) + " "
-							+ getActivity().getString(Resource.toRString(resourceType))
-							+ " " + getString(R.string.game_from_str) + " "
-							+ player.getPlayerName());
-				}
-				else
-				{
-					toast(getString(R.string.game_player_couldnt_steal) + " "
-							+ player.getPlayerName());
-				}
-				if (index == victim) {
-					board.setIsBishop(false);
-					board.nextPhase();
-					mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
-					showState(false);
-					return;
-				}
-			} else if (index == victim) {
+			if (index == victim) {
 				Resource.ResourceType resourceType = board.getPlayerOfCurrentGameTurn().steal(player);
 
 				if (resourceType != null)
@@ -2067,12 +1833,6 @@ public class ActiveGameFragment extends Fragment {
 					message = getString(R.string.game_nowhere_available_edge_unit_build);
 				}
 
-				if (board.isProgressPhase1()) {
-					//TODO: is cost affected by progress card?
-				} else if (board.isProgressPhase2()) {
-					//TODO: is  cost affected by progress card?
-				}
-
 				break;
 			case BUILD_ROAD:
 
@@ -2085,12 +1845,6 @@ public class ActiveGameFragment extends Fragment {
 					message = getString(R.string.game_nowhere_available_road_build);
 				}
 
-				if (board.isProgressPhase1()) {
-					//TODO: is road cost affected by progress card?
-				} else if (board.isProgressPhase2()) {
-					//TODO: is road cost affected by progress card?
-				}
-
 				break;
 			case BUILD_SHIP:
 
@@ -2101,12 +1855,6 @@ public class ActiveGameFragment extends Fragment {
 				else
 				{
 					message = getString(R.string.game_nowhere_available_ship_build);
-				}
-
-				if (board.isProgressPhase1()) {
-					//TODO: is road cost affected by progress card?
-				} else if (board.isProgressPhase2()) {
-					//TODO: is road cost affected by progress card?
 				}
 
 				break;
@@ -2167,10 +1915,6 @@ public class ActiveGameFragment extends Fragment {
 				message = getString(R.string.game_nowhere_available_activate_knight);
 				break;
 
-			case REMOVE_KNIGHT:
-				message = getString(R.string.game_remove_knight);
-				break;
-
 			case PROMOTE_KNIGHT:
 				int numOwnedBasicKnights = player.getNumOwnedBasicKnights(),
 						numOwnedStrongKnights = player.getNumOwnedStrongKnights(),
@@ -2204,7 +1948,6 @@ public class ActiveGameFragment extends Fragment {
 				message = getString(R.string.game_nowhere_available_knight_move);
 
 				break;
-			case REMOVE_OPEN_ROAD:
 
 			default:
 				return;
@@ -2277,21 +2020,18 @@ public class ActiveGameFragment extends Fragment {
 												case MERCHANT:
 													playMerchant();
 													break;
-												case ROAD_BUILDING:
-													playRoadBuilding();
-													break;
 												case DIPLOMAT:
 													//playDiplomat();
 													break;
-												case INVENTOR:
-													playInventor();
+												case ROAD_BUILDING:
+													//playRoadBuilding();
 													break;
 												case CRANE:
 													playCrane();
 												case ENGINEER:
 													playEngineer();
 													break;
-												case IRRIGIATION:
+												case IRRIGATION:
 													playIrrigation();
 													break;
 												case MINING:
@@ -2310,7 +2050,7 @@ public class ActiveGameFragment extends Fragment {
 													playAlchemist();
 													break;
 												case BISHOP:
-													playBishop();
+//													playBishop();
 													break;
 												case INTRIGUE:
 													//playIntrigue();
@@ -2336,7 +2076,7 @@ public class ActiveGameFragment extends Fragment {
 												case TRADE_MONOPOLY:
 													playTradeMonopoly();
 												case SMITH:
-													playSmith();
+//													playSmith();
 													break;
 												case WEDDING:
 													//playWedding();
@@ -3244,9 +2984,6 @@ public class ActiveGameFragment extends Fragment {
 					Player current = board.getPlayerOfCurrentGameTurn();
 					if (current.displaceKnightAt(displacementTarget)) {
 						// finish moving the knight
-						if(current.getIsIntrigue()) {
-							current.setIsIntrigue(false);
-						}
 						renderer.setAction(Action.NONE);
 						showState(true);
 					}
@@ -3296,15 +3033,6 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played the Alchemist");
 	}
 
-
-	private void playBishop(){
-		//@TODO
-		board.setIsBishop(true);
-		board.setPhase(Board.Phase.CHOOSE_ROBBER_PIRATE);
-		this.chooseRobberPirate(0);
-
-		toast("Played the Bishop");
-	}
 	/*
 	//FIXME: NOT WORKING PROGRESS CARD
 	private void playIntrigue(){
@@ -3586,37 +3314,6 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played medicine");
 	}
 
-	private void playSmith(){ //works
-		Player player = board.getPlayerOfCurrentGameTurn();
-		popup("Promote 2 knights","free of charge");
-
-//		int numPromotable = player.getNumOwnedStrongKnights() + player.getNumOwnedBasicKnights();
-//
-//		if(numPromotable = 1 || numPromotable = 2)
-		player.setFreePromote(true);
-		board.setPhase(Board.Phase.SMITH_PHASE1);
-		showState(true);
-		toast("Played Knight");
-	}
-	private void playRoadBuilding() //works -> ship doesn't fully work
-	{ //needs to be ship or road
-
-		Player player = board.getPlayerOfCurrentGameTurn();
-		if (player.getNumRoads() + player.getNumShips() < (Player.MAX_ROADS + Player.MAX_SHIPS))
-			{
-				popup("Build your first road","free of charge");
-				player.setFreeBuild(true);
-				board.setPhase(Board.Phase.PROGRESS_CARD_STEP_1);
-				renderer.setAction(Action.BUILD_EDGE_UNIT);
-				showState(true);
-			}
-		else {toast(getActivity().getString(R.string.game_build_edge_unit_max));}
-
-
-		toast("Played Road Builder");
-
-	}
-
 	/*
 	//FIXME: NOT WORKING PROGRESS CARD
 	private void playWedding() {
@@ -3639,19 +3336,6 @@ public class ActiveGameFragment extends Fragment {
 
 		toast("Played Diplomat");
 	}*/
-
-	private void playInventor(){ //works
-		Player player = board.getPlayerOfCurrentGameTurn();
-		board.setHexInventorsNull();
-		board.setPhase(Board.Phase.PLAYING_INVENTOR);
-		showState(true);
-
-		getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-					+ getActivity().getString(R.string.game_play_inventor));
-		player.appendAction(R.string.player_switched_numToken);
-		showState(false);
-		toast("Played Inventor");
-	}
 
 	private void confirmChaseRobberDialog(){
 		final int confirm = 0;
