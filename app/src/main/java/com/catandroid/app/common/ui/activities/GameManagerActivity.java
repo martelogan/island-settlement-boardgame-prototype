@@ -847,6 +847,10 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 					results.add(new ParticipantResult(mMatch.getParticipantIds().get(i), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED));
 				}
 			}
+			String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
+			String myParticipantId = mMatch.getParticipantId(playerId);
+			Games.TurnBasedMultiplayer.takeTurn(mGoogleApiClient, mMatch.getMatchId(),
+					catandroidTurn.persist(),myParticipantId);
 			Games.TurnBasedMultiplayer.finishMatch(mGoogleApiClient, mMatch.getMatchId(),catandroidTurn.persist(),results);
 
 		} else {

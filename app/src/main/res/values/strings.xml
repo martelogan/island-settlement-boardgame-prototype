@@ -136,7 +136,7 @@
 	<string name="player_gave_boot">Gave boot to %s</string>
 	<string name="player_received_resource">Received %s</string>
 	<string name="player_received_x_resources" formatted="false">Received %s resources</string>
-    <string name="player_discarded">Discarded %s</string>
+    <string name="player_discarded">Discarded %s cards</string>
     <string name="player_traded_with">Traded with %s</string>
     <string name="player_traded_for">Traded for %s</string>
 

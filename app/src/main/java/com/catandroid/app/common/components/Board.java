@@ -441,6 +441,7 @@ public class Board {
 					for (int j = 0; j < extra; j++){
 						players[i].discard(null);
 					}
+					players[i].appendAction(R.string.player_discarded, extra);
 				}
 				 else if (players[i].isBot()) {
 					// instruct the ai to discard_resources

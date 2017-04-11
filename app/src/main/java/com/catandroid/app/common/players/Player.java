@@ -1843,8 +1843,6 @@ public class Player {
 
 		useResources(choice, 1);
 
-		int res = Resource.toRString(choice);
-		appendAction(R.string.player_discarded, res);
 	}
 
 	/**

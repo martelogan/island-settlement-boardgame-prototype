@@ -48,8 +48,11 @@ public class CatandroidTurn {
         String st = gson.toJson(currentBoard);
 
         Log.d(TAG, "==== PERSISTING\n" + st);
+        byte[] boardData = st.getBytes(Charset.forName("UTF-8"));
 
-        return st.getBytes(Charset.forName("UTF-8"));
+        int boardSize = boardData.length;
+
+        return boardData;
     }
 
     // Creates a new instance of Board
