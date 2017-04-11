@@ -887,23 +887,24 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 						"We're still waiting for an automatch partner.");
 				return;
 			case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-				if (turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) {
-					showWarning(
-							"Game Ended!",
-							"This game has ended because someone won! Check Player stats to find out who");
-					break;
-				}
+//				if (turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) {
+//					showWarning(
+//							"Game Ended!",
+//							"This game has ended because someone won! Check Player stats to find out who");
+//					break;
+//				}
 
 				// Note that in this state, you must still call "Finish" yourself,
 				// so we allow this to continue.
-				showWarning("Complete!",
-						"This game is over; someone one!");
+//				showWarning("Complete!",
+//						"This game is over; someone one!");
 		}
 
 		// OK, it's active. Check on turn pager_title_strip.
 		switch (turnStatus) {
 			case TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN:
             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
+			case TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE:
 				//fetch the board state from unpersist and set board
 				Board board = CatandroidTurn.unpersist(mMatch.getData());
 				catandroidTurn.currentBoard = board;

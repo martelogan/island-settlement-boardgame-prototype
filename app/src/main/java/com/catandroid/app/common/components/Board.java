@@ -393,7 +393,7 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
+		int diceRollNumber = 7;
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
@@ -441,7 +441,7 @@ public class Board {
 					for (int j = 0; j < extra; j++){
 						players[i].discard(null);
 					}
-					players[i].appendAction(R.string.player_discarded, extra);
+					players[i].appendAction(R.string.player_discarded, Integer.toString(extra));
 				}
 				 else if (players[i].isBot()) {
 					// instruct the ai to discard_resources

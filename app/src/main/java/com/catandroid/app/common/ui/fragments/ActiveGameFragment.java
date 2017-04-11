@@ -1129,12 +1129,12 @@ public class ActiveGameFragment extends Fragment {
 		// display winner
 		boolean hadWinner = board.getWinner() != null;
 		Player winner = board.checkAndGetWinner();
-		if (!hadWinner && winner != null) {
+		if (!hadWinner && winner != null || winner != null) {
 			//if its the first time that the winner is declared, we should notify google
 			if(board.getPhase() != Board.Phase.FINISHED_GAME){
+				board.setPhase(Board.Phase.FINISHED_GAME);
 				mListener.endTurn(winner.getGooglePlayParticipantId(),true);
 			}
-			board.setPhase(Board.Phase.FINISHED_GAME);
 
 			// declare winner
 			final Builder infoDialog = new AlertDialog.Builder(getActivity());
