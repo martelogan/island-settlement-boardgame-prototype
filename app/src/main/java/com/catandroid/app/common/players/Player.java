@@ -1,7 +1,6 @@
 package com.catandroid.app.common.players;
 
 
-import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 
@@ -21,8 +20,6 @@ import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
 
-import java.util.Random;
-import java.util.Vector;
 
 public class Player {
 
@@ -51,7 +48,7 @@ public class Player {
 	private int playerNumber;
 	private Color color;
 	private String playerName;
-	private int PCVictoryPointsCount;
+	private int progressCardVictoryPointsCount;
 	protected int numOwnedSettlements;
 	protected int numOwnedCities;
 	protected int numOwnedCityWalls;
@@ -83,7 +80,6 @@ public class Player {
 
 	//Progress Cards
 	private boolean isMerchantFleetActive = false;
-	private boolean isIntrigue = false;
 
 	public enum Color {
 		RED, BLUE, GREEN, YELLOW, SELECTING, NONE
@@ -127,7 +123,7 @@ public class Player {
 		actionLog = "";
 		latestBuiltCommunityId = -1;
 		metropolisTypeToBuild = -1;
-		PCVictoryPointsCount = 0;
+		progressCardVictoryPointsCount = 0;
 
 		hand = new Vector<ProgressCardType>();
         newCards = new Vector<ProgressCardType>();
@@ -208,10 +204,6 @@ public class Player {
 		actionLog = "";
 	}
 
-	public void incPCVictoryPointscount(int inc)
-	{
-		PCVictoryPointsCount = PCVictoryPointsCount + inc;
-	}
 	/**
 	 * Function called at the end of the trun (after build phase finishes)
 	 */
@@ -289,6 +281,7 @@ public class Player {
 			useResources(Resource.ResourceType.LUMBER, 1);
 		} else {
 			FREE_BUILD = false;
+			freeBuildUnit = -1;
 		}
 
 		appendAction(R.string.player_road);
@@ -349,6 +342,7 @@ public class Player {
 			useResources(Resource.ResourceType.WOOL, 1);
 		} else {
 			FREE_BUILD = false;
+			freeBuildUnit = -1;
 		}
 
 		//TODO: longest trade route (extend with road)
@@ -879,27 +873,6 @@ public class Player {
 		return true;
 	}
 
-	public boolean removeKnightOffBoardFrom(Vertex vertex)
-	{
-		if(vertex == null || !canRemoveKnightOffBoard(vertex))
-		{
-			return false;
-		}
-
-		Knight toRemove = vertex.getPlacedKnight();
-
-		if(!vertex.removeKnightOffBoardFromHere(this))
-		{
-			return false;
-		}
-
-		board.nextPhase();
-
-		board.startKnightRemovementPhase(toRemove);
-
-		return true;
-	}
-
 	/**
 	 * Attempt to move a knight peacefully to this vertex. Returns true on success
 	 *
@@ -949,27 +922,21 @@ public class Player {
 		if(toDisplace.getOwnerPlayer() == this) {
 			return false;
 		}
-		if(!isIntrigue) {
-			Knight toMove = board.getCurrentlyMovingKnight();
+		Knight toMove = board.getCurrentlyMovingKnight();
 
-			if(toMove == null || !toMove.canDisplace(toDisplace)) {
-				return false;
-			}
+		if(toMove == null || !toMove.canDisplace(toDisplace)) {
+			return false;
+		}
 
-			if(!target.displaceKnightFromHere(this, toMove)) {
-				return false;
-			}
-		} else {
-			target.displaceKnightFromHereDuringIntrigue();
+		if(!target.displaceKnightFromHere(this, toMove)) {
+			return false;
 		}
 
 		board.updateLongestTradeRoute();
 
 		//TODO: is this safe?
 		// clear temporary memory and intermediately return to player turn phase
-		if (!isIntrigue) {
-			board.nextPhase();
-		}
+		board.nextPhase();
 
 		boolean displacedKnightHasSomewhereToRelocate = false;
 		for (Vertex candidateRelocation : board.getVertices()) {
@@ -1245,12 +1212,20 @@ public class Player {
 		}
 		boolean canMove = false, hasEdgeToRemove = false, hasSomewhereToMove = false;
 		for (Edge edge : board.getEdges()) {
+			Edge removeableEdge = null, validDestinationEdge = null;
 			if (edge.canRemoveShipFromHere(this))
 			{
 				hasEdgeToRemove = true;
+				removeableEdge = edge;
 			}
 			if (edge.canMoveShipToHere(this)) {
 				hasSomewhereToMove = true;
+				validDestinationEdge = edge;
+			}
+			if (removeableEdge == validDestinationEdge) {
+				// only happens if both variables set in same iteration
+				hasEdgeToRemove = false;
+				hasSomewhereToMove = false;
 			}
 			if (hasEdgeToRemove && hasSomewhereToMove) {
 				canMove = true;
@@ -1554,12 +1529,6 @@ public class Player {
 		return false;
 	}
 
-	//Phil's Method
-	public boolean canRemoveKnightOffBoard(Vertex vertex)
-	{
-		return vertex.canRemoveKnightOffBoardHere(this);
-	}
-
 	/**
 	 * Can you place the currently moving knight at this vertex?
 	 *
@@ -1617,17 +1586,13 @@ public class Player {
 		{
 			return false;
 		}
-		if(isIntrigue) {
-			return vertex.canDisplaceKnightFromHere(this);
-		} else {
-			Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
+		Knight currentlyMovingKnight = board.getCurrentlyMovingKnight();
 
-			if(!isMyKnight(currentlyMovingKnight)) {
-				return false;
-			}
-
-			return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
+		if(!isMyKnight(currentlyMovingKnight)) {
+			return false;
 		}
+
+		return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
 	}
 	/**
  	* Can you remove this road? (is it open)
@@ -1716,18 +1681,6 @@ public class Player {
 		return sum;
 	}
 
-	/**
-	 * Relies on the ordering of resources
-	 *
-	 * @return sum of player's main resources only (lumber, wheat, brick, wool, ore)
-	 */
-	public int getBaseGameResourceCount() {
-		int sum = 0;
-		for (int i = 0; i < 4; i++) {
-			sum += countPerResource[i];
-		}
-		return sum;
-	}
 
 	/**
 	 * Add resources to the player
@@ -1804,32 +1757,6 @@ public class Player {
 		}
 	}
 
-	public void decreaseResources(ResourceType resourceType) {
-		if (countPerResource[resourceType.ordinal()] > 0) {
-			countPerResource[resourceType.ordinal()] -= 1;
-		/*
-		switch(resourceType) {
-			case LUMBER:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case WOOL:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case GRAIN:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case BRICK:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case ORE:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case GOLD:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case CLOTH:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case COIN:
-				countPerResource[resourceType.ordinal()] -= 1;
-			case PAPER:
-				countPerResource[resourceType.ordinal()] -= 1;
-				*/
-		}
-	}
 	/**
 	 * Add fish to the player
 	 * @param curUnitType
@@ -1947,10 +1874,6 @@ public class Player {
 		}
 
 		return resourceType;
-	}
-
-	public void incVictoryPoints() {
-		privateVictoryPointsCount += 1;
 	}
 
 	/**
@@ -2176,6 +2099,8 @@ public class Player {
 		}
 		points += defenderOfCatan;
 
+		points += progressCardVictoryPointsCount;
+
 		return points;
 	}
 	/**
@@ -2184,7 +2109,16 @@ public class Player {
 	 * @return the number of privateVictoryPointsCount points
 	 */
 	public int getVictoryPoints() {
-		return getPublicVictoryPoints() + privateVictoryPointsCount + PCVictoryPointsCount;
+		return getPublicVictoryPoints();
+	}
+
+	/**
+	 * Return player's current total progress cards points
+	 *
+	 * @return the number of progress card points
+	 */
+	public int getPCVictoryPoints() {
+		return progressCardVictoryPointsCount;
 	}
 
 	/**
@@ -2315,14 +2249,6 @@ public class Player {
 
 	public boolean getIsMerchantFleetActive() {
 		return isMerchantFleetActive;
-	}
-
-	public void setIsIntrigue(boolean isActive) {
-		isIntrigue = isActive;
-	}
-
-	public boolean getIsIntrigue() {
-		return isIntrigue;
 	}
 
 //TODO: see how we can use this similar code for progress cards
@@ -2910,13 +2836,13 @@ public class Player {
 	}
 
 	public void playConstitution() {
-		incVictoryPoints();
-		board.toast("Received and Played Constitution");
+		progressCardVictoryPointsCount++;
+		board.toast(this.playerName + " received and Played Constitution");
 	}
 
 	public void playPrinter() {
-		incVictoryPoints();
-		board.toast("Received and Played Printer");
+		progressCardVictoryPointsCount++;
+		board.toast(this.playerName + " received and Played Printer");
 	}
 
 	public ProgressCard.ProgressCardType gainProgressCard(CityImprovement.CityImprovementType type){
@@ -2962,15 +2888,6 @@ public class Player {
 		this.numOwnedFish = numOwnedFish;
 	}
 
-	public void setNumOwnedCityWalls(int numOwnedCityWalls)
-	{
-		this.numOwnedCityWalls = this.numOwnedCityWalls + numOwnedCityWalls;
-	}
-
-	public void setNumOwnedBricks(int count)
-	{
-
-	}
 
 
 	/**

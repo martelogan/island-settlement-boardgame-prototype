@@ -392,7 +392,6 @@ public class ActiveGameFragment extends Fragment {
 			case BUILD_METROPOLIS:
 			case HIRE_KNIGHT:
 			case ACTIVATE_KNIGHT:
-			case REMOVE_KNIGHT: //This might be problem
 			case PROMOTE_KNIGHT:
 			case CHASE_ROBBER:
 			case CHASE_PIRATE:
@@ -523,7 +522,7 @@ public class ActiveGameFragment extends Fragment {
 				|| action == Action.PROMOTE_KNIGHT || action == Action.CHASE_ROBBER
 				|| action == Action.CHASE_PIRATE || action == Action.MOVE_KNIGHT_1
 				|| action == Action.MOVE_KNIGHT_2 || action == Action.MOVE_DISPLACED_KNIGHT
-				|| action == Action.PLAY_INTRIGUE || action == Action.REMOVE_KNIGHT) {
+				|| action == Action.PLAY_INTRIGUE) {
 			vertexUnitType = Vertex.KNIGHT;
 		}
 
@@ -539,6 +538,9 @@ public class ActiveGameFragment extends Fragment {
 			case Vertex.SETTLEMENT:
 			case Vertex.CITY:
 			case Vertex.WALLED_CITY:
+			case Vertex.POLITICS_METROPOLIS:
+			case Vertex.SCIENCE_METROPOLIS:
+			case Vertex.TRADE_METROPOLIS:
 				// selecting buildable vertex unit
 				if (player.buildVertexUnit(vertex, vertexUnitType)) {
 					if (board.isSetupSettlement() || board.isSetupCity() || board.isBuildMetropolisPhase())
@@ -565,24 +567,6 @@ public class ActiveGameFragment extends Fragment {
 						break;
 					case PROMOTE_KNIGHT:
 						if (player.promoteKnightAt(vertex)) {
-								if(player.getNumOwnedBasicKnights()+player.getNumOwnedStrongKnights() >= 1 && board.isSmithPhase1()){
-									popup("Promote a second knight","free of charge");
-									player.setFreePromote(true);
-									board.setPhase(Board.Phase.SMITH_PHASE2);
-									showState(true);
-								}
-								else {
-									popup("No more knights can be promoted","");
-									player.setFreePromote(false);
-									renderer.setAction(Action.NONE);
-									board.setPhase(Board.Phase.PLAYER_TURN);
-									showState(false);
-								}
-						}
-						else
-						{
-							popup("Invalid","");
-							board.setPhase(Board.Phase.PLAYER_TURN);
 							showState(false);
 						}
 						break;
@@ -633,13 +617,6 @@ public class ActiveGameFragment extends Fragment {
 							showState(true);
 						}
 						break;
-					case REMOVE_KNIGHT:
-						if(player.removeKnightOffBoardFrom(vertex))
-						{
-							renderer.setAction(Action.REMOVE_KNIGHT);
-							showState(true);
-						}
-						break;
 				}
 		}
 	}
@@ -679,7 +656,6 @@ public class ActiveGameFragment extends Fragment {
 		}
 
 		//proceed to build road or edge
-
 		Player player = board.getPlayerOfCurrentGameTurn();
 		if (action == Action.BUILD_ROAD) {
 			if (player.buildRoad(edge)) {
@@ -704,25 +680,6 @@ public class ActiveGameFragment extends Fragment {
 					board.setPhase(Board.Phase.PLAYER_TURN);
 					showState(false);
 				}
-				//TODO: special progress card shit?
-//				else if (board.isProgressPhase()) {
-//					board.nextPhase();
-//
-//					boolean canBuild = false;
-//					for (Edge other : board.getEdges()) {
-//						if (other.canBuildRoad(player))
-//						{
-//							canBuild = true;
-//						}
-//					}
-//
-//					if (!canBuild) {
-//						board.nextPhase();
-//						cantAct(Action.BUILD_ROAD);
-//					}
-//
-//					showState(false);
-//				}
 				else {
 					showState(false);
 				}
@@ -1077,27 +1034,6 @@ public class ActiveGameFragment extends Fragment {
 						+ getActivity().getString(R.string.game_activate_knight));
 				break;
 
-			case REMOVE_KNIGHT:
-				for (Vertex vertex : board.getVertices()) {
-					if(player.canRemoveKnightOffBoard(vertex))
-					{
-						canAct = true;
-						break;
-					}
-				}
-
-				if(!canAct)
-				{
-					cantAct(Action.REMOVE_KNIGHT);
-					break;
-				}
-
-				renderer.setAction(Action.REMOVE_KNIGHT);
-				setButtons(Action.REMOVE_KNIGHT);
-				getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
-						+ getString(R.string.game_remove_knight_final));
-				break;
-
 			case PROMOTE_KNIGHT:
 				canAct = player.canPromoteSomeKnight();
 
@@ -1384,10 +1320,6 @@ public class ActiveGameFragment extends Fragment {
 		else if (board.isKnightDisplacementPhase()) {
 			action = Action.MOVE_DISPLACED_KNIGHT;
 		}
-		else if(board.isRemoveKnightPhase())
-		{
-			action = Action.REMOVE_KNIGHT;
-		}
 		else if(board.isBuildMetropolisPhase()){
 			action = Action.BUILD_METROPOLIS;
 		}
@@ -1409,11 +1341,6 @@ public class ActiveGameFragment extends Fragment {
 		}
 		else if(board.isSmithPhase2()){
 			action = Action.PROMOTE_KNIGHT;
-		}
-
-        //TODO: Condition for Intrigue
-        else if(board.isPlayIntrigue()) {
-			action = Action.PLAY_INTRIGUE;
 		}
 
 		renderer.setAction(action);
@@ -1567,10 +1494,6 @@ public class ActiveGameFragment extends Fragment {
 			}
 			if(player.canActivateSomeKnight()) {
 				view.addButton(ButtonType.ACTIVATE_KNIGHT);
-			}
-			if(player.canMoveSomeKnight())
-			{
-				view.addButton(ButtonType.REMOVE_KNIGHT);
 			}
 			if(player.canPromoteSomeKnight()) {
 				view.addButton(ButtonType.PROMOTE_KNIGHT);
@@ -2167,9 +2090,6 @@ public class ActiveGameFragment extends Fragment {
 				message = getString(R.string.game_nowhere_available_activate_knight);
 				break;
 
-			case REMOVE_KNIGHT:
-				message = getString(R.string.game_remove_knight);
-				break;
 
 			case PROMOTE_KNIGHT:
 				int numOwnedBasicKnights = player.getNumOwnedBasicKnights(),
@@ -2277,9 +2197,6 @@ public class ActiveGameFragment extends Fragment {
 												case MERCHANT:
 													playMerchant();
 													break;
-												case ROAD_BUILDING:
-													playRoadBuilding();
-													break;
 												case DIPLOMAT:
 													//playDiplomat();
 													break;
@@ -2308,9 +2225,6 @@ public class ActiveGameFragment extends Fragment {
 													break;
 												case ALCHEMIST:
 													playAlchemist();
-													break;
-												case BISHOP:
-													playBishop();
 													break;
 												case INTRIGUE:
 													//playIntrigue();
@@ -2851,96 +2765,6 @@ public class ActiveGameFragment extends Fragment {
 		showState(true);
 	}
 
-	//Working on this
-	/*
-	//FIXME: NOT WORKING PROGRESS CARD
-	private void playDeserter()
-	{
-		final Player currentPlayer = board.getPlayerOfCurrentGameTurn();
-		int l = 0;
-
-		final List<String> playersWithKnightsList = new ArrayList<>();
-		final Map<Integer, String> playersWithKnights = new HashMap<>();
-
-		for(int k = 0; k < board.getNumPlayers(); k++)
-		{
-			Player opponent = board.getPlayerById(k);
-			if(currentPlayer == opponent)
-			{
-				continue;
-			}
-			else
-			{
-				if(opponent.getTotalNumOwnedKnights() > 0)
-				{
-					playersWithKnights.put(opponent.getPlayerNumber(), opponent.getPlayerName());
-					l++;
-				}
-			}
-		}
-
-		if(playersWithKnights.size() == 0)
-		{
-			popup("Message", "None of your opponents have removeable knights");
-			return;
-		}
-
-		final int[] newItem = new int[l];
-		int k = 0;
-
-		for(int i = 0; i < board.getNumPlayers(); i++)
-		{
-			Player opponent = board.getPlayerById(i);
-			if(currentPlayer == opponent)
-			{
-				continue;
-			}
-			else
-			{
-				if(opponent.getTotalNumOwnedKnights() > 0)
-				{
-					newItem[k] = opponent.getPlayerNumber();
-					k++;
-				}
-			}
-		}
-
-		playersWithKnightsList.addAll(playersWithKnights.values());
-		CharSequence[] items = new CharSequence[playersWithKnightsList.size()];
-		items = playersWithKnightsList.toArray(items);
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getString(R.string.game_confirm_choose_opponent));
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int item)
-			{
-				Player player = board.getPlayerByName(playersWithKnightsList.get(item));
-				int playerNo = player.getPlayerNumber();
-				board.setPlayerNo(playerNo);
-				//renderer.setAction(Action.REMOVE_KNIGHT);
-				//setButtons(Action.REMOVE_KNIGHT);
-				//getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
-						//+ getString(R.string.game_remove_knight_final));
-
-
-				 board.setPhase(Board.Phase.REMOVING_KNIGHT);
-				 currentPlayer.gotResourcesSinceLastTurn = false;
-				 board.nextPhase();
-				 showState(true);
-
-
-				//renderer.setAction(Action.REMOVE_KNIGHT);
-				//setButtons(Action.REMOVE_KNIGHT);
-				//getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerNumber() + ": "
-				//+ getString(R.string.game_remove_knight_final));
-			}
-		});
-		builder.create().show();
-
-		toast("Played the deserter");
-	}
-	 */
-
 
 	//Working
 	 private void playResourceMonopoly()
@@ -3243,10 +3067,6 @@ public class ActiveGameFragment extends Fragment {
 					dialog.dismiss();
 					Player current = board.getPlayerOfCurrentGameTurn();
 					if (current.displaceKnightAt(displacementTarget)) {
-						// finish moving the knight
-						if(current.getIsIntrigue()) {
-							current.setIsIntrigue(false);
-						}
 						renderer.setAction(Action.NONE);
 						showState(true);
 					}
@@ -3258,8 +3078,6 @@ public class ActiveGameFragment extends Fragment {
 	}
 
 	private void playAlchemist(){
-		//@TODO
-		//add merchant placement logic
 		playedIsAlchemist = true;
 		final CharSequence[] items = new CharSequence[6];
 		for (int i = 0; i < 6; i++) {
@@ -3296,79 +3114,10 @@ public class ActiveGameFragment extends Fragment {
 		toast("Played the Alchemist");
 	}
 
-
-	private void playBishop(){
-		//@TODO
-		board.setIsBishop(true);
-		board.setPhase(Board.Phase.CHOOSE_ROBBER_PIRATE);
-		this.chooseRobberPirate(0);
-
-		toast("Played the Bishop");
-	}
-	/*
-	//FIXME: NOT WORKING PROGRESS CARD
-	private void playIntrigue(){
-
-		//@TODO
-		Player player = board.getPlayerOfCurrentGameTurn();
-		player.setIsIntrigue(true);
-		getActivity().setTitle("Displace opponent's knight");
-		board.setPhase(Board.Phase.PLAY_INTRIGUE);
-		showState(false);
-		//add merchant placement logic
-		toast("Played the Intrigue");
-
-	}
-	*/
-
 	@Override
 	public String toString() {
 		return super.toString();
 	}
-	/*
-	//FIXME: NOT WORKING PROGRESS CARD
-	private void playSaboteur(){
-		//@TODO
-		//add Saboteur placement logic
-		board.setReturnPhase(board.getPhase());
-		board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
-		Player currentPlayer = board.getPlayerOfCurrentGameTurn();
-		Player opponentPlayer;
-		int currentPlayerVictoryPoints = currentPlayer.getVictoryPoints();
-		for (int i = 0; i < board.getNumPlayers(); i++) {
-			opponentPlayer = board.getPlayerById(i);
-			if (currentPlayer.getPlayerNumber() == opponentPlayer.getPlayerNumber()) {
-				continue;
-			} else {
-				if (currentPlayerVictoryPoints <= opponentPlayer.getVictoryPoints()) {
-					int cards = opponentPlayer.getResourceCount();
-					int extra = cards / 2;
-					if (board.getAutoDiscad()) {
-						for (int j = 0; j < extra; j++) {
-							opponentPlayer.discard(null);
-						}
-					} else if (opponentPlayer.isBot()) {
-						// instruct the ai to discard_resources
-						AutomatedPlayer bot = (AutomatedPlayer) opponentPlayer;
-						bot.discard(extra);
-					} else if (opponentPlayer.isHuman()) {
-						// queue human players to discard_resources
-						board.getPlayerIdsYetToAct().add(opponentPlayer.getPlayerNumber());
-					}
-				}
-			}
-		}
-
-		toast("Played the Saboteur");
-
-		// Something to consider about how to pass the turn around.
-		if(!board.getPlayerIdsYetToAct().isEmpty()) {
-			mListener.endTurn(board.getPlayerById(currentPlayer.getPlayerNumber()).getGooglePlayParticipantId(), false);
-		}
-
-		board.nextPhase();
-
-	}*/
 
 	private void playSpy(){
 		//@TODO
@@ -3449,114 +3198,6 @@ public class ActiveGameFragment extends Fragment {
 		builder.create().show();
 	}
 
-	/*
-	//FIXME: NOT WORKING PROGRESS CARD
-	private void playCommercialHarbor(){
-		//@TODO
-		//add commercial harbor placement logic
-		board.setReturnPhase(board.getPhase());
-		board.setPhase(Board.Phase.PROGRESS_CARD_STEP_2);
-
-		CharSequence[] playerList = new CharSequence[board.getNumPlayers()];
-		boolean somethingToStealFrom = false;
-
-		final Player current = board.getPlayerOfCurrentGameTurn();
-		//storing opponent player in this
-
-		int playerIndex = 0;
-		int resourceIndex = 0;
-
-		int totalResources = current.getBaseGameResourceCount();
-
-		if (totalResources == 0) {
-			toast("No resources to trade, progress card void");
-			return;
-		}
-
-		final Map<CharSequence,Integer> resourcePointerMap = new HashMap<>();
-
-		resourcePointerMap.put("Lumber", 0);
-		resourcePointerMap.put("Wool", 1);
-		resourcePointerMap.put("Grain", 2);
-		resourcePointerMap.put("Brick", 3);
-		resourcePointerMap.put("Ore", 4);
-
-		int totalCommodities = 0;
-		int lumberCount = 0;
-		int woolCount = 0;
-		int grainCount = 0;
-		int brickCount = 0;
-		int oreCount = 0;
-
-		for (int i= 0; i < board.getNumPlayers(); i++) {
-			totalCommodities = 0;
-			resourceIndex = 0;
-
-			//ArrayList in which we store the resources that the cur player has
-			final List<String> currentlyContainedResources = new ArrayList<>();
-			final Player player = board.getPlayerById(i);
-
-			lumberCount = current.getResources(Resource.ResourceType.LUMBER);
-			if(lumberCount != 0) {
-				currentlyContainedResources.add(resourceIndex++, "Lumber");
-			}
-			woolCount = current.getResources(Resource.ResourceType.WOOL);
-			if(woolCount != 0) {
-				currentlyContainedResources.add(resourceIndex++, "Wool");
-			}
-			grainCount = current.getResources(Resource.ResourceType.GRAIN);
-			if(grainCount != 0) {
-				currentlyContainedResources.add(resourceIndex++, "Grain");
-			}
-			brickCount = current.getResources(Resource.ResourceType.BRICK);
-			if(brickCount != 0) {
-				currentlyContainedResources.add(resourceIndex++, "Brick");
-			}
-			oreCount = current.getResources(Resource.ResourceType.ORE);
-			if(oreCount != 0) {
-				currentlyContainedResources.add(resourceIndex, "Ore");
-			}
-
-			CharSequence[] items = new CharSequence[resourceIndex];
-			items = currentlyContainedResources.toArray(items);
-
-			if (player == current) {
-				//just move onto the next player
-				continue;
-			} else {
-				totalCommodities = player.getResources(Resource.ResourceType.PAPER) +
-						player.getResources(Resource.ResourceType.COIN) +
-						player.getResources(Resource.ResourceType.CLOTH) +
-						player.getResources(Resource.ResourceType.GOLD);
-				if (totalCommodities > 0) {
-					String playerInfo = "Trade Resource with commodity with \n" + player.getPlayerName() + " " + player.getPlayerNumber();
-
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-					builder.setTitle(playerInfo);
-					builder.setItems(items, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int item) {
-							dialog.dismiss();
-							Resource.ResourceType resourceType = Resource.RESOURCE_TYPES[resourcePointerMap.get(currentlyContainedResources.get(item))];
-							player.addResources(resourceType, 1, false);
-							current.decreaseResources(resourceType);
-							toast("Gave 1 resource of " + currentlyContainedResources.get(item) + "to " + player.getPlayerName());
-							board.getPlayerIdsYetToAct().add(player.getPlayerNumber());
-						}
-					});
-					builder.setCancelable(true);
-					builder.create().show();
-
-				}
-			}
-		}
-
-		mListener.endTurn(board.getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
-		board.nextPhase();
-
-		toast("Played the Commercial Harbor");
-	}
-	*/
-
 	private void playMerchantFleet() {
 		//@TODO
 		//add merchant placement logic
@@ -3598,47 +3239,6 @@ public class ActiveGameFragment extends Fragment {
 		showState(true);
 		toast("Played Knight");
 	}
-	private void playRoadBuilding() //works -> ship doesn't fully work
-	{ //needs to be ship or road
-
-		Player player = board.getPlayerOfCurrentGameTurn();
-		if (player.getNumRoads() + player.getNumShips() < (Player.MAX_ROADS + Player.MAX_SHIPS))
-			{
-				popup("Build your first road","free of charge");
-				player.setFreeBuild(true);
-				board.setPhase(Board.Phase.PROGRESS_CARD_STEP_1);
-				renderer.setAction(Action.BUILD_EDGE_UNIT);
-				showState(true);
-			}
-		else {toast(getActivity().getString(R.string.game_build_edge_unit_max));}
-
-
-		toast("Played Road Builder");
-
-	}
-
-	/*
-	//FIXME: NOT WORKING PROGRESS CARD
-	private void playWedding() {
-		toast("Played Wedding");
-	}
-	 */
-
-	/*
-	//FIXME: NOT WORKING PROGRESS CARD
-	private void playDiplomat(){//not working
-
-		Player player = board.getPlayerOfCurrentGameTurn();
-		board.setPhase(Board.Phase.REMOVING_OPEN_ROAD);
-		renderer.setAction(Action.REMOVE_OPEN_ROAD);
-		setButtons(Action.REMOVE_OPEN_ROAD);
-		showState(true);
-		getActivity().setTitle(board.getPlayerOfCurrentGameTurn().getPlayerName() + ": "
-				+ getActivity().getString(R.string.game_play_diplomat));
-		player.appendAction(R.string.player_removedOpenRoad);
-
-		toast("Played Diplomat");
-	}*/
 
 	private void playInventor(){ //works
 		Player player = board.getPlayerOfCurrentGameTurn();
@@ -3651,61 +3251,6 @@ public class ActiveGameFragment extends Fragment {
 		player.appendAction(R.string.player_switched_numToken);
 		showState(false);
 		toast("Played Inventor");
-	}
-
-	private void confirmChaseRobberDialog(){
-		final int confirm = 0;
-		final int cancel = 1;
-		CharSequence[] items = new CharSequence[2];
-		items[0] = getString(R.string.game_confirm_chase_robber);
-		items[1] = getString(R.string.game_cancel_str);
-
-		//create the popup asking which card to use
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getString(R.string.game_confirm_chase_robber_title));
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int item) {
-
-				if (item == cancel) {
-					dialog.dismiss();
-				} else if (item == confirm){
-					dialog.dismiss();
-					board.setReturnPhase(board.getPhase());
-					board.startRobberPhase();
-					showState(false);
-				}
-			}
-		});
-
-		builder.create().show();
-	}
-
-	private void confirmChasePirateDialog() {
-		final int confirm = 0;
-		final int cancel = 1;
-		CharSequence[] items = new CharSequence[2];
-		items[0] = getString(R.string.game_confirm_chase_pirate);
-		items[1] = getString(R.string.game_cancel_str);
-
-		//create the popup asking which card to use
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getString(R.string.game_confirm_chase_pirate_title));
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int item) {
-
-				if (item == cancel) {
-					dialog.dismiss();
-				} else if (item == confirm){
-					dialog.dismiss();
-					board.setReturnPhase(board.getPhase());
-					board.startPiratePhase();
-					showState(false);
-				}
-			}
-		});
-
-		builder.create().show();
-
 	}
 
 }

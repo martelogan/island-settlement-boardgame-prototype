@@ -1113,17 +1113,6 @@ public class Vertex {
 		}
 	}
 
-	public boolean canRemoveKnightOffBoardHere(Player player)
-	{
-		if(curUnitType == KNIGHT && board.getPlayerById(ownerPlayerNumber) == player)
-		{
-			return getPlacedKnight().canMoveOffBoard();
-		}
-		else
-		{
-			return false;
-		}
-	}
 
 	/**
 	 * Check if the player can place the currently moving knight at this vertex
@@ -1207,21 +1196,6 @@ public class Vertex {
 		return attackerKnight.canDisplace(getPlacedKnight());
 	}
 
-	public boolean canDisplaceKnightFromHere(Player attackerPlayer) {
-		if (attackerPlayer == null) {
-			return false;
-		}
-
-		if (attackerPlayer != board.getPlayerOfCurrentGameTurn()) {
-			return false;
-		}
-
-		if(!(curUnitType == KNIGHT) || (ownerPlayerNumber == -1)) {
-			return false;
-		}
-
-		return true;
-	}
 	/**
 	 * Wrapper of canBuild(player, setup) where setup is false by default
 	 *
@@ -1372,25 +1346,6 @@ public class Vertex {
 		return true;
 	}
 
-	public boolean removeKnightOffBoardFromHere(Player player)
-	{
-		if(!this.canRemoveKnightOffBoardHere(player))
-		{
-			return false;
-		}
-
-		//remove knight from this vertex
-		placedKnightId = -1;
-		placedKnightRank = null;
-		ownerPlayerNumber = -1;
-		curUnitType = NONE;
-
-		//HERE?????
-		//board.nextPhase();
-
-		return true;
-	}
-
 
 	/**
 	 * Return a knight back to stationed vertex
@@ -1498,26 +1453,6 @@ public class Vertex {
 		}
 
 		return false;
-	}
-
-	public boolean displaceKnightFromHereWithIntrigue(Player attackerPlayer) {
-		if (attackerPlayer == null) {
-			return false;
-		}
-		if(attackerPlayer != board.getPlayerOfCurrentGameTurn()) {
-			return false;
-		}
-		if(!canDisplaceKnightFromHere(attackerPlayer)) {
-			return false;
-		}
-		return false;
-	}
-
-	public void displaceKnightFromHereDuringIntrigue() {
-		placedKnightId = -1;
-		placedKnightRank = null;
-		ownerPlayerNumber = -1;
-		curUnitType = NONE;
 	}
 
 	public Harbor[] getHarbors() {

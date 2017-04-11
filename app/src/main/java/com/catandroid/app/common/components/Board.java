@@ -88,10 +88,6 @@ public class Board {
 		this.phase = phase;
 	}
 
-	public void setPlayerNo(int playerNo)
-	{
-		this.playerNo = playerNo;
-	}
 
 	public Phase getPhase() {
 		return phase;
@@ -309,17 +305,6 @@ public class Board {
 		return numPlayers;
 	}
 
-	public boolean getAutoDiscad() {
-		return autoDiscard;
-	}
-
-	public Stack<Integer> getPlayerIdsYetToAct() {
-		return playerIdsYetToAct;
-	}
-
-	public void addPlayerIdsYetToAct(int playerId) {
-		playerIdsYetToAct.add(playerId);
-	}
 	/**
 	 * Get a reference to the player for current game turn
 	 * 
@@ -460,7 +445,6 @@ public class Board {
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
 		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
-
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
@@ -486,6 +470,7 @@ public class Board {
 		//@TODO
 		//resolve the barbarian
 		if(eventRoll == 1 || eventRoll == 2 || eventRoll == 3){
+            barbarianPosition++;
 			resolveBarbarians();
 		}
 
@@ -716,22 +701,6 @@ public class Board {
 				tempKnightIdMemory = -1;
 				tempVertexIdMemory = -1;
 				break;
-			case REMOVING_KNIGHT:
-				/**
-				players[curPlayerNumber].endTurn();
-				curPlayerNumber = playerNo;
-				gameTurnNumber++;
-				turnChanged = true;
-				phase = returnPhase;
-				players[curPlayerNumber].beginTurn();
-				 **/
-				tempKnightIdMemory = -1;
-				tempVertexIdMemory = -1;
-				tempPlayerNumberMemory = -1; /** Not sure about this **/
-				// pass the turn back to the active turn player
-				activeGameFragment.mListener.endTurn( /** Not sure about this turn change **/
-						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
-				break;
 			case DISPLACING_KNIGHT:
 				// TODO: what else when ending knight displacement?
 				phase = returnPhase;
@@ -739,8 +708,8 @@ public class Board {
 				tempVertexIdMemory = -1;
 				tempPlayerNumberMemory = -1;
 				// pass the turn back to the active turn player
-				//activeGameFragment.mListener.endTurn(
-						//getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
+				activeGameFragment.mListener.endTurn(
+						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				break;
 			case PROGRESS_CARD_STEP_1:
 				phase = Phase.PROGRESS_CARD_STEP_2;
@@ -803,8 +772,6 @@ public class Board {
 				}
             case PLACE_MERCHANT:
                 phase = Phase.PLAYER_TURN;
-			case PLAY_INTRIGUE:
-				phase = Phase.PLAYER_TURN;
 			case DONE:
 				return false;
 		}
@@ -918,24 +885,6 @@ public class Board {
 		toast("Your turn will resume when your opponent moves the displaced knight! Check back later.");
 	}
 
-	public void startKnightRemovementPhase(Knight toRemove)
-	{
-		returnPhase = phase;
-		phase = REMOVING_KNIGHT;
-		tempKnightIdMemory = toRemove.getId();
-		tempVertexIdMemory = toRemove.getCurrentVertexLocation().getId();
-		Player removedKnightOwner = toRemove.getOwnerPlayer();
-		tempPlayerNumberMemory = playerNo;
-		toRemove.displaceFromPost();
-		if(removedKnightOwner.isBot()) {
-			runAITurn();
-		}
-		else
-		{
-			activeGameFragment.mListener.endTurn(getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
-		}
-		toast("Your turn will resume when your opponent removes his knight! Check back later.");
-	}
 
 	/**
 	 * Enter the trade Responded phase
@@ -1089,7 +1038,6 @@ public class Board {
 		return (phase == Phase.MOVING_ROBBER);
 	}
 
-	public boolean isMyRobberPhase() {return (phase == Phase.MY_MOVING_ROBBER); }
 
 	public boolean isPiratePhase() {
 		return (phase == Phase.MOVING_PIRATE);
@@ -1143,8 +1091,6 @@ public class Board {
 
     public boolean isPlaceMerchantPhase() { return (phase == Phase.PLACE_MERCHANT);}
 
-	public boolean isPlayIntrigue() { return (phase == Phase.PLAY_INTRIGUE);
-	}
 	/**
 	 * Get the dice number token value for a hexagons
 	 * 
@@ -1359,16 +1305,6 @@ public class Board {
 		runAITurn();
 	}
 
-	public void  startMyRobberPhase() {
-		if(this.curRobberHexId != null) {
-			hexagons[this.curRobberHexId].removeRobber();
-		}
-		this.prevRobberHexId = this.curRobberHexId;
-		this.curRobberHexId = null;
-		phase = Phase.MY_MOVING_ROBBER;
-		// run AI's turn
-		runAITurn();
-	}
 
 	/**
 	 * Enter the pirate placement phase
@@ -1697,8 +1633,6 @@ public class Board {
                 return R.string.phase_move_ship;
 			case MOVING_KNIGHT:
 				return R.string.phase_move_knight;
-			case REMOVING_KNIGHT:
-				return R.string.game_remove_knight;
 			case DISPLACING_KNIGHT:
 				return R.string.phase_displacing_knight;
 			case PROGRESS_CARD_STEP_1:
@@ -1866,86 +1800,40 @@ public class Board {
 		scienceDeck = new ArrayList<>();
 		politicsDeck = new ArrayList<>();
 
-		//@TODO for testing purposes ONLY
-		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
-		tradeDeck.add(ProgressCard.ProgressCardType.BISHOP);
+		tradeDeck.add(ProgressCard.ProgressCardType.MASTER_MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MASTER_MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
+		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
+		tradeDeck.add(ProgressCard.ProgressCardType.TRADE_MONOPOLY);
+		tradeDeck.add(ProgressCard.ProgressCardType.TRADE_MONOPOLY);
 
-		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
-		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
-		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
-		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
-		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
+		scienceDeck.add(ProgressCard.ProgressCardType.ALCHEMIST);
+		scienceDeck.add(ProgressCard.ProgressCardType.ALCHEMIST);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
+		scienceDeck.add(ProgressCard.ProgressCardType.ENGINEER);
+		scienceDeck.add(ProgressCard.ProgressCardType.MEDICINE);
+		scienceDeck.add(ProgressCard.ProgressCardType.MEDICINE);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
+		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
 		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
 
 		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-
-
-		//@TODO Implement all these progress cards
-//		tradeDeck.add(ProgressCard.ProgressCardType.COMMERCIAL_HARBOR);
-//		tradeDeck.add(ProgressCard.ProgressCardType.COMMERCIAL_HARBOR);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MASTER_MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MASTER_MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-//		tradeDeck.add(ProgressCard.ProgressCardType.MERCHANT_FLEET);
-//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
-//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
-//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
-//		tradeDeck.add(ProgressCard.ProgressCardType.RESOURCE_MONOPOLY);
-//		tradeDeck.add(ProgressCard.ProgressCardType.TRADE_MONOPOLY);
-//		tradeDeck.add(ProgressCard.ProgressCardType.TRADE_MONOPOLY);
-//
-//		scienceDeck.add(ProgressCard.ProgressCardType.ALCHEMIST);
-//		scienceDeck.add(ProgressCard.ProgressCardType.ALCHEMIST);
-//		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-//		scienceDeck.add(ProgressCard.ProgressCardType.CRANE);
-//		scienceDeck.add(ProgressCard.ProgressCardType.ENGINEER);
-//		scienceDeck.add(ProgressCard.ProgressCardType.INVENTOR);
-//		scienceDeck.add(ProgressCard.ProgressCardType.INVENTOR);
-//		scienceDeck.add(ProgressCard.ProgressCardType.IRIGIATION);
-//		scienceDeck.add(ProgressCard.ProgressCardType.IRIGIATION);
-//		scienceDeck.add(ProgressCard.ProgressCardType.MEDICINE);
-//		scienceDeck.add(ProgressCard.ProgressCardType.MEDICINE);
-//		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-//		scienceDeck.add(ProgressCard.ProgressCardType.MINING);
-//		scienceDeck.add(ProgressCard.ProgressCardType.PRINTER);
-//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILDING);
-//		scienceDeck.add(ProgressCard.ProgressCardType.ROAD_BUILDING);
-//		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
-//		scienceDeck.add(ProgressCard.ProgressCardType.SMITH);
-//
-//		politicsDeck.add(ProgressCard.ProgressCardType.BISHOP);
-//		politicsDeck.add(ProgressCard.ProgressCardType.CONSTITUTION);
-//		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
-//		politicsDeck.add(ProgressCard.ProgressCardType.DESERTER);
-//		politicsDeck.add(ProgressCard.ProgressCardType.DIPLOMAT);
-//		politicsDeck.add(ProgressCard.ProgressCardType.DIPLOMAT);
-//		politicsDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-//		politicsDeck.add(ProgressCard.ProgressCardType.INTRIGUE);
-//		politicsDeck.add(ProgressCard.ProgressCardType.SABOTEUR);
-//		politicsDeck.add(ProgressCard.ProgressCardType.SABOTEUR);
-//		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
-//		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
-//		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
-//		politicsDeck.add(ProgressCard.ProgressCardType.WARLORD);
-//		politicsDeck.add(ProgressCard.ProgressCardType.WARLORD);
-//		politicsDeck.add(ProgressCard.ProgressCardType.WEDDING);
-//		politicsDeck.add(ProgressCard.ProgressCardType.WEDDING);
+		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
+		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
+		politicsDeck.add(ProgressCard.ProgressCardType.SPY);
+		politicsDeck.add(ProgressCard.ProgressCardType.WARLORD);
+		politicsDeck.add(ProgressCard.ProgressCardType.WARLORD);
 
 		Collections.shuffle(tradeDeck);
 		Collections.shuffle(scienceDeck);
@@ -1973,12 +1861,6 @@ public class Board {
         else if(phase == DISPLACING_KNIGHT &&
 				getPlayerToDisplaceKnight().getGooglePlayParticipantId().equals(
 						activeGameFragment.myParticipantId)) {
-			return true;
-		}
-		else if(phase == REMOVING_KNIGHT &&
-				getPlayerToRemoveKnight().getGooglePlayParticipantId().equals(
-						activeGameFragment.myParticipantId))
-		{
 			return true;
 		}
 		return false;

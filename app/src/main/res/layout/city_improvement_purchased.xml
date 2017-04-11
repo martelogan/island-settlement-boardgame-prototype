@@ -63,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#F00"
-                android:text="⚀, ⚁, ⚂, ⚃, ⚄"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄\nYou may trade any commodity at the 2:1 rate"
                 android:textSize="24sp"
                 android:visibility="gone">
             </TextView>
@@ -72,7 +72,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#F00"
-                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅\nYou may trade any commodity at the 2:1 rate"
                 android:textSize="24sp"
                 android:visibility="gone">
             </TextView>
@@ -132,7 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#F00"
-                android:text="⚀, ⚁, ⚂, ⚃, ⚄"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄\nYou may promote strong knights to mighty knights!"
                 android:textSize="24sp"
                 android:visibility="gone">
             </TextView>
@@ -141,7 +141,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#F00"
-                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅\nYou may promote strong knights to mighty knights!"
                 android:textSize="24sp"
                 android:visibility="gone">
             </TextView>
@@ -201,7 +201,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#F00"
-                android:text="⚀, ⚁, ⚂, ⚃, ⚄"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄\nWhen get no resources, you may choose your own!"
                 android:textSize="24sp"
                 android:visibility="gone">
             </TextView>
@@ -210,7 +210,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#F00"
-                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅"
+                android:text="⚀, ⚁, ⚂, ⚃, ⚄, ⚅\nWhen get no resources, you may choose your own!"
                 android:textSize="24sp"
                 android:visibility="gone">
             </TextView>

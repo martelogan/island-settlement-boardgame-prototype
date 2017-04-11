@@ -96,6 +96,8 @@ public class PlayerStatsFragment extends Fragment {
 
 			message += getString(R.string.player_status_progress_cards) + ": "
 					+ player.getNumProgressCards();
+			message += "\nVP from Progress Cards" + ": "
+					+ player.getPCVictoryPoints();
 
 			message += "\n";
 

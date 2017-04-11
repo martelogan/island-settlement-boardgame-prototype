@@ -283,7 +283,7 @@ public class UseFishFragment extends Fragment {
 							currentPlayer.setFreeBuild(true);
 							if(item == 0){
 								if(currentPlayer.canBuildSomeShip()){
-									currentPlayer.setFreeBuildUnit(Edge.SHIP);
+									currentPlayer.setFreeBuildUnit(0);
 									getFragmentManager().popBackStack();
 									currentPlayer.appendAction(R.string.player_ship);
 									currentPlayer.setNumOwnedFish(numFishOWned-5);
@@ -294,8 +294,7 @@ public class UseFishFragment extends Fragment {
 								}
 							} else{
 								if(currentPlayer.canBuildSomeRoad()){
-
-									currentPlayer.setFreeBuildUnit(Edge.ROAD);
+									currentPlayer.setFreeBuildUnit(1);
 									getFragmentManager().popBackStack();
 									currentPlayer.appendAction(R.string.player_road);
 									currentPlayer.setNumOwnedFish(numFishOWned-5);
