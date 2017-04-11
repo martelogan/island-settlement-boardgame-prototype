@@ -5,7 +5,6 @@ import android.widget.Toast;
 import com.catandroid.app.R;
 import com.catandroid.app.common.components.board_pieces.CityImprovement;
 import com.catandroid.app.common.components.board_pieces.Knight;
-import com.catandroid.app.common.components.board_pieces.NumberToken;
 import com.catandroid.app.common.components.board_pieces.ProgressCard;
 import com.catandroid.app.common.components.board_pieces.Resource;
 import com.catandroid.app.common.components.board_positions.Edge;
@@ -30,12 +29,10 @@ import java.util.Stack;
 import static com.catandroid.app.common.components.Board.Phase.DISPLACING_KNIGHT;
 import static com.catandroid.app.common.components.Board.Phase.MOVING_KNIGHT;
 import static com.catandroid.app.common.components.Board.Phase.MOVING_SHIP;
-import static com.catandroid.app.common.components.Board.Phase.REMOVING_KNIGHT;
 import static com.catandroid.app.common.components.board_pieces.CityImprovement.CityImprovementType.POLITICS;
 
 public class Board {
 
-	int playerNo;
 	private transient ActiveGameFragment activeGameFragment;
 
 	private ArrayList<String> gameParticipantIds;
@@ -77,17 +74,14 @@ public class Board {
 
 	public enum Phase {
 		SETUP_SETTLEMENT, SETUP_EDGE_UNIT_1, SETUP_CITY, SETUP_EDGE_UNIT_2,
-		PRODUCTION, MY_PlAYER_TURN, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
-		PROGRESS_CARD_STEP_1, PROGRESS_CARD_STEP_2,	BUILD_METROPOLIS,
-		CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE, TRADE_PROPOSED, TRADE_RESPONDED,
-		DEFENDER_OF_CATAN, PLACE_MERCHANT, PLAY_INTRIGUE, PRODUCTION1, REMOVING_KNIGHT, MY_PRODUCTION, MY_MOVING_ROBBER, DONE,
-		PLAYING_INVENTOR, REMOVING_OPEN_ROAD, SMITH_PHASE1, SMITH_PHASE2;
+		PRODUCTION, PLAYER_TURN, MOVING_SHIP, MOVING_KNIGHT, DISPLACING_KNIGHT,
+		BUILD_METROPOLIS, CHOOSE_ROBBER_PIRATE, MOVING_ROBBER, MOVING_PIRATE,
+		TRADE_PROPOSED, TRADE_RESPONDED,DEFENDER_OF_CATAN, PLACE_MERCHANT, FINISHED_GAME;
 	}
 
 	public void setPhase(Phase phase) {
 		this.phase = phase;
 	}
-
 
 	public Phase getPhase() {
 		return phase;
@@ -116,8 +110,8 @@ public class Board {
 	private Stack<Integer> playerIdsYetToAct;
 	private BoardGeometry boardGeometry;
 	private HashMap<Long, Integer> hexIdMap;
-    private Hexagon hexInventor1; //for inventor progress card
-    private Hexagon hexInventor2; //for inventor progress card
+
+	private boolean isMerchantFleetActive = false;
 
 	private ArrayList<ProgressCard.ProgressCardType> tradeDeck;
 	private ArrayList<ProgressCard.ProgressCardType> scienceDeck;
@@ -143,8 +137,6 @@ public class Board {
 			tempKnightIdMemory = -1, tempPlayerNumberMemory = -1;
 
 	private int[] metropolisOwners = {-1, -1, -1};
-
-
 
     private int merchantOwner = -1;
     private int curMerchantHexId = -1;
@@ -176,8 +168,6 @@ public class Board {
 		this.numPlayers = gameParticipantIds.size();
 		this.numTotalPlayableKnights = numPlayers * 6;
 		nextAvailableKnightId = 0;
-        this.hexInventor1 = null;
-        this.hexInventor2 = null;
 
 		// initialize players
 		players = new Player[numPlayers];
@@ -206,8 +196,6 @@ public class Board {
 	public void setIsMerchantFleetActive(boolean isActive) {
 		isMerchantFleetActive = isActive;
 	}
-
-	public void setIsBishop(boolean isActive) { isBishopActive = isActive;};
 
 	private void commonInit() {
 		curPlayerNumber = 0;
@@ -257,32 +245,6 @@ public class Board {
 		progressCardInit();
 	}
 
-	/**
-	 * Inventor: set hexes chosen by player - they need their number tokens switched
-	 * @param hexagon
-	 * @param num if first hex or second hex selected
-	 */
-
-	public void setHexInventor(Hexagon hexagon, int num){
-        if(num == 1){
-            this.hexInventor1 = hexagon;
-        }
-        else if(num == 2){
-            this.hexInventor2 = hexagon;
-        }
-    }
-
-    public Hexagon getHexInventor1(){return this.hexInventor1;}
-
-    public Hexagon getHexInventor2(){return this.hexInventor2;}
-
-	/**
-	 * Once tokens switched reset hexInventor values to null
-	 */
-	public void setHexInventorsNull(){
-		this.hexInventor1 = null;
-		this.hexInventor2 = null;
-	}
 	/**
 	 * Get a costs_reference to the board's geometry
 	 *
@@ -405,15 +367,6 @@ public class Board {
 		return getPlayerById(tempPlayerNumberMemory);
 	}
 
-	public Player getPlayerToRemoveKnight()
-	{
-		if(phase != REMOVING_KNIGHT)
-		{
-			return null;
-		}
-		return getPlayerById(tempPlayerNumberMemory);
-	}
-
 	/**
 	 * Get a reference to the old location of the currently moving knight
 	 *
@@ -427,14 +380,10 @@ public class Board {
 		return getVertexById(tempVertexIdMemory);
 	}
 
-	private boolean isMerchantFleetActive = false;
-	private boolean isBishopActive = false;
-
 	public boolean getIsMerchantFleetActive() {
 		return isMerchantFleetActive;
 	}
 
-	public boolean getIsBishopActive() { return isBishopActive; }
 	/**
 	 * Distribute resources for a given dice roll number
 	 *  @param diceRollNumber1
@@ -523,7 +472,7 @@ public class Board {
 	 * @return the last dice roll, or 0
 	 */
 	public int getLastDiceRollNumber() {
-		if (isSetupPhase() || isProgressPhase())
+		if (isSetupPhase())
 		{
 			return 0;
 		}
@@ -605,25 +554,13 @@ public class Board {
 					//TODO: automate
 					break;
 
-				case PROGRESS_CARD_STEP_1:
-					current.progressRoad(edges);
-				case PROGRESS_CARD_STEP_2:
-					current.progressRoad(edges);
-					phase = returnPhase;
-					return;
-
 				case CHOOSE_ROBBER_PIRATE:
 				case MOVING_ROBBER:
 				case MOVING_PIRATE:
-				case MY_MOVING_ROBBER:
 					startAIRobberPhase(current);
 					return;
-				case PLAYING_INVENTOR:
-				case REMOVING_OPEN_ROAD:
-				case SMITH_PHASE1:
-				case SMITH_PHASE2:
 
-				case DONE:
+				case FINISHED_GAME:
 					return;
 				}
 
@@ -696,13 +633,11 @@ public class Board {
 				tempEdgeIdMemory = -1;
 				break;
 			case MOVING_KNIGHT:
-				// TODO: what else when ending knight movement?
 				phase = returnPhase;
 				tempKnightIdMemory = -1;
 				tempVertexIdMemory = -1;
 				break;
 			case DISPLACING_KNIGHT:
-				// TODO: what else when ending knight displacement?
 				phase = returnPhase;
 				tempKnightIdMemory = -1;
 				tempVertexIdMemory = -1;
@@ -711,29 +646,12 @@ public class Board {
 				activeGameFragment.mListener.endTurn(
 						getPlayerOfCurrentGameTurn().getGooglePlayParticipantId(), false);
 				break;
-			case PROGRESS_CARD_STEP_1:
-				phase = Phase.PROGRESS_CARD_STEP_2;
-				toast("Passing to Prog_Card_Step_2");
-				break;
-			case PROGRESS_CARD_STEP_2:
-				phase = returnPhase;
-				//toast("Return phase");
-				break;
 			case MOVING_ROBBER:
 				phase = returnPhase;
-				//toast("Return phase");
 				break;
-			case MY_MOVING_ROBBER:
-				phase = returnPhase;
 			case MOVING_PIRATE:
 				phase = returnPhase;
 				break;
-            case PLAYING_INVENTOR:
-                phase = returnPhase;
-                break;
-            case REMOVING_OPEN_ROAD:
-                phase = returnPhase;
-                break;
 			case TRADE_PROPOSED:
 				if(!tradeProposal.isTradeReplied()){
 					//we did not accept or counteroffer. we should pass to the next player in the queue to propse to
@@ -770,9 +688,11 @@ public class Board {
 					phase = Phase.PLAYER_TURN;
 					activeGameFragment.mListener.endTurn(gameParticipantIds.get(curPlayerNumber),false);
 				}
+				break;
             case PLACE_MERCHANT:
                 phase = Phase.PLAYER_TURN;
-			case DONE:
+                break;
+			case FINISHED_GAME:
 				return false;
 		}
 
@@ -798,20 +718,11 @@ public class Board {
 					return false;
 				}
 				break;
-			case DONE:
+			case FINISHED_GAME:
 				return false;
 		}
 
 		return turnChanged;
-	}
-
-	/**
-	 * Enter progress card phase 1
-	 */
-	public void startProgressPhase1() {
-		returnPhase = phase;
-		phase = Phase.PROGRESS_CARD_STEP_1;
-		runAITurn();
 	}
 
     /**
@@ -884,7 +795,6 @@ public class Board {
 		}
 		toast("Your turn will resume when your opponent moves the displaced knight! Check back later.");
 	}
-
 
 	/**
 	 * Enter the trade Responded phase
@@ -1038,18 +948,9 @@ public class Board {
 		return (phase == Phase.MOVING_ROBBER);
 	}
 
-
 	public boolean isPiratePhase() {
 		return (phase == Phase.MOVING_PIRATE);
 	}
-
-	public boolean isInventorPhase() {return (phase == Phase.PLAYING_INVENTOR);}
-
-	public boolean isSmithPhase1(){return(phase == Phase.SMITH_PHASE1);}
-
-	public boolean isSmithPhase2(){return(phase == Phase.SMITH_PHASE2);}
-
-    public boolean isRemovingOpenRoadPhase() {return(phase == Phase.REMOVING_OPEN_ROAD);}
 
 	public boolean isProduction() {
 		return (phase == Phase.PRODUCTION);
@@ -1069,20 +970,6 @@ public class Board {
 
 	public boolean isKnightDisplacementPhase() { return (phase == DISPLACING_KNIGHT);}
 
-	public boolean isRemoveKnightPhase() { return (phase == REMOVING_KNIGHT);}
-
-	public boolean isProgressPhase() {
-		return (phase == Phase.PROGRESS_CARD_STEP_1 || phase == Phase.PROGRESS_CARD_STEP_2);
-	}
-
-	public boolean isProgressPhase1() {
-		return (phase == Phase.PROGRESS_CARD_STEP_1);
-	}
-
-	public boolean isProgressPhase2() {
-		return (phase == Phase.PROGRESS_CARD_STEP_2);
-	}
-
 	public boolean isTradeProposedPhase() { return (phase == Phase.TRADE_PROPOSED);}
 
 	public boolean isTradeRespondedPhase() { return (phase == Phase.TRADE_RESPONDED);}
@@ -1090,28 +977,6 @@ public class Board {
 	public boolean isBuildMetropolisPhase() { return (phase == Phase.BUILD_METROPOLIS);}
 
     public boolean isPlaceMerchantPhase() { return (phase == Phase.PLACE_MERCHANT);}
-
-	/**
-	 * Get the dice number token value for a hexagons
-	 * 
-	 * @param id
-	 *            the id of the hexagons
-	 * @return the number token value
-	 */
-	public int getNumberTokenByHexId(int id) {
-		return hexagons[id].getNumberTokenAsInt();
-	}
-
-	/**
-	 * Get the resource produced by a particular hexagon
-	 * 
-	 * @param id
-	 *            the id of the hexagon
-	 * @return the resource produced by that hexagon
-	 */
-	public Resource getResourceByHexId(int id) {
-		return hexagons[id].getResource();
-	}
 
 	/**
 	 * Get indexed hexToTerrainTypes mapping
@@ -1305,7 +1170,6 @@ public class Board {
 		runAITurn();
 	}
 
-
 	/**
 	 * Enter the pirate placement phase
 	 */
@@ -1446,17 +1310,6 @@ public class Board {
         return merchantType;
     }
 
-    public boolean playInventor(){ //switch the number tokens of two hexagons
-        //already checked to make sure not token 2,6,8,12
-        if(this.hexInventor1!=null && this.hexInventor2!=null) {
-            NumberToken token1 = hexInventor1.getNumberTokenAsObject();
-            NumberToken token2 = hexInventor2.getNumberTokenAsObject();
-            hexInventor1.placeNumberToken(token2);
-            hexInventor2.placeNumberToken(token1);
-            return true;
-        }
-        else return false;
-    }
 	/**
 	 * Get the number of points required to win
 	 * 
@@ -1635,12 +1488,6 @@ public class Board {
 				return R.string.phase_move_knight;
 			case DISPLACING_KNIGHT:
 				return R.string.phase_displacing_knight;
-			case PROGRESS_CARD_STEP_1:
-				// TODO: progress card step 1
-				return 0;
-			case PROGRESS_CARD_STEP_2:
-				// TODO: progress card step 2
-				return 0;
 			case CHOOSE_ROBBER_PIRATE:
 				return R.string.phase_make_choice;
 			case MOVING_ROBBER:
@@ -1657,9 +1504,7 @@ public class Board {
 				return R.string.game_defended_catan_wait_pick_card;
 			case PLACE_MERCHANT:
 				return R.string.game_place_merchant;
-			case PLAYING_INVENTOR:
-				return R.string.game_play_inventor;
-			case DONE:
+			case FINISHED_GAME:
 				return R.string.phase_game_over;
 			}
 
@@ -1707,11 +1552,11 @@ public class Board {
 			if(playerNumBootOwner == players[i].getPlayerNumber()) hasBoot = 1;
 			if (players[i].getVictoryPoints() >= (maxPoints+hasBoot)) {
 				winnerId = players[i].getPlayerNumber();
-				if(phase != phase.DONE){
-					//we need to tell google the game is done
+				if(phase != phase.FINISHED_GAME){
+					// we need to tell google the game is done
 					activeGameFragment.mListener.endTurn(players[winnerId].getGooglePlayParticipantId(),true);
 				}
-				phase = Phase.DONE;
+				phase = Phase.FINISHED_GAME;
 				break;
 			}
 		}

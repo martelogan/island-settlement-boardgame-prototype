@@ -178,13 +178,6 @@ public class Vertex {
 	}
 
 	/**
-	 * Get the edge ids of this vertex
-	 *
-	 * @return the edgeids
-	 */
-	public int[] getEdgeIds(){return edgeIds;}
-
-	/**
 	 * Check if vertex has a current unit from any player
 	 * 
 	 * @return true if there is any vertex unit placed here
@@ -740,119 +733,64 @@ public class Vertex {
 	}
 
 	/**
-	 * This function checks if knights can be removed by this player without using a knight
-	 *
+	 * Check that this vertex can connect to target via a trade route of the given player
 	 *
 	 * @param target
+	 * 			  destination vertex of desired trade route
 	 * @param tradeRouteOwner
-	 * @param isPeaceful
-	 * @return
+	 *            player that seeks to connect to target
+	 * @param toIgnore
+	 *            ignore previously considered edge
+	 * @return true iff there is a path to the target vertex via edge units owned by the given player
 	 */
-	public boolean canRemoveKnightAtThisVertex(Vertex target, Player tradeRouteOwner, boolean isPeaceful) {
-		boolean foundValidTradeRoute = false;
-		Edge curEdge = null;
-		Vertex neighborVertex = null;
-		for (int i = 0; i < 3; i++) {
-			curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
-			if (curEdge != null && curEdge.getOwnerPlayer() == tradeRouteOwner &&
-					curEdge.getCurUnitType() != Edge.NONE)
-			{
-				neighborVertex = curEdge.getAdjacent(this);
-				if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
-					// are we an aggressive knight attempting displacement
-					if(!isPeaceful && neighborVertex == target
-							&& neighborVertex.getCurUnitType() == Vertex.KNIGHT) {
-						// WARNING: need to check elsewhere that we can actually displace opponent
+	public boolean hasTradeRouteTo(Vertex target, Player tradeRouteOwner,
+			Edge toIgnore, boolean isPeaceful) {
+			boolean foundValidTradeRoute = false;
+			Edge curEdge = null;
+			Vertex neighborVertex = null;
+			for (int i = 0; i < 3; i++) {
+				curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
+				if (curEdge != null && curEdge!= toIgnore && curEdge.getOwnerPlayer() == tradeRouteOwner
+						&& curEdge.getCurUnitType() != Edge.NONE)
+				{
+					neighborVertex = curEdge.getAdjacent(this);
+					if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
+						// are we an aggressive knight attempting displacement
+						if(!isPeaceful && neighborVertex == target
+								&& neighborVertex.getCurUnitType() == Vertex.KNIGHT) {
+							// WARNING: need to check elsewhere that
+							// we can actually displace opponent
+							return true;
+						}
+						// can't pass through vertex owned by another player
+						continue;
+					}
+					if (neighborVertex == target) { // base case
 						return true;
 					}
-					// can't pass through vertex owned by another player
-					continue;
-				}
-				else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
-					foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target,
-							tradeRouteOwner, curEdge, isPeaceful);
-				}
-				else if(curEdge.getCurUnitType() == Edge.ROAD) {
-					if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
-						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target,
-										tradeRouteOwner, curEdge, isPeaceful);
+					else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
+						foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target,
+								tradeRouteOwner, curEdge, isPeaceful);
 					}
-				}
-				else if(curEdge.getCurUnitType() == Edge.SHIP) {
-					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
-						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target,
-										tradeRouteOwner, curEdge, isPeaceful);
-					}
-				}
-				if(foundValidTradeRoute) {
-					return true;
-				}
-			}
-		}
-		return foundValidTradeRoute;
-	}
-
-							/**
-							 * Check that this vertex can connect to target via a trade route of the given player
-							 *
-							 * @param target
-							 * 			  destination vertex of desired trade route
-							 * @param tradeRouteOwner
-							 *            player that seeks to connect to target
-							 * @param toIgnore
-							 *            ignore previously considered edge
-							 * @return true iff there is a path to the target vertex via edge units owned by the given player
-							 */
-					public boolean hasTradeRouteTo(Vertex target, Player tradeRouteOwner,
-							Edge toIgnore, boolean isPeaceful) {
-						boolean foundValidTradeRoute = false;
-						Edge curEdge = null;
-						Vertex neighborVertex = null;
-						for (int i = 0; i < 3; i++) {
-							curEdge = edgeIds[i] != -1 ? board.getEdgeById(edgeIds[i]) : null;
-							if (curEdge != null && curEdge!= toIgnore && curEdge.getOwnerPlayer() == tradeRouteOwner
-									&& curEdge.getCurUnitType() != Edge.NONE)
-							{
-								neighborVertex = curEdge.getAdjacent(this);
-								if (neighborVertex.isOwnedByAnotherPlayer(tradeRouteOwner)) { // negative base case
-									// are we an aggressive knight attempting displacement
-									if(!isPeaceful && neighborVertex == target
-											&& neighborVertex.getCurUnitType() == Vertex.KNIGHT) {
-										// WARNING: need to check elsewhere that
-										// we can actually displace opponent
-										return true;
-									}
-									// can't pass through vertex owned by another player
-									continue;
-								}
-								if (neighborVertex == target) { // base case
-									return true;
-								}
-								else if(neighborVertex.hasCommunityOf(tradeRouteOwner)) {
-									foundValidTradeRoute = neighborVertex.hasTradeRouteTo(target,
+					else if(curEdge.getCurUnitType() == Edge.ROAD) {
+						if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
+							foundValidTradeRoute =
+									neighborVertex.hasTradeRouteTo(target,
 											tradeRouteOwner, curEdge, isPeaceful);
-								}
-								else if(curEdge.getCurUnitType() == Edge.ROAD) {
-									if(isConnectedToRoadOwnedBy(tradeRouteOwner)) {
-						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target,
-										tradeRouteOwner, curEdge, isPeaceful);
+						}
 					}
-				}
-				else if(curEdge.getCurUnitType() == Edge.SHIP) {
-					if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
-						foundValidTradeRoute =
-								neighborVertex.hasTradeRouteTo(target,
-										tradeRouteOwner, curEdge, isPeaceful);
+					else if(curEdge.getCurUnitType() == Edge.SHIP) {
+						if(isConnectedToShipOwnedBy(tradeRouteOwner)) {
+							foundValidTradeRoute =
+									neighborVertex.hasTradeRouteTo(target,
+											tradeRouteOwner, curEdge, isPeaceful);
+						}
 					}
-				}
-				if(foundValidTradeRoute) {
-					return true;
+					if(foundValidTradeRoute) {
+						return true;
+					}
 				}
 			}
-		}
 
 		return false;
 	}
@@ -1113,7 +1051,6 @@ public class Vertex {
 		}
 	}
 
-
 	/**
 	 * Check if the player can place the currently moving knight at this vertex
 	 *
@@ -1297,8 +1234,7 @@ public class Vertex {
 	 * @param player
 	 *            which player intends to activate a knight here
 	 */
-	public boolean activateKnight(Player player)
-	{
+	public boolean activateKnight(Player player) {
 		if (!this.canActivateKnightHere(player))
 		{
 			return false;

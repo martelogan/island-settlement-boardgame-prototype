@@ -36,7 +36,7 @@ public class ProgressCard extends InventoryItem {
                 return R.string.crane;
             case ENGINEER:
                 return R.string.engineer;
-            case IRRIGIATION:
+            case IRRIGATION:
                 return R.string.irrigation;
             case MINING:
                 return R.string.mining;
@@ -87,7 +87,7 @@ public class ProgressCard extends InventoryItem {
                 return R.string.crane_description;
             case ENGINEER:
                 return R.string.engineer_description;
-            case IRRIGIATION:
+            case IRRIGATION:
                 return R.string.irrigation_description;
             case MINING:
                 return R.string.mining_description;
@@ -138,7 +138,7 @@ public class ProgressCard extends InventoryItem {
             case CRANE:
             case ENGINEER:
             case INVENTOR:
-            case IRRIGIATION:
+            case IRRIGATION:
             case MEDICINE:
             case MINING:
             case PRINTER:
@@ -163,7 +163,7 @@ public class ProgressCard extends InventoryItem {
     public enum ProgressCardType {
         COMMERCIAL_HARBOR, MASTER_MERCHANT, MERCHANT, MERCHANT_FLEET, RESOURCE_MONOPOLY, TRADE_MONOPOLY,
 
-        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRRIGIATION, MEDICINE, MINING, PRINTER, ROAD_BUILDING, SMITH,
+        ALCHEMIST, CRANE, ENGINEER, INVENTOR, IRRIGATION, MEDICINE, MINING, PRINTER, ROAD_BUILDING, SMITH,
 
         BISHOP, CONSTITUTION, DESERTER, DIPLOMAT, INTRIGUE, SABOTEUR, SPY, WARLORD, WEDDING
     }

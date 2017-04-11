@@ -124,7 +124,7 @@ public class Knight extends OwnableUnit {
     }
 
     public boolean canPromote() {
-        if (hasBeenPromotedThisTurn() && !board.isSmithPhase2() && !board.isSmithPhase1()) {
+        if (hasBeenPromotedThisTurn()) {
             return false;
         }
         switch(knightRank) {

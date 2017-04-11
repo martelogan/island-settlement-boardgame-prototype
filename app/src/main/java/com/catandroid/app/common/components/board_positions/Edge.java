@@ -3,8 +3,6 @@ package com.catandroid.app.common.components.board_positions;
 import com.catandroid.app.common.components.Board;
 import com.catandroid.app.common.players.Player;
 
-import java.util.Vector;
-
 public class Edge {
 
 	public static final int NONE = 0;
@@ -65,10 +63,6 @@ public class Edge {
 		v0.addEdge(this);
 		v1.addEdge(this);
 	}
-	/**
-	 * Get vertex ids for the edge
-	 */
-	public int[] getVertices() {return vertexIds;}
 
 	/**
 	 * Check if the edge has a given vertexI
@@ -577,31 +571,6 @@ public class Edge {
 		ownerPlayerNumber = player.getPlayerNumber();
 		curUnitType = SHIP;
 		turnShipWasBuilt = board.getGameTurnNumber();
-		return true;
-	}
-
-	public boolean removeRoad(){ //removes this road from the board
-		Player player = this.getOwnerPlayer();
-
-		Vector<Integer> roadIds = player.getRoadIds();
-		Vector<Integer> reachingVertexIds = player.getReachingVertexIds();
-
-		roadIds.removeElement(this);
-
-		int vertexId = this.getV0Clockwise().getId();
-		if (reachingVertexIds.contains(vertexId))
-		{
-			reachingVertexIds.removeElement(vertexId);
-		}
-		vertexId = this.getV1Clockwise().getId();
-		if (reachingVertexIds.contains(vertexId))
-		{
-			reachingVertexIds.removeElement(vertexId);
-		}
-
-		ownerPlayerNumber = -1;
-		curUnitType = NONE;
-
 		return true;
 	}
 

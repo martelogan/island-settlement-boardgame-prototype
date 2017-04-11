@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.Vector;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.catandroid.app.CatAndroidApp;
 import com.catandroid.app.R;
@@ -19,7 +18,6 @@ import com.catandroid.app.common.components.board_pieces.Resource.ResourceType;
 import com.catandroid.app.common.components.board_positions.Edge;
 import com.catandroid.app.common.components.board_positions.Hexagon;
 import com.catandroid.app.common.components.board_positions.Vertex;
-
 
 public class Player {
 
@@ -48,7 +46,6 @@ public class Player {
 	private int playerNumber;
 	private Color color;
 	private String playerName;
-	private int progressCardVictoryPointsCount;
 	protected int numOwnedSettlements;
 	protected int numOwnedCities;
 	protected int numOwnedCityWalls;
@@ -62,10 +59,10 @@ public class Player {
 	private int defenderOfCatan = 0;
 	private int numOwnedFish = 0;
 
-	private int playerType, privateVictoryPointsCount,
+	private int playerType, privateVictoryPointsCount, progressCardVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
-	private int[] cityImprovementLevels = {3, 3, 3};
+	private int[] cityImprovementLevels = {0, 0, 0};
 	private boolean[] harbors;
 	private Vector<ProgressCardType> hand;
 	private Vector<ProgressCardType> newCards;
@@ -922,6 +919,7 @@ public class Player {
 		if(toDisplace.getOwnerPlayer() == this) {
 			return false;
 		}
+
 		Knight toMove = board.getCurrentlyMovingKnight();
 
 		if(toMove == null || !toMove.canDisplace(toDisplace)) {
@@ -1516,19 +1514,6 @@ public class Player {
 		return vertex.canRemoveKnightFromHere(this);
 	}
 
-	//Abhi's Method
-	public boolean canRemoveKnightAtThisVertex(Vertex vertex) {
-		for (Vertex v : board.getVertices()) {
-			if (v.hasCommunity() && v.getOwnerPlayer() == this) {
-				if (v.canRemoveKnightAtThisVertex(vertex, this, false)) {
-					return true;
-				}
-			}
-
-		}
-		return false;
-	}
-
 	/**
 	 * Can you place the currently moving knight at this vertex?
 	 *
@@ -1568,10 +1553,6 @@ public class Player {
 			return false;
 		}
 
-		if(vertex.getId() == 54) {
-			Log.d("test","here");
-		}
-
 		return vertex.canDisplaceKnightToHere(this, currentlyMovingKnight);
 	}
 
@@ -1593,41 +1574,6 @@ public class Player {
 		}
 
 		return vertex.canDisplaceKnightFromHere(this, currentlyMovingKnight);
-	}
-	/**
- 	* Can you remove this road? (is it open)
- 	*
- 	*/
-
-	public boolean RemoveOpenRoad(Edge edge) {
-		boolean isOpen = false;
-		int edgeId = edge.getId();
-		if (edge.hasEdgeUnit() && edge.getCurUnitType() == 1) {
-			int[] vertexIds = edge.getVertices();
-
- 			for (int i = 0; i < 2; i++) {
-				//checks if either end of road is open
-				Vertex thisVertex = board.getVertexById(vertexIds[i]);
-				int[] vertexEdgeids = thisVertex.getEdgeIds();
-
-				int count = 0;
-				for (int j = 0; j < 3; j++){
-					if(thisVertex.getEdge(vertexEdgeids[i]).getCurUnitType() == 1){
-						count++;
-					}
-				}
-
-				if (!thisVertex.hasVertexUnitPlacedHere() && count == 1) {
-					isOpen = true;
-				}
-					//also considered open if road/ship has city,settlement or knight of a different colour on one end
-				else if (thisVertex.getOwnerPlayer() != edge.getOwnerPlayer()) {
-					isOpen = true;
-				}
-
-			}
-		}
-		return isOpen;
 	}
 
 	/**
@@ -1680,7 +1626,6 @@ public class Player {
 			sum += countPerResource[i];
 		return sum;
 	}
-
 
 	/**
 	 * Add resources to the player
@@ -2112,12 +2057,7 @@ public class Player {
 		return getPublicVictoryPoints();
 	}
 
-	/**
-	 * Return player's current total progress cards points
-	 *
-	 * @return the number of progress card points
-	 */
-	public int getPCVictoryPoints() {
+	public int getProgressCardVictoryPoints() {
 		return progressCardVictoryPointsCount;
 	}
 
@@ -2887,8 +2827,6 @@ public class Player {
 	public void setNumOwnedFish(int numOwnedFish) {
 		this.numOwnedFish = numOwnedFish;
 	}
-
-
 
 	/**
 	 * Add an action to the turn log
