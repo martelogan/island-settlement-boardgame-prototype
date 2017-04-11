@@ -1505,7 +1505,12 @@ public class Board {
 			case PLACE_MERCHANT:
 				return R.string.game_place_merchant;
 			case FINISHED_GAME:
-				return R.string.phase_game_over;
+				if(winnerId == getActiveFragmentPlayer().getPlayerNumber()){
+					return R.string.phase_game_won;
+				} else {
+					return R.string.phase_game_loss;
+				}
+
 			}
 
 		return 0;
@@ -1536,10 +1541,19 @@ public class Board {
 
 	/**
 	 * Get the winner
-	 * 
+	 *
 	 * @return the winning player or null
 	 */
 	public Player getWinner() {
+		return winnerId != null ? players[winnerId] : null;
+	}
+
+	/**
+	 * recompute if there is a winner and Get the winner
+	 * 
+	 * @return the winning player or null
+	 */
+	public Player checkAndGetWinner() {
 		// winnerId already found or we just want to check what was already found
 		if (winnerId != null)
 		{
@@ -1552,12 +1566,6 @@ public class Board {
 			if(playerNumBootOwner == players[i].getPlayerNumber()) hasBoot = 1;
 			if (players[i].getVictoryPoints() >= (maxPoints+hasBoot)) {
 				winnerId = players[i].getPlayerNumber();
-				if(phase != phase.FINISHED_GAME){
-					// we need to tell google the game is done
-					activeGameFragment.mListener.endTurn(players[winnerId].getGooglePlayParticipantId(),true);
-				}
-				phase = Phase.FINISHED_GAME;
-				break;
 			}
 		}
 
@@ -1600,11 +1608,11 @@ public class Board {
 	public ProgressCard.ProgressCardType pickNewProgressCard(CityImprovement.CityImprovementType type){
 		switch(type){
 			case TRADE:
-				return tradeDeck.get(0);
+				return tradeDeck.remove(0);
 			case SCIENCE:
-				return scienceDeck.get(0);
+				return scienceDeck.remove(0);
 			case POLITICS:
-				return politicsDeck.get(0);
+				return politicsDeck.remove(0);
 			default:
 				return null;
 		}

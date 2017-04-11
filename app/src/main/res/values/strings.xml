@@ -255,7 +255,9 @@
 	<string name="phase_make_choice">Time to choose!</string>
     <string name="phase_move_robber">Move the robber</string>
     <string name="phase_move_pirate">Move the pirate</string>
-    <string name="phase_game_over">Game over</string>
+    <string name="phase_game_won">You won!</string>
+    <string name="phase_game_loss">You lost!</string>
+    <string name="phase_game_over">Somebody Won!</string>
 
 	<!-- Various strings in the game -->
 	<string name="not_my_turn">It\'s not your turn!</string>

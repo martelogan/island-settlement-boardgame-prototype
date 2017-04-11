@@ -761,30 +761,40 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 				boardState = loadJSONFromAsset("progress_card_abundance.json");
 				board = gson.fromJson(boardState, Board.class);
 				board.reinitBoardOnDependents();
+				board.reinitPlayers(names, gameParticipantIds);
+				board.setActiveGameFragment(activeGameFragment);
 				break;
 			case 3:
 				//Metropolis Land
 				boardState = loadJSONFromAsset("metropolis_land.json");
 				board = gson.fromJson(boardState, Board.class);
 				board.reinitBoardOnDependents();
+				board.reinitPlayers(names, gameParticipantIds);
+				board.setActiveGameFragment(activeGameFragment);
 				break;
 			case 4:
 				//Protected by Knights
 				boardState = loadJSONFromAsset("protected_by_knights.json");
 				board = gson.fromJson(boardState, Board.class);
 				board.reinitBoardOnDependents();
+				board.reinitPlayers(names, gameParticipantIds);
+				board.setActiveGameFragment(activeGameFragment);
 				break;
 			case 5:
 				//Imminent Barbarian Attack!!
 				boardState = loadJSONFromAsset("imminent_barbarian_attack.json");
 				board = gson.fromJson(boardState, Board.class);
 				board.reinitBoardOnDependents();
+				board.reinitPlayers(names, gameParticipantIds);
+				board.setActiveGameFragment(activeGameFragment);
 				break;
 			case 6:
 				//Winner is close!
 				boardState = loadJSONFromAsset("winner_is_close.json");
 				board = gson.fromJson(boardState, Board.class);
 				board.reinitBoardOnDependents();
+				board.reinitPlayers(names, gameParticipantIds);
+				board.setActiveGameFragment(activeGameFragment);
 				break;
 			default:
 				board = new Board(gameParticipantIds, names, types, maxPoints, boardGeometry,
@@ -832,9 +842,9 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 			ArrayList<ParticipantResult> results = new ArrayList<>();
 			for(int i = 0; i < numberPlayers; i++){
 				if(i == winnerIndex){
-					results.add(new ParticipantResult(mMatch.getParticipantIds().get(i), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED));
-				} else {
 					results.add(new ParticipantResult(mMatch.getParticipantIds().get(i), ParticipantResult.MATCH_RESULT_WIN, ParticipantResult.PLACING_UNINITIALIZED));
+				} else {
+					results.add(new ParticipantResult(mMatch.getParticipantIds().get(i), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED));
 				}
 			}
 			Games.TurnBasedMultiplayer.finishMatch(mGoogleApiClient, mMatch.getMatchId(),catandroidTurn.persist(),results);
@@ -875,15 +885,15 @@ public class GameManagerActivity extends FragmentActivity implements GoogleApiCl
 			case TurnBasedMatch.MATCH_STATUS_COMPLETE:
 				if (turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) {
 					showWarning(
-							"Complete!",
-							"This game is over; someone finished it, and so did you!  There is nothing to be done.");
+							"Game Ended!",
+							"This game has ended because someone won! Check Player stats to find out who");
 					break;
 				}
 
 				// Note that in this state, you must still call "Finish" yourself,
 				// so we allow this to continue.
 				showWarning("Complete!",
-						"This game is over; someone finished it!  You can only finish it now.");
+						"This game is over; someone one!");
 		}
 
 		// OK, it's active. Check on turn pager_title_strip.

@@ -1128,8 +1128,14 @@ public class ActiveGameFragment extends Fragment {
 
 		// display winner
 		boolean hadWinner = board.getWinner() != null;
-		Player winner = board.getWinner();
+		Player winner = board.checkAndGetWinner();
 		if (!hadWinner && winner != null) {
+			//if its the first time that the winner is declared, we should notify google
+			if(board.getPhase() != Board.Phase.FINISHED_GAME){
+				mListener.endTurn(winner.getGooglePlayParticipantId(),true);
+			}
+			board.setPhase(Board.Phase.FINISHED_GAME);
+
 			// declare winner
 			final Builder infoDialog = new AlertDialog.Builder(getActivity());
 			infoDialog.setTitle(getString(R.string.phase_game_over));
@@ -1138,15 +1144,6 @@ public class ActiveGameFragment extends Fragment {
 					+ getString(R.string.game_won));
 			infoDialog.setNeutralButton(getString(R.string.game_back_to_board),
 					null);
-			infoDialog.setPositiveButton(getString(R.string.game_return_to_menu),
-					new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							//ActiveGameFragment.this.finish();
-							// must ask the activity to close this StartScreenActivity Fragment
-							getActivity().getSupportFragmentManager().popBackStack();
-						}
-					});
 			infoDialog.show();
 		}
 
@@ -1357,7 +1354,7 @@ public class ActiveGameFragment extends Fragment {
 			if(player.canMoveSomeKnight()) {
 				view.addButton(ButtonType.MOVE_KNIGHT);
 			}
-			if(player.getNumOwnedFish() > 0){
+			if(player.getNumOwnedFish() > 0 || board.playerNumBootOwner == player.getPlayerNumber()){
 				view.addButton(ButtonType.USE_FISH);
 			}
 			view.addButton(ButtonType.PURCHASE_CITY_IMPROVEMENT);

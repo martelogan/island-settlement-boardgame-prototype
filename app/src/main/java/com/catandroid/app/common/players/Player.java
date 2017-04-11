@@ -59,7 +59,7 @@ public class Player {
 	private int defenderOfCatan = 0;
 	private int numOwnedFish = 0;
 
-	private int playerType, privateVictoryPointsCount, progressCardVictoryPointsCount,
+	private int playerType, progressCardVictoryPointsCount,
 			tradeValue, myLongestTradeRouteLength, latestBuiltCommunityId;
 	private int[] countPerResource, countPerProgressCard;
 	private int[] cityImprovementLevels = {0, 0, 0};
@@ -113,7 +113,6 @@ public class Player {
 		numOwnedStrongKnights = 0;
 		numOwnedMightyKnights = 0;
 		myLongestTradeRouteLength = 0;
-		privateVictoryPointsCount = 0;
 		tradeValue = 4;
 		usedCardThisTurn = false;
 		shipWasMovedThisTurn = false;
@@ -2778,11 +2777,13 @@ public class Player {
 	public void playConstitution() {
 		progressCardVictoryPointsCount++;
 		board.toast(this.playerName + " received and Played Constitution");
+		appendAction("Played Constituition");
 	}
 
 	public void playPrinter() {
 		progressCardVictoryPointsCount++;
 		board.toast(this.playerName + " received and Played Printer");
+		appendAction("Played Printer");
 	}
 
 	public ProgressCard.ProgressCardType gainProgressCard(CityImprovement.CityImprovementType type){
