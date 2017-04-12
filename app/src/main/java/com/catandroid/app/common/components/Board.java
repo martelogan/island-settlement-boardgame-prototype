@@ -393,7 +393,7 @@ public class Board {
 	 */
 	public void executeDiceRoll(int diceRollNumber1, int diceRollNumber2, int eventRoll) {
 		//TODO: remove debugging
-		int diceRollNumber = 7;
+		int diceRollNumber = diceRollNumber1 + diceRollNumber2;
 		CityImprovement.CityImprovementType disciplineRolled;
 		switch(eventRoll){
 			case 4:
