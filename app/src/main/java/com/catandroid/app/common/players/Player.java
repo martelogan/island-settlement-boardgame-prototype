@@ -786,7 +786,6 @@ public class Player {
 				demoteOffDutyKnightOfRank(Knight.KnightRank.STRONG_KNIGHT);
 				break;
 		}
-		numTotalOwnedKnights += 1;
 
 		// append to the turn log
 		appendAction(R.string.player_promote_knight);
@@ -1012,6 +1011,7 @@ public class Player {
 
 	/**
 	 * Attempt to get an off-duty knight of the requested rank
+	 * IMPORTANT: calling method must ad knight to active ids & update knight counts
 	 *
 	 * @param rankNeeded
 	 *            knight rank needed
@@ -1024,19 +1024,6 @@ public class Player {
 			if(curKnight.getKnightRank() == rankNeeded) {
 				Integer curKnightId = curKnight.getId();
 				myOffDutyKnightIds.removeElement(curKnightId);
-				myActiveKnightIds.add(curKnightId);
-				switch(rankNeeded) {
-					case BASIC_KNIGHT:
-						numOwnedBasicKnights += 1;
-						break;
-					case STRONG_KNIGHT:
-						numOwnedStrongKnights += 1;
-						break;
-					case MIGHTY_KNIGHT:
-						numOwnedMightyKnights += 1;
-						break;
-				}
-				numTotalOwnedKnights += 1;
 				return curKnight;
 			}
 		}

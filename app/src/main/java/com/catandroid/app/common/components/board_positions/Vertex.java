@@ -987,7 +987,14 @@ public class Vertex {
 			Knight.KnightRank currentRank = toPromote.getKnightRank();
 			switch (currentRank) {
 				case BASIC_KNIGHT:
+					if (player.getNumOwnedStrongKnights() >= Player.MAX_STRONG_KNIGHTS) {
+						return false;
+					}
+					return toPromote.canPromote();
 				case STRONG_KNIGHT:
+					if (player.getNumOwnedMightyKnights() >= Player.MAX_MIGHTY_KNIGHTS) {
+						return false;
+					}
 					return toPromote.canPromote();
 				default:
 					return false;

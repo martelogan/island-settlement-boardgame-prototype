@@ -36,7 +36,7 @@ public class TextureManager {
     * button just on top (layer CITY + 1) and all remaining png's at the city layer
     */
 	private enum TextureType {
-		NONE, HEX_COAST, HEX_TERRAIN, HEX_ROBBER, HEX_ACTIVE, HEX_MERCHANT,
+        NONE, HEX_COAST, HEX_TERRAIN, HEX_MERCHANT, HEX_ACTIVE, HEX_ROBBER,
 		HARBOR, FISHING_GROUND, RESOURCE, NUMBER_TOKEN, SHIP, ROAD, SETTLEMENT, CITY, CITY_WALL,
 		TRADE_METROPOLIS, SCIENCE_METROPOLIS, POLITICS_METROPOLIS, 
 		WALLED_TRADE_METROPOLIS, WALLED_SCIENCE_METROPOLIS, WALLED_POLITICS_METROPOLIS, 
@@ -758,7 +758,11 @@ public class TextureManager {
         int textureDepth = 0;
         if(textureType == TextureType.BUTTON || textureType == TextureType.BUTTON_BG) {
             // buttons should always be rendered at the topmost layer
-            textureDepth = TextureType.CITY.ordinal() + 1;
+            //FIXME: why does this even need to be 2 layers above to work (one layer not enough)?
+            textureDepth = TextureType.SETTLEMENT.ordinal() + 2;
+        }
+        else if (textureType == TextureType.HEX_ROBBER || textureType == TextureType.HEX_ACTIVE) {
+            textureDepth = TextureType.HEX_ACTIVE.ordinal();
         }
         else if(textureType == TextureType.SHIP || textureType == TextureType.ROAD) {
             textureDepth = TextureType.ROAD.ordinal();
@@ -766,9 +770,9 @@ public class TextureManager {
         else if (textureType == TextureType.HARBOR || textureType == TextureType.FISHING_GROUND) {
             textureDepth = TextureType.HARBOR.ordinal();
         }
-        else if (textureType.ordinal() > TextureType.CITY.ordinal()) {
+        else if (textureType.ordinal() > TextureType.SETTLEMENT.ordinal()) {
             // render most textures at the depth of a city
-            textureDepth = TextureType.CITY.ordinal();
+            textureDepth = TextureType.SETTLEMENT.ordinal();
         }
         else {
             // the ordinal number of a texture type designates its layering
