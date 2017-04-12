@@ -135,6 +135,7 @@ public class CityImprovementFragment extends Fragment {
 
 	private boolean canPurchaseCityImprovement(CityImprovement.CityImprovementType cityImprovementType, int levelDesired){
 		//check has at least one city
+		boolean hasNonMetropolisCity = currentPlayer.getNonMetropolisCities() > 0;
 		boolean hasCity = currentPlayer.getNumOwnedCities() > 0;
 
 		//check if have enough resources
@@ -162,7 +163,12 @@ public class CityImprovementFragment extends Fragment {
 				break;
 		}
 
-		return hasCity && enoughResources;
+		if(levelDesired >= 4){
+			return hasNonMetropolisCity && enoughResources;
+		} else {
+			return hasCity && enoughResources;
+		}
+
 	}
 
 	private void setPurchasedViewVisibility(View city_improvement_purchased){
@@ -387,7 +393,8 @@ public class CityImprovementFragment extends Fragment {
 					if(playerTradeLevel == 3 || playerTradeLevel == 4){
 
 					int currentTradeMetropolisOwner = board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)];
-					if(currentTradeMetropolisOwner != -1 && currentTradeMetropolisOwner != currentPlayer.getPlayerNumber()) {
+					if(playerTradeLevel == 4 && currentTradeMetropolisOwner != -1
+							&& currentTradeMetropolisOwner != currentPlayer.getPlayerNumber()) {
 						boolean tradeMetropolisIsStealable = (board.getPlayerById(currentTradeMetropolisOwner).getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.TRADE)] == 4);
 						if (tradeMetropolisIsStealable) {
 							//remove the metropolis from the current user
@@ -454,7 +461,8 @@ public class CityImprovementFragment extends Fragment {
 					if(playerScienceLevel == 3 || playerScienceLevel == 4){
 
 						int currentScienceMetropolisOwner = board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)];
-						if(currentScienceMetropolisOwner != -1 && currentScienceMetropolisOwner != currentPlayer.getPlayerNumber()) {
+						if(playerTradeLevel == 4 && currentScienceMetropolisOwner != -1
+								&& currentScienceMetropolisOwner != currentPlayer.getPlayerNumber()) {
 							boolean scienceMetropolisIsStealable = (board.getPlayerById(currentScienceMetropolisOwner).getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.SCIENCE)] == 4);
 							if (scienceMetropolisIsStealable) {
 								//remove the metropolis from the current user
@@ -527,7 +535,8 @@ public class CityImprovementFragment extends Fragment {
 					if(playerPoliticsLevel == 3 || playerPoliticsLevel == 4){
 
 						int currentPoliticsMetropolisOwner = board.getMetropolisOwners()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)];
-						if(currentPoliticsMetropolisOwner != -1 && currentPoliticsMetropolisOwner != currentPlayer.getPlayerNumber()) {
+						if(playerTradeLevel == 4 && currentPoliticsMetropolisOwner != -1
+								&& currentPoliticsMetropolisOwner != currentPlayer.getPlayerNumber()) {
 							boolean politicsMetropolisIsStealable = (board.getPlayerById(currentPoliticsMetropolisOwner).getCityImprovementLevels()[CityImprovement.toCityImprovementIndex(CityImprovement.CityImprovementType.POLITICS)] == 4);
 							if (politicsMetropolisIsStealable) {
 								//remove the metropolis from the current user

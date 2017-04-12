@@ -2027,15 +2027,6 @@ public class ActiveGameFragment extends Fragment {
 												case ALCHEMIST:
 													playAlchemist();
 													break;
-												case BISHOP:
-//													playBishop();
-													break;
-												case INTRIGUE:
-													//playIntrigue();
-													break;
-												case SABOTEUR:
-													//playSaboteur();
-													break;
 												case SPY:
 													playSpy();
 													break;

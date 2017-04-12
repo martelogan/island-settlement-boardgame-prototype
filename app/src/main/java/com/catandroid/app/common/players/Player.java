@@ -2668,6 +2668,18 @@ public class Player {
 	public int getNumOwnedCities() {
 		return numOwnedCities;
 	}
+	/**
+	 * Get the number of cities owned by the player
+	 *
+	 * @return the number of city owned by the player
+	 */
+	public int getNonMetropolisCities() {
+		int numMetropolisOwned = 0;
+		if(board.getMetropolisOwners()[0] == getPlayerNumber()) numMetropolisOwned++;
+		if(board.getMetropolisOwners()[1] == getPlayerNumber()) numMetropolisOwned++;
+		if(board.getMetropolisOwners()[2] == getPlayerNumber()) numMetropolisOwned++;
+		return numOwnedCities-(numMetropolisOwned);
+	}
 
 	/**
 	 * Get the number of city walls owned by the player
