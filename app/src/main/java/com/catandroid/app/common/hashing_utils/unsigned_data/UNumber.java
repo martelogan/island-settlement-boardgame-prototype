@@ -1,7 +1,6 @@
-package com.catandroid.app.common.hashing_utils.unsigned_data;
-
 /*
- * Copyright (c) 2011-2016, Data Geekery GmbH (http://www.datageekery.com)
+ * Original work Copyright (c) 2011-2016, Data Geekery GmbH (http://www.datageekery.com)
+ * Modified work Copyright (C) 2017, Logan Martel, Frederick Parsons
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +14,24 @@ package com.catandroid.app.common.hashing_utils.unsigned_data;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * island-settlement-boardgame-prototype
+ * Copyright (C) 2017, Logan Martel, Frederick Parsons
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.catandroid.app.common.hashing_utils.unsigned_data;
 
 import java.math.BigInteger;
 
