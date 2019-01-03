@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "com.catandroid.app"
         minSdkVersion 15
-        targetSdkVersion 19
+        targetSdkVersion 28
     }
 
     buildTypes {
@@ -20,8 +20,21 @@ android {
 }
 
 dependencies {
-    compile project(':libraries:BaseGameUtils')
-    compile 'com.android.support:support-v4:25.1.0'
-    compile 'com.google.android.gms:play-services-games:10.2.0'
-    compile 'com.google.code.gson:gson:2.8.0'
+    // Set defaults so that BaseGameUtils can be used outside of BasicSamples
+    if (!project.hasProperty('support_library_version')) {
+        ext.support_library_version = '28.0.0'
+    }
+    if (!project.hasProperty('gms_library_version')) {
+        ext.gms_library_version = '16.0.0'
+    }
+    if (!project.hasProperty('gms_library_version')) {
+        ext.gms_library_version = '16.0.0'
+    }
+    if (!project.hasProperty('gson_version')) {
+        ext.gson_version = "2.8.2"
+    }
+    implementation project(':libraries:BaseGameUtils')
+    implementation "com.android.support:support-v4:${support_library_version}"
+    implementation "com.google.android.gms:play-services-games:${gms_library_version}"
+    implementation "com.google.code.gson:gson:${gson_version}"
 }
